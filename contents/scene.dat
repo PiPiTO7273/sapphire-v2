@@ -1,0 +1,4 @@
+include:script>>script/contents.txt
+include:script>>script/maps.txt
+include:script>>script/syntax.txt
+include:script>>script/theme.txt

@@ -1,0 +1,168 @@
+#module _dxplus_
+
+	#deffunc DrawStringXCenterToHandle int _x,int _y,str _string,int _width,int _color,int _handle
+		sdim StringNote
+		StringNote=_string
+		notesel StringNote
+		repeat notemax
+			sdim StringBuf
+			dim StringWidth
+
+			noteget StringBuf,cnt
+			StringWidth=GetDrawStringWidthToHandle(StringBuf,strlen(StringBuf),_handle)
+			DrawStringToHandle _x+_width/2-StringWidth/2,_y+GetFontSizeToHandle(_handle)*cnt,StringBuf,_color,_handle
+		loop
+
+		noteunsel
+		return
+	#deffunc DrawStringXYCenterToHandle int _x,int _y,str _string,int _width,int _height,int _color,int _handle
+		sdim StringNote
+		StringNote=_string
+		notesel StringNote
+		repeat notemax
+			sdim StringBuf
+			dim StringWidth
+
+			noteget StringBuf,cnt
+			StringWidth=GetDrawStringWidthToHandle(StringBuf,strlen(StringBuf),_handle)
+			DrawStringToHandle _x+_width/2-StringWidth/2,_y+_height/2-(GetFontSizeToHandle(_handle)*notemax)/2+GetFontSizeToHandle(_handle)*cnt,StringBuf,_color,_handle
+		loop
+
+		noteunsel
+		return
+	#deffunc DrawStringXCenter int _x,int _y,str _string,int _width,int _color
+		sdim StringNote
+		StringNote=_string
+		notesel StringNote
+		repeat notemax
+			sdim StringBuf
+			dim StringWidth
+
+			noteget StringBuf,cnt
+			StringWidth=GetDrawStringWidth(StringBuf,strlen(StringBuf))
+			DrawString _x+_width/2-StringWidth/2,_y+GetFontSize()*cnt,StringBuf,_color
+		loop
+
+		noteunsel
+		return
+	#deffunc DrawStringXYCenter int _x,int _y,str _string,int _width,int _height,int _color
+		sdim StringNote
+		StringNote=_string
+		notesel StringNote
+		repeat notemax
+			sdim StringBuf
+			dim StringWidth
+
+			noteget StringBuf,cnt
+			StringWidth=GetDrawStringWidth(StringBuf,strlen(StringBuf))
+			DrawString _x+_width/2-StringWidth/2,_y+_height/2-(GetFontSize()*notemax)/2+GetFontSize()*cnt,StringBuf,_color
+		loop
+
+		noteunsel
+		return
+
+	#deffunc DrawStringYCenter int _x,int _y,str _string,int _height,int _color
+		sdim StringNote
+		StringNote=_string
+		notesel StringNote
+		repeat notemax
+			sdim StringBuf
+			dim StringWidth
+
+			noteget StringBuf,cnt
+			StringWidth=GetDrawStringWidth(StringBuf,strlen(StringBuf))
+			DrawString _x,_y+_height/2-(GetFontSize()*notemax)/2+GetFontSize()*cnt,StringBuf,_color
+		loop
+
+		noteunsel
+		return
+
+	#deffunc DrawStringXAlignRight int _x,int _y,str _string,int _width,int _color
+		sdim StringNote
+		StringNote=_string
+		notesel StringNote
+		repeat notemax
+			sdim StringBuf
+			dim StringWidth
+
+			noteget StringBuf,cnt
+			StringWidth=GetDrawStringWidth(StringBuf,strlen(StringBuf))
+			DrawString _x+_width-StringWidth,_y+GetFontSize()*cnt,StringBuf,_color
+		loop
+
+		noteunsel
+		return
+
+	#deffunc DrawStringXAlignRightToHandle int _x,int _y,str _string,int _width,int _color,int _hwnd
+		sdim StringNote
+		StringNote=_string
+		notesel StringNote
+		repeat notemax
+			sdim StringBuf
+			dim StringWidth
+
+			noteget StringBuf,cnt
+			StringWidth=GetDrawStringWidthToHandle(StringBuf,strlen(StringBuf),_hwnd)
+			DrawStringToHandle _x+_width-StringWidth,_y+GetFontSize()*cnt,StringBuf,_color,_hwnd
+		loop
+
+		noteunsel
+		return
+
+	#define global alCopyImageToDXBuf(%1=0,%2=0,%3=0,%4=0,%5=0,%6=0,%7=0,%8=0) _alCopyImageToDXBuf %1,%2,%3,%4,%5,%6,%7,%8
+	#deffunc _alCopyImageToDXBuf int _a2did,int _dxhwnd,int _posx,int _posy,int _width,int _height,int _refx,int _refy
+		dim CopyWidth:dim CopyHeight
+		dim RefXCount:dim RefYCount
+		dim SoftImgHWND
+		dim ColorCode
+
+		alSelectImage _a2did
+
+		dim ImgWidth:dim ImgHeight
+		ImgWidth=_width:ImgHeight=_height
+		if ImgWidth<1 :ImgWidth=alGetWidth()
+		if ImgHeight<1 :ImgHeight=alGetHeight()
+
+		SoftImgHWND=MakeARGB8ColorSoftImage(ImgWidth,ImgHeight)
+
+		repeat ImgWidth
+			repeat ImgHeight
+				ColorCode=alGetPixel(_refx+RefXCount,_refy+RefYCount)
+				DrawPixelSoftImage SoftImgHWND,RefXCount,RefYCount,ARGB_R(ColorCode),ARGB_G(ColorCode),ARGB_B(ColorCode),ARGB_A(ColorCode)
+				RefYCount++
+			loop
+			RefXCount++
+			RefYCount=0
+		loop
+
+		SetDrawScreen _dxhwnd
+		SetDrawBlendMode DX_BLENDMODE_PMA_ALPHA,255
+		DrawSoftImage _posx,_posy,SoftImgHWND
+		DeleteSoftImage SoftImgHWND
+		return
+
+	#deffunc DrawStringFromGraph int _posx,int _posy,str _string,int _hwnd,int _fontwidth,int _fontheight,int _offsetx
+		dim stringbyte
+		sdim stringbuf
+		dim curposx:dim curposy
+		curposx=_posx:curposy=_posy
+		stringbuf=_string
+		repeat strlen(stringbuf)
+			stringbyte=peek(stringbuf,cnt)
+			if stringbyte==10 :continue
+			if stringbyte==13 {
+				curposx=_posx
+				curposy+_fontheight
+				continue
+			}
+			DrawRectGraph curposx,curposy,stringbyte\16*_fontwidth,stringbyte/16*_fontheight,_fontwidth,_fontheight,_hwnd,1,0
+			curposx+_fontwidth+_offsetx
+		loop
+		return
+
+	#deffunc StopMovieToGraph int _hwnd
+		PauseMovieToGraph _hwnd
+		SeekMovieToGraph _hwnd,0
+		return
+
+#global

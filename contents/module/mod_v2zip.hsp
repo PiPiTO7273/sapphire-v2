@@ -1,0 +1,79 @@
+#module
+#uselib "kernel32.dll"
+#cfunc GetLastError  "GetLastError"
+#const ERROR_INSUFFICIENT_BUFFER  122
+
+#uselib "cabinet.dll"
+#const COMPRESS_ALGORITHM_MSZIP  2
+#const COMPRESSDATA_DEFAULT_ALGORITHM  COMPRESS_ALGORITHM_MSZIP
+#func CreateCompressor    "CreateCompressor"    sptr, sptr, sptr
+#func Compress            "Compress"            sptr, sptr, sptr, sptr, sptr, sptr
+#func CloseCompressor     "CloseCompressor"     sptr
+#func CreateDecompressor  "CreateDecompressor"  sptr, sptr, sptr
+#func Decompress          "Decompress"          sptr, sptr, sptr, sptr, sptr, sptr
+#func CloseDecompressor   "CloseDecompressor"   sptr
+
+// データを圧縮する。
+//   uncompressed_buffer: 圧縮したいデータを保持する変数
+//   uncompressed_size  : 圧縮したいデータのサイズ (bytes)
+//   compressed_buffer  : 圧縮結果を受け取る変数
+//   compressed_size    : 圧縮結果のデータサイズを受け取る変数
+// 戻り値: 成功時 stat != 0、失敗時 stat == 0
+#deffunc CompressData var uncompressed_buffer, int uncompressed_size, var compressed_buffer, var compressed_size, local handle, local result
+	// 環境チェック
+	if varptr64(CreateCompressor)==0 :return 0
+
+	// 圧縮ハンドル作成
+	dim64 handle
+	if cfunc64i(CreateCompressor,COMPRESSDATA_DEFAULT_ALGORITHM,0,varptr64(handle))==0 :return 0
+
+	// サイズ計算
+	result=0:compressed_size=0
+	cfunc64v Compress,handle,varptr64(uncompressed_buffer),uncompressed_size,0,0,varptr64(compressed_size)
+	if GetLastError()==ERROR_INSUFFICIENT_BUFFER {
+		// 圧縮する
+		sdim compressed_buffer,compressed_size
+		cfunc64v Compress,handle,varptr64(uncompressed_buffer),uncompressed_size,varptr64(compressed_buffer),compressed_size,varptr64(compressed_size)
+		result=(stat!=0)
+	}
+
+	cfunc64v CloseCompressor,handle
+	return result
+
+// データを展開する。
+//   compressed_buffer  : 展開したいデータを保持する変数
+//   compressed_size    : 展開したいデータのサイズ (bytes)
+//   uncompressed_buffer: 展開結果を受け取る変数
+//   uncompressed_size  : 展開結果のデータサイズを受け取る変数
+// 戻り値: 成功時 stat != 0、失敗時 stat == 0
+#deffunc DecompressData var compressed_buffer, int compressed_size, var uncompressed_buffer, var uncompressed_size, local handle, local result
+	// 環境チェック
+	if varptr64(CreateDecompressor)==0 :return 0
+
+	// 圧縮ハンドル作成
+	dim64 handle
+	if cfunc64i(CreateDecompressor,COMPRESSDATA_DEFAULT_ALGORITHM,0,varptr64(handle))==0 :return 0
+
+	// サイズ計算
+	result=0:uncompressed_size=0
+	cfunc64v Decompress,handle,varptr64(compressed_buffer),compressed_size,0,0,varptr64(uncompressed_size)
+	if GetLastError()==ERROR_INSUFFICIENT_BUFFER {
+		// 展開する
+		sdim uncompressed_buffer,uncompressed_size
+		cfunc64v Decompress,handle,varptr64(compressed_buffer),compressed_size,varptr64(uncompressed_buffer),uncompressed_size,varptr64(uncompressed_size)
+		result=(stat!=0)
+	}
+
+	cfunc64v CloseDecompressor,handle
+	return result
+
+//v2zipを展開して文字列として返す
+#defcfunc v2zip_Load str _path
+	exist _path
+	sdim v2zipbuf,strsize
+	sdim v2zipdec
+	dim v2zipdecsize
+	bload _path,v2zipbuf
+	DecompressData v2zipbuf, strsize, v2zipdec, v2zipdecsize
+	return v2zipdec
+#global

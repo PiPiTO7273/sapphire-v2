@@ -1,0 +1,813 @@
+
+//	Sapphire v2.xx Project
+//	(c) 2022 puoro.
+
+#include"hsp3_64.as"
+#include"contents/module/hspint64.as"
+
+#include"contents/module/dxlib_x64.as"		//DXライブラリ
+#include"contents/module/bass_x64.as"		//BASS Audio Library
+#include"a2d.hsp"						//Artlet2D
+#include"kernel32.as"					//KERNEL32.DLL header
+#include"contents/module/mod_wininet64.hsp"	//WININET.DLL header
+#include"contents/module/mod_fx.as"		//式評価
+#include"contents/module/mod_strmidfix.hsp"	//strmid命令の高速化
+#include"contents/module/dirlist2.hsp"		//hspextのdirlist2を再現
+
+goto*Startup
+
+#include"contents/module/mod_Debug.hsp"			//デバッグ関連
+#include"contents/module/mod_dxlibplus.hsp"		//DXライブラリ拡張命令
+#include"contents/module/mod_v2zip.hsp"			//データ圧縮
+#include"contents/module/mod_4bithex.hsp"		//バイナリ→文字列変換
+#include"contents/module/mod_BinPkg.hsp"		//バイナリパッケージ
+
+#include"contents/module/NameSpace.hsp"				//グローバル空間の定数・マクロ
+#include"contents/module/StringTable.hsp"			//文字列の配列
+#include"contents/module/func_Default.hsp"			//基本命令・関数
+#include"contents/module/func_InternetRanking.hsp"	//IR同期関連
+
+#include"contents/module/duioparse.hsp"				//Dynamic UI Language (Input-Output Module)
+#include"contents/module/scene_MusicSelect.hsp"		//楽曲選択画面
+#include"contents/module/scene_Gameplay.hsp"			//ゲームプレイ
+#include"contents/module/scene_ErrorDialog.hsp"		//エラーダイアログ
+
+#epack"start.ax"
+#packopt hide 1
+
+*Startup
+
+	onexit*Exit
+	;onerror*SystemError
+
+	sdim dir_default
+	dir_default=dir_cur
+
+	//スプラッシュ画面
+		bgscr 0,320,60,0,ginfo(20)/2-320/2,(ginfo(21)-40)/2-60/2
+		title"":gsel 0,2
+		color 100,100,100:boxf
+		color 255,255,255:boxf 1,1,ginfo(12)-2,ginfo(13)-2
+		color 100,100,100:font"MS GOTHIC",12
+		pos 20,21:mes"起動中"
+		color 230,230,230:boxf 320/2-80,25,320/2-80+160,30
+		color 0,0,0:boxf 320/2-80,25,320/2-80+10,30
+
+	gosub*DrawInitDebugMsg
+
+	//セーブデータ読み込み
+		logmes GetTimeStamp()+" Loading savedata \""+"contents/savedata.bin"+"\""
+		exist"contents/savedata.bin"
+		if strsize==-1 {
+			OpenErrorDialog"S2S0000"
+			end
+		}
+		sdim ClientSaveData,strsize
+		bload"contents/savedata.bin",ClientSaveData
+		color 0,0,0:boxf 320/2-80,25,320/2-80+30,30
+
+	//復号化
+		logmes GetTimeStamp()+" Decrypting savedata (seed="+8881109+")"
+		randomize 8881109
+		repeat strsize
+			poke ClientSaveData,cnt,peek(ClientSaveData,cnt)^rnd(256)
+		loop
+		randomize
+
+	//シグネチャを確認
+		if (peek(ClientSaveData,0)=='s'&peek(ClientSaveData,0)=='s'&peek(ClientSaveData,0)=='s'&peek(ClientSaveData,0)=='s')==FALSE {
+			OpenErrorDialog"S2S0001"
+			end
+		}
+
+	//設定読み込み
+		dupptr DispWidth,varptr64(ClientSaveData)+4,4,vartype("int")
+		dupptr DispHeight,varptr64(ClientSaveData)+8,4,vartype("int")
+		dupptr BufWidth,varptr64(ClientSaveData)+12,4,vartype("int")
+		dupptr BufHeight,varptr64(ClientSaveData)+16,4,vartype("int")
+		dupptr duioScenePath,varptr64(ClientSaveData)+32,64,vartype("str")
+		dupptr PlayerID,varptr64(ClientSaveData)+96,64,vartype("str")
+		dupptr PlayerPassword,varptr64(ClientSaveData)+160,64,vartype("str")
+		dupptr HTTPproxy,varptr64(ClientSaveData)+224,64,vartype("str")
+
+		logmes GetTimeStamp()+" Loading system settings..."
+		logmes GetTimeStamp()+" - Display : "+DispWidth+"x"+DispHeight
+		logmes GetTimeStamp()+" - Buffer : "+BufWidth+"x"+BufHeight
+		logmes GetTimeStamp()+" - Internet Ranking ID : "+PlayerID
+		logmes GetTimeStamp()+" - HTTP Proxy : "+HTTPproxy
+
+	//文字列テーブル
+		gosub*LoadStringTable
+
+	//DXライブラリ初期化
+		logmes GetTimeStamp()+" Initializing DirectX..."
+		SetOutApplicationLogValidFlag FALSE
+		SetAlwaysRunFlag TRUE
+		ChangeWindowMode TRUE
+		SetGraphMode DispWidth,DispHeight
+		SetWindowVisibleFlag FALSE
+		;SetWaitVSyncFlag FALSE
+		DxLib_Init
+		if MSAAflag :SetDrawMode DX_DRAWMODE_BILINEAR
+		SetUsePremulAlphaConvertLoad TRUE
+		SetMouseDispFlag FALSE
+
+		//DirectXバージョン出力
+		sdim dxversionarr:dxversionarr="[ERROR]","9","9 EX","11"
+		logmes GetTimeStamp()+" - DirectX API version : "+dxversionarr(GetUseDirect3DVersion())
+
+		SetUseLighting FALSE
+		SetCameraNearFar d2f(100),d2f(4000)
+		color 0,0,0:boxf 320/2-80,25,320/2-80+40,30
+
+		LoadAllImgResource
+
+	//BASS audio library初期化
+		logmes GetTimeStamp()+" [bass] Initializing audio component..."
+
+		BASS_Init -1,44100,0,0,NULL
+		if stat==FALSE {
+			logmes GetTimeStamp()+" [Warning] Failed to initialize audio component"
+		}
+
+		BASS_SetConfig BASS_CONFIG_DEV_PERIOD,1
+
+		dim struct_BASS_INFO,14
+		cfunc64v BASS_GetInfo,varptr64(struct_BASS_INFO)
+
+		logmes" - Audio output rate : "+struct_BASS_INFO(13)+" hz"
+		logmes" - Minimum audio buffer size : "+struct_BASS_INFO(8)+" ms"
+		logmes" - Average audio latency : "+struct_BASS_INFO(10)+" ms"
+
+		//バッファサイズ設定
+		dim BASS_AudioBufferSize
+		BASS_AudioBufferSize=AudioBufferSize
+		if BASS_AudioBufferSize==0 {
+			//自動（最小サイズに設定）
+			BASS_AudioBufferSize=struct_BASS_INFO(8)
+		}
+		BASS_SetConfig BASS_CONFIG_BUFFER,BASS_AudioBufferSize
+		BASS_SetConfig BASS_CONFIG_UPDATEPERIOD,BASS_AudioBufferSize/2
+		BASS_SetConfig BASS_CONFIG_UPDATETHREADS,4
+
+	//UI構成初期化
+		duio_Init
+		duio_LoadFontData"contents/fontdata"
+		duio_LoadSoundData"contents/sound"
+		duio_LoadScript duioScenePath,duioScenePath+".tmp"
+		color 0,0,0:boxf 320/2-80,25,320/2-80+50,30
+
+	//キー登録
+		#addition"contents/module/puorosvc.key"
+
+	//画像読み込み
+		SetDXArchiveExtension"bin"
+		dim hcommonLayer:hcommonLayer=MakeScreen(BufWidth,BufHeight,TRUE)
+		dim hdximg
+		hdximg(ibg_common)=LoadGraph("contents/video/background.ogv")
+
+		hdximg(itmplayer)=MakeScreen(BufWidth,BufHeight,TRUE)
+
+		hdximg(ishape_commonbg)=LoadGraph("contents/graphic/common_bg_parts.png")
+		hdximg(icommon_ironline)=LoadGraph("contents/graphic/common_ironline.png")
+		hdximg(icommon_bglayer)=LoadGraph("contents/graphic/common_bg_layer.png")
+		hdximg(icommon_cursor)=LoadGraph("contents/graphic/common_cursor.png")
+
+		hdximg(imusicselect_bg_songitem)=LoadGraph("contents/graphic/musicselect_songitem.png")
+		hdximg(imusicselect_item_normal)=LoadGraph("contents/graphic/musicselect_item_normal.png")
+		hdximg(imusicselect_item_hard)=LoadGraph("contents/graphic/musicselect_item_hard.png")
+		hdximg(imusicselect_item_chaos)=LoadGraph("contents/graphic/musicselect_item_chaos.png")
+
+		hdximg(imusicselect_folder_all)=LoadGraph("contents/graphic/musicselect_button_folder_all.png")
+		hdximg(imusicselect_folder_alllv)=LoadGraph("contents/graphic/musicselect_button_folder_alllv.png")
+		hdximg(imusicselect_folder_lv1_4)=LoadGraph("contents/graphic/musicselect_button_folder_lv1-4.png")
+		hdximg(imusicselect_folder_lv5_8)=LoadGraph("contents/graphic/musicselect_button_folder_lv5-8.png")
+		hdximg(imusicselect_folder_lv9_11)=LoadGraph("contents/graphic/musicselect_button_folder_lv9-11.png")
+		hdximg(imusicselect_folder_lv12)=LoadGraph("contents/graphic/musicselect_button_folder_lv12.png")
+		hdximg(imusicselect_folder_assist)=LoadGraph("contents/graphic/musicselect_button_folder_assist.png")
+		hdximg(imusicselect_folder_clear)=LoadGraph("contents/graphic/musicselect_button_folder_clear.png")
+		hdximg(imusicselect_folder_expert)=LoadGraph("contents/graphic/musicselect_button_folder_expert.png")
+		hdximg(imusicselect_folder_madness)=LoadGraph("contents/graphic/musicselect_button_folder_madness.png")
+		hdximg(imusicselect_folder_fc)=LoadGraph("contents/graphic/musicselect_button_folder_fc.png")
+		hdximg(imusicselect_folder_allex)=LoadGraph("contents/graphic/musicselect_button_folder_allex.png")
+		hdximg(imusicselect_folder_normal)=LoadGraph("contents/graphic/musicselect_button_folder_normal.png")
+		hdximg(imusicselect_folder_hard)=LoadGraph("contents/graphic/musicselect_button_folder_hard.png")
+		hdximg(imusicselect_folder_chaos)=LoadGraph("contents/graphic/musicselect_button_folder_chaos.png")
+		hdximg(imusicselect_folder_s1)=LoadGraph("contents/graphic/musicselect_button_folder_s1.png")
+
+		hdximg(imusicselect_sort_default)=LoadGraph("contents/graphic/musicselect_button_sort_default.png")
+		hdximg(imusicselect_sort_name)=LoadGraph("contents/graphic/musicselect_button_sort_name.png")
+		hdximg(imusicselect_sort_level)=LoadGraph("contents/graphic/musicselect_button_sort_level.png")
+		hdximg(imusicselect_sort_score)=LoadGraph("contents/graphic/musicselect_button_sort_score.png")
+		hdximg(imusicselect_sort_bpm)=LoadGraph("contents/graphic/musicselect_button_sort_bpm.png")
+		hdximg(imusicselect_sort_cleartype)=LoadGraph("contents/graphic/musicselect_button_sort_cleartype.png")
+
+		hdximg(imusicselect_itemscroll_circle)=LoadGraph("contents/graphic/musicselect_itemscroll_circle.png")
+
+		duio_ChangeButtonImage duio_ButtonID2UIsetID("musicselect_button_folder"),hdximg(imusicselect_folder_all)
+		duio_ChangeButtonImage duio_ButtonID2UIsetID("musicselect_button_sort"),hdximg(imusicselect_sort_default)
+
+		hdximg(imusicselect_ir)=MakeScreen(290,116,TRUE)
+
+		hdximg(imusicselect_ir_icon_1)=LoadGraph("contents/graphic/musicselect_ir_icon_1.png")
+		hdximg(imusicselect_ir_icon_2)=LoadGraph("contents/graphic/musicselect_ir_icon_2.png")
+		hdximg(imusicselect_ir_icon_3)=LoadGraph("contents/graphic/musicselect_ir_icon_3.png")
+		hdximg(imusicselect_ir_icon_other)=LoadGraph("contents/graphic/musicselect_ir_icon_0.png")
+
+		hdximg(imusicselect_levelsel_normalorg)=LoadGraph("contents/graphic/musicselect_levelselect_normal.png")
+		hdximg(imusicselect_levelsel_normal)=MakeScreen(200,66,TRUE)
+		hdximg(imusicselect_levelsel_hardorg)=LoadGraph("contents/graphic/musicselect_levelselect_hard.png")
+		hdximg(imusicselect_levelsel_hard)=MakeScreen(200,66,TRUE)
+		hdximg(imusicselect_levelsel_chaosorg)=LoadGraph("contents/graphic/musicselect_levelselect_chaos.png")
+		hdximg(imusicselect_levelsel_chaos)=MakeScreen(200,66,TRUE)
+
+		hdximg(iplayoption_enabled_120)=LoadGraph("contents/graphic/playoption_button_enabled_120.png")
+		hdximg(iplayoption_enabled_180)=LoadGraph("contents/graphic/playoption_button_enabled_180.png")
+
+		//オブジェクトの配置
+			repeat 6
+				hdximg(iplayoption_objplace_normal_enabled+cnt)=MakeScreen(120,35,TRUE)
+				SetDrawScreen hdximg(iplayoption_objplace_normal_enabled+cnt)
+				DrawGraph 0,0,duio_GetButtonhImg(duio_ButtonID2UIsetID(playoption_objplace_buttonid(cnt))),TRUE
+				DrawGraph 0,0,hdximg(iplayoption_enabled_120),TRUE
+			loop
+
+		//ゲージの難易度
+			repeat 6
+				hdximg(iplayoption_gauge_normal_enabled+cnt)=MakeScreen(120,35,TRUE)
+				SetDrawScreen hdximg(iplayoption_gauge_normal_enabled+cnt)
+				DrawGraph 0,0,duio_GetButtonhImg(duio_ButtonID2UIsetID(playoption_gauge_buttonid(cnt))),TRUE
+				DrawGraph 0,0,hdximg(iplayoption_enabled_120),TRUE
+			loop
+
+		//ウィンドウレイアウト
+			repeat 3
+				hdximg(iplayoption_window_profile_enabled+cnt)=MakeScreen(180,35,TRUE)
+				SetDrawScreen hdximg(iplayoption_window_profile_enabled+cnt)
+				DrawGraph 0,0,duio_GetButtonhImg(duio_ButtonID2UIsetID(playoption_window_buttonid(cnt))),TRUE
+				DrawGraph 0,0,hdximg(iplayoption_enabled_180),TRUE
+			loop
+
+		//目標スコア
+			repeat 6
+				hdximg(iplayoption_target_ex_enabled+cnt)=MakeScreen(120,35,TRUE)
+				SetDrawScreen hdximg(iplayoption_target_ex_enabled+cnt)
+				DrawGraph 0,0,duio_GetButtonhImg(duio_ButtonID2UIsetID(playoption_target_buttonid(cnt))),TRUE
+				DrawGraph 0,0,hdximg(iplayoption_enabled_120),TRUE
+			loop
+			repeat 2
+				hdximg(iplayoption_target_mybest_enabled+cnt)=MakeScreen(180,35,TRUE)
+				SetDrawScreen hdximg(iplayoption_target_mybest_enabled+cnt)
+				DrawGraph 0,0,duio_GetButtonhImg(duio_ButtonID2UIsetID(playoption_target_buttonid(cnt+6))),TRUE
+				DrawGraph 0,0,hdximg(iplayoption_enabled_180),TRUE
+			loop
+
+		hdximg(igameplay_bg_sidelr)=MakeScreen(256,1024,TRUE)
+		hdximg(igameplay_bgorg_side_0)=LoadGraph("contents/graphic/gameplay_bg_effect_0.png")
+
+		hdximg(igameplay_bg_grid)=MakeScreen(1024,1024,TRUE)
+		hdximg(igameplay_bgorg_grid_0)=LoadGraph("contents/graphic/gameplay_bg_grid.png")
+
+		hdximg(igameplay_note_single_0)=LoadGraph("contents/graphic/gameplay_note_single_0.png")
+		hdximg(igameplay_note_hold_0)=LoadGraph("contents/graphic/gameplay_note_hold_0.png")
+		hdximg(igameplay_lane)=MakeScreen(512/TexLv,2048/TexLv,TRUE)
+		hdximg(igameplay_bg_lane)=LoadGraph("contents/graphic/gameplay_bg_lane.png")
+		hdximg(igameplay_sidelane_l)=MakeScreen(128/TexLv,2048/TexLv,TRUE)
+		hdximg(igameplay_sidelane_r)=MakeScreen(128/TexLv,2048/TexLv,TRUE)
+		hdximg(igameplay_bg_sidelane)=LoadGraph("contents/graphic/gameplay_bg_lane_s.png")
+		hdximg(igameplay_note_hold_long)=MakeScreen(128/TexLv,2048/TexLv,TRUE)
+		hdximg(igameplay_copybuf)=MakeScreen((128+512+128)/TexLv,2048/TexLv,TRUE)
+
+		hdximg(igameplay_judge_excellent)=LoadGraph("contents/graphic/gameplay_judge_excellent.png")
+		hdximg(igameplay_judge_great)=LoadGraph("contents/graphic/gameplay_judge_great.png")
+		hdximg(igameplay_judge_good)=LoadGraph("contents/graphic/gameplay_judge_good.png")
+		hdximg(igameplay_judge_bad)=LoadGraph("contents/graphic/gameplay_judge_bad.png")
+		hdximg(igameplay_judge_miss)=LoadGraph("contents/graphic/gameplay_judge_miss.png")
+
+		hdximg(igameplay_laneeffect)=LoadGraph("contents/graphic/gameplay_laneeffect.png")
+
+		hdximg(igameplay_graph_cur)=LoadGraph("contents/graphic/gameplay_graph_current.png")
+		hdximg(igameplay_graph_mybest)=LoadGraph("contents/graphic/gameplay_graph_mybest.png")
+		hdximg(igameplay_graph_target)=LoadGraph("contents/graphic/gameplay_graph_target.png")
+		hdximg(igameplay_graph_reward)=LoadGraph("contents/graphic/gameplay_graph_reward.png")
+
+		hdximg(igameplay_playtime_pre)=LoadGraph("contents/graphic/gameplay_playtime_pre.png")
+
+		PlayMovieToGraph hdximg(ibg_common),DX_PLAYTYPE_LOOP
+
+		dim hdximgarr_gameplay_particle,8
+		repeat 8
+			hdximgarr_gameplay_particle(cnt)=LoadGraph("contents/package/res_effect_particle/effect_Particle_"+cnt+".png")
+		loop
+
+	//3Dモデル
+		dim hdxobj
+		hdxobj(ogameplay_controlpanel)=MV1LoadModel("contents/object/gameplay_controlpanel.mv1")
+
+		color 0,0,0:boxf 320/2-80,25,320/2-80+80,30
+
+	//グローバル変数
+		sdim curSceneTag
+		dim i
+		dim cursorPosX
+		dim cursorPosY
+		ddim cursorWheelraw,1
+		ddim bfCursorWheelraw,1
+		dim cursorWheelEase
+		dim cursorWheelCount
+		dim cursorStatus
+		dim bfcursorStatus
+		dim SceneCount
+		dim FrameCount
+		ddim CurFPS
+		ddim SumFPS
+		ddim AvgFPS
+		dim FPSkeepCount_std
+		dim FPSkeepCount
+		dim SubThreadCount
+		dim DrawThreadTime
+		curSceneTag="#MusicSelect"
+		color 0,0,0:boxf 320/2-80,25,320/2-80+120,30
+
+	//ライブラリ読み込み
+		sdim mapgroup
+		dim mapgroup_max
+		repeat
+			mapgroup(cnt)=duio_idsGet("map@"+cnt)
+			if mapgroup(cnt)=="" :break
+			mapgroup_max++
+		loop
+
+		sdim map_uuid,64,mapgroup_max,3
+		sdim map_path,64,mapgroup_max,3
+		sdim map_buf,1024*256,mapgroup_max,3
+		dim map_buf_size,mapgroup_max,3
+
+		//メタデータ
+		sdim mapdb_title,64,mapgroup_max,3			//曲名
+		sdim mapdb_artist,64,mapgroup_max,3		//アーティスト名
+		sdim mapdb_source,64,mapgroup_max,3		//提供元
+		sdim mapdb_resource,64,mapgroup_max,3		//リソースID
+		dim mapdb_difficulty,mapgroup_max,3		//難易度区分
+		dim mapdb_level,mapgroup_max,3			//難易度
+		sdim mapdb_artworkpath,64,mapgroup_max,3	//ジャケット画像のパス
+		dim mapdb_hartwork,mapgroup_max,3			//ジャケット画像のハンドル
+		ddim mapdb_defbpm,mapgroup_max,3			//既定のBPM値
+		ddim mapdb_minbpm,mapgroup_max,3			//最低のBPM値
+		ddim mapdb_maxbpm,mapgroup_max,3			//最高のBPM値
+		dim mapdb_totalnotes,mapgroup_max,3		//合計オブジェクト数
+		dim mapdb_release,mapgroup_max,3			//リリースされたバージョン（0=legacy,1=v2）
+		sdim mapdb_mapdesign,64,mapgroup_max,3		//譜面製作者
+
+		//IRデータ
+		dim mapdb_ir_score,mapgroup_max,3,100		//IRスコア
+		sdim mapdb_ir_name,64,mapgroup_max,3,100	//IR登録名
+		dim mapdb_ir_myrank,mapgroup_max,3			//IRの自分の順位
+		dim mapdb_ir_regmax,mapgroup_max,3			//IRの登録数
+
+		//自己ベストデータ
+		dim mapdb_mybest_score,mapgroup_max,3				//スコア
+		ddim mapdb_mybest_pfpoint,mapgroup_max,3			//能力値
+		dim mapdb_mybest_judgedetail,mapgroup_max,3,7		//判定詳細
+		ddim mapdb_mybest_judgerate,mapgroup_max,3,7			//判定詳細（レート）
+		sdim mapdb_mybest_cleartype,64,mapgroup_max,3		//クリアの種類
+		dim mapdb_mybest_maxcombo,mapgroup_max,3			//最大コンボ
+		sdim mapdb_mybest_regdate,64,mapgroup_max,3			//記録日時
+		sdim mapdb_mybest_gauge4binhex,350,mapgroup_max,3		//ゲージ推移
+		sdim mapdb_mybest_score4binhex,2048,mapgroup_max,3	//スコア推移
+
+		dim item:dim lv
+		repeat mapgroup_max
+			split mapgroup(cnt),",",map_uuid(cnt,0),map_uuid(cnt,1),map_uuid(cnt,2)
+			item=cnt
+			repeat 3
+				lv=cnt
+				if map_uuid(item,lv)=="*" :continue
+
+				map_path(item,lv)="contents/maps/"+map_uuid(item,lv)+".m2o"
+				exist map_path(item,lv)
+				if strsize==-1 {
+					OpenErrorDialog"MFM0000"
+					goto*Exit
+				} else {
+					map_buf_size(item,lv)=strsize
+					memexpand map_buf(item,lv),map_buf_size(item,lv)	//メモリ領域を拡張
+					bload map_path(item,lv),map_buf(item,lv)
+
+					//ファイルのシグネチャを確認
+					if (peek(map_buf(item,lv),0)!'v')|(peek(map_buf(item,lv),1)!'2')|(peek(map_buf(item,lv),2)!'o')|(peek(map_buf(item,lv),3)!'p') {
+						OpenErrorDialog"MFM0001"
+						goto*Exit
+					}
+
+					dim binpos		//バイナリ検索位置
+					dim binlength		//データ長
+					sdim tmpmapbuf
+					memexpand tmpmapbuf,map_buf_size(item,lv)
+					memcpy tmpmapbuf,map_buf(item,lv),map_buf_size(item,lv),0,0
+
+					binpos+4+4
+
+					//既定値
+					mapdb_mapdesign(item,lv)="puoro."
+					mapdb_artworkpath(item,lv)="img.png"
+
+					repeat
+
+						;logmes GetTimeStamp()+" [Processing] Search syntax ("+binpos+"/"+map_buf_size(item,lv)+" , chunktype="+peek(tmpmapbuf,binpos)+")"
+						switch peek(tmpmapbuf,binpos)
+
+							//Title
+							case ID_TITLE
+								binlength=peek(tmpmapbuf,binpos+1)
+								memexpand mapdb_title(item,lv),binlength
+								memcpy mapdb_title(item,lv),tmpmapbuf,binlength,0,binpos+2
+								binpos+2+binlength
+							swbreak
+
+							//Artist
+							case ID_ARTIST
+								binlength=peek(tmpmapbuf,binpos+1)
+								memexpand mapdb_artist(item,lv),binlength
+								memcpy mapdb_artist(item,lv),tmpmapbuf,binlength,0,binpos+2
+								binpos+2+binlength
+							swbreak
+
+							//Source
+							case ID_SOURCE
+								binlength=peek(tmpmapbuf,binpos+1)
+								memexpand mapdb_source(item,lv),binlength
+								memcpy mapdb_source(item,lv),tmpmapbuf,binlength,0,binpos+2
+								binpos+2+binlength
+							swbreak
+
+							//Resource
+							case ID_RESOURCEID
+								binlength=peek(tmpmapbuf,binpos+1)
+								memexpand mapdb_resource(item,lv),binlength
+								memcpy mapdb_resource(item,lv),tmpmapbuf,binlength,0,binpos+2
+								binpos+2+binlength
+							swbreak
+
+							//Artwork
+							case ID_ARTWORK
+								binlength=peek(tmpmapbuf,binpos+1)
+								memexpand mapdb_artworkpath(item,lv),binlength
+								memcpy mapdb_artworkpath(item,lv),tmpmapbuf,binlength,0,binpos+2
+								binpos+2+binlength
+							swbreak
+
+							//MapDesign
+							case ID_MAPDESIGN
+								binlength=peek(tmpmapbuf,binpos+1)
+								memexpand mapdb_mapdesign(item,lv),binlength
+								memcpy mapdb_mapdesign(item,lv),tmpmapbuf,binlength,0,binpos+2
+								binpos+2+binlength
+							swbreak
+
+							//Level
+							case ID_LEVEL
+								dim binsearchvalue
+								binsearchvalue=peek(tmpmapbuf,binpos+1)
+								if binsearchvalue&16 {
+									mapdb_difficulty(item,lv)=ID_DIFFICULTY_NORMAL
+									mapdb_level(item,lv)=binsearchvalue-16
+								}
+								if binsearchvalue&32 {
+									mapdb_difficulty(item,lv)=ID_DIFFICULTY_HARD
+									mapdb_level(item,lv)=binsearchvalue-32
+								}
+								if binsearchvalue&64 {
+									mapdb_difficulty(item,lv)=ID_DIFFICULTY_CHAOS
+									mapdb_level(item,lv)=binsearchvalue-64
+								}
+								binpos+2
+							swbreak
+
+							//Release
+							case ID_RELEASE
+								mapdb_release=lpeek(tmpmapbuf,binpos+1)
+								binpos+5
+							swbreak
+
+							case ID_BGVIDEO_COMMON:binpos+2:swbreak
+							case ID_BGVIDEO_PATH:binpos+2+peek(tmpmapbuf,binpos+1):swbreak
+							case ID_BGAUDIO:binpos+2+peek(tmpmapbuf,binpos+1):swbreak
+							case ID_UNLOCKINFO:binpos+6:swbreak
+							case ID_TOTALOFFSET:binpos+3:swbreak
+							case ID_EVENTOFFSET:binpos+3:swbreak
+							case ID_BGVIDEO_OFFSET:binpos+3:swbreak
+							case ID_BGAUDIO_OFFSET:binpos+3:swbreak
+							case ID_AUDIOENCODE:binpos+2+peek(tmpmapbuf,binpos+1):swbreak
+
+							case ID_SOUNDSET:binpos+4+peek(tmpmapbuf,binpos+3):swbreak
+							case ID_SOUNDPLAY:binpos+8:swbreak
+							case ID_BPM
+								if mapdb_defbpm(item,lv)==0 {
+									mapdb_defbpm(item,lv)=f2d(lpeek(tmpmapbuf,binpos+5))
+									mapdb_maxbpm(item,lv)=mapdb_defbpm(item,lv)
+									mapdb_minbpm(item,lv)=mapdb_defbpm(item,lv)
+								} else {
+									if f2d(lpeek(tmpmapbuf,binpos+5))>mapdb_maxbpm(item,lv) {
+										mapdb_maxbpm(item,lv)=f2d(lpeek(tmpmapbuf,binpos+5))
+									}
+									if f2d(lpeek(tmpmapbuf,binpos+5))<mapdb_minbpm(item,lv) {
+										mapdb_minbpm(item,lv)=f2d(lpeek(tmpmapbuf,binpos+5))
+									}
+								}
+								binpos+9
+							swbreak
+							case ID_NOTEHOLDSTART:mapdb_totalnotes(item,lv)+2:binpos+13:swbreak
+							case ID_NOTESINGLE:mapdb_totalnotes(item,lv)++:binpos+9:swbreak
+
+							//拡張命令
+							case ID_EXTEND
+								binpos++
+								switch peek(tmpmapbuf,binpos)
+								swend
+							swbreak
+
+							//終端を見つけたので終了
+							case ID_EOF:break:swbreak
+
+							//不明
+							default
+								logmes GetTimeStamp()+" [Warning] Invalid syntax (file="+map_path(item,lv)+",position="+binpos+",chunktype="+peek(tmpmapbuf,binpos)+")"
+								OpenErrorDialog"MFM0002"
+								goto*Exit
+							swbreak
+
+						swend
+						
+						//検索位置がファイルサイズを超えたら終了
+						if binpos+1>map_buf_size(item,lv) :break
+					loop
+
+					mapdb_hartwork(item,lv)=LoadGraph("contents/maps/"+mapdb_resource(item,lv)+"/"+mapdb_artworkpath(item,lv))
+					if mapdb_hartwork(item,lv)=-1 {
+						mapdb_hartwork(item,lv)=LoadGraph("contents/graphic/common_artwork.png")
+					}
+				}
+			loop
+		loop
+		color 0,0,0:boxf 320/2-80,25,320/2-80+140,30
+
+		//IR
+			sdim IRrawdata:sdim IRdivdata
+			sdim IRproc_prm
+			sdim IRproc_data_UUID
+			sdim IRproc_data_Rank
+			sdim IRproc_data_PlayerName
+			sdim IRproc_data_Score
+			dim item:dim lv
+			IRrawdata=PortalWebSvc_DownloadIRraw()
+			split IRrawdata,"\n",IRdivdata
+			repeat length(IRdivdata)
+				split IRdivdata(cnt),"=",IRproc_prm
+				split IRproc_prm(0),".",IRproc_data_UUID,IRproc_data_Rank
+				split IRproc_prm(1),",",IRproc_data_PlayerName,IRproc_data_Score
+				strrep IRproc_data_Rank,"RANK#",""
+
+				if IRproc_data_UUID!""&int(IRproc_data_Rank)!0 {
+					SearchDBfromUUID IRproc_data_UUID,item,lv
+					mapdb_ir_name(item,lv,int(IRproc_data_Rank)-1)=IRproc_data_PlayerName
+					mapdb_ir_score(item,lv,int(IRproc_data_Rank)-1)=int(IRproc_data_Score)
+					if IRproc_data_PlayerName==PlayerID {	//自分の順位
+						mapdb_ir_myrank(item,lv)=int(IRproc_data_Rank)-1
+					}
+					if int(IRproc_data_Rank)>mapdb_ir_regmax(item,lv) {
+						mapdb_ir_regmax(item,lv)=int(IRproc_data_Rank)
+					}
+
+					if IRproc_data_PlayerName!"" {
+						logmes GetTimeStamp()+" [irsync] Registered IR (uuid="+IRproc_data_UUID+",("+item+","+lv+"),name="+IRproc_data_PlayerName+",score="+IRproc_data_Score+",rank="+IRproc_data_Rank+")"
+					}
+				}
+			loop
+			color 0,0,0:boxf 320/2-80,25,320/2-80+160,30
+
+		//プロフィール取得
+			sdim PFrawdata:sdim PFdivdata
+			sdim INIkey:sdim INIvalue
+			PFrawdata=PortalWebSvc_DownloadProfile(PlayerID,PlayerPassword)
+			split PFrawdata,"\n",PFdivdata
+
+			//プロフィール情報変数
+				sdim pfreg_dispname			//表示名
+				sdim pfreg_RegDate			//登録日時
+				sdim pfreg_EmailAddress		//メールアドレス
+				sdim pfreg_InvitationCode	//招待コード
+				dim pfreg_NewdataFlag		//新規データフラグ
+				dim pfreg_NumLilly			//Lilly所持数（旧バージョンの共通通貨）
+				dim pfreg_NumLepus			//Lepus所持数（v2.xxの共通通貨）
+				dim pfreg_NumFragments		//音色のかけら所持数
+				dim pfreg_Level			//プレイヤーランク
+				dim pfreg_EXPvalue			//プレイヤー経験値
+				ddim pfreg_PFpoint,1		//プレイヤー能力値
+				sdim pfreg_Badge			//バッジ（旧バージョンのコメント）
+				dim pfreg_NumTickets		//チャレンジチケットの枚数
+
+			//オプション設定値
+				ddim pfreg_AddSpeed,1		//オブジェクトの速度
+				dim pfreg_GaugeType			//ゲージの種類
+				dim pfreg_Placement			//オブジェクトの配置オプション
+				dim pfreg_Target			//目標スコア
+				dim pfreg_JudgeOffset		//判定オフセット
+				dim pfreg_DispOffset		//表示オフセット
+				dim pfreg_Autoplay			//オートプレイフラグ
+				dim pfreg_Bonusflag			//能力値のボーナスを有効にするフラグ
+				dim pfreg_WindowLayout		//ウィンドウレイアウト
+				pfreg_AddSpeed=1.0
+				pfreg_Bonusflag=TRUE
+				pfreg_WindowLayout=1+2+4
+
+				dim volume_BGM		//BGM音量(0-100)
+				dim volume_SE		//SE音量(0-100)
+				dim volume_PLAY	//キーサウンド、イベントサウンドの音量(0-100)
+				volume_BGM=70
+				volume_SE=70
+				volume_PLAY=70
+
+			repeat length(PFdivdata)
+				split PFdivdata(cnt),"=",INIkey,INIvalue
+
+				switch INIkey
+					case"DISP.NAME":pfreg_dispname=inivalue:swbreak
+					case"REG.DATE":pfreg_RegDate=INIvalue:swbreak
+					case"EMAIL.ADDRESS":pfreg_EmailAddress=INIvalue:swbreak
+					case"INVITATION":pfreg_InvitationCode=INIvalue:swbreak
+					case"XODA.NEWDATA":pfreg_NewdataFlag=int(INIvalue):swbreak
+					case"XODA.NUMLILLY":pfreg_NumLilly=int(INIvalue):swbreak
+					case"XODA.NUMLEPUS":pfreg_NumLepus=int(INIvalue):swbreak
+					case"XODA.NUMFRAGMENTS":pfreg_NumFragments=int(INIvalue):swbreak
+					case"XODA.LEVEL":pfreg_Level=int(INIvalue):swbreak
+					case"XODA.EXP":pfreg_EXPvalue=int(INIvalue):swbreak
+					case"XODA.RATE":pfreg_PFpoint=double(INIvalue):swbreak
+					case"XODA.BADGE":pfreg_Badge=INIvalue:swbreak
+					case"XODA.NUMTICKETS":pfreg_NumTickets=int(INIvalue):swbreak
+
+					case"XODA.OPTION.ADDSPEED":pfreg_AddSpeed=double(INIvalue):swbreak
+					case"XODA.OPTION.GAUGE":pfreg_GaugeType=int(INIvalue):swbreak
+					case"XODA.OPTION.PLACEMENT":pfreg_Placement=int(INIvalue):swbreak
+					case"XODA.OPTION.TARGET":pfreg_Target=int(INIvalue):swbreak
+					case"XODA.OPTION.JUDGEOFFSET":pfreg_JudgeOffset=int(INIvalue):swbreak
+					case"XODA.OPTION.DISPOFFSET":pfreg_DispOffset=int(INIvalue):swbreak
+					case"XODA.OPTION.AUTOPLAY":pfreg_Autoplay=int(INIvalue):swbreak
+					case"XODA.OPTION.BONUSFLAG":pfreg_Bonusflag=int(INIvalue):swbreak
+
+					case"XODA.VOLUME.BGM":volume_BGM=int(INIvalue):swbreak
+					case"XODA.VOLUME.SE":volume_SE=int(INIvalue):swbreak
+					case"XODA.VOLUME.PLAY":volume_PLAY=int(INIvalue):swbreak
+				swend
+			loop
+
+			if pfreg_dispname=="" :pfreg_dispname=PlayerID	//表示名が未設定の場合、IDをそのまま反映
+
+		//自己ベスト記録
+			sdim mybestrawdata:sdim mybestdivdata
+			dim item:dim lv:sdim INIkey:sdim INIvalue
+			mybestrawdata=PortalWebSvc_DownloadRecord(PlayerID)
+			split mybestrawdata,"\n",mybestdivdata
+
+			repeat length(mybestdivdata)
+				if strmid(mybestdivdata(cnt),0,1)=="[" {	//セクション検出
+					strrep mybestdivdata(cnt),"[",""
+					strrep mybestdivdata(cnt),"]",""
+					SearchDBfromUUID mybestdivdata(cnt),item,lv
+					logmes GetTimeStamp()+" Import Records (UUID="+mybestdivdata(cnt)+",Item="+item+",Level="+lv+")"
+				} else {
+					//通常の処理
+					split mybestdivdata(cnt),"=",INIkey,INIvalue
+					switch INIkey
+
+						case"Score":mapdb_mybest_score(item,lv)=int(INIvalue):swbreak							//スコア
+						case"NumExcellent":mapdb_mybest_judgedetail(item,lv,JUDGEID_EXCELLENT)=int(INIvalue):swbreak	//EXCELLENT数
+						case"NumGreat":mapdb_mybest_judgedetail(item,lv,JUDGEID_GREAT)=int(INIvalue):swbreak			//GREAT数
+						case"NumGood":mapdb_mybest_judgedetail(item,lv,JUDGEID_GOOD)=int(INIvalue):swbreak			//GOOD数
+						case"NumBad":mapdb_mybest_judgedetail(item,lv,JUDGEID_BAD)=int(INIvalue):swbreak			//BAD数
+						case"NumMiss":mapdb_mybest_judgedetail(item,lv,JUDGEID_MISS)=int(INIvalue):swbreak			//MISS数
+						case"NumEarly":mapdb_mybest_judgedetail(item,lv,JUDGEID_EARLY)=int(INIvalue):swbreak			//EARLY数
+						case"NumLate":mapdb_mybest_judgedetail(item,lv,JUDGEID_LATE)=int(INIvalue):swbreak			//LATE数
+						case"MaxCombo":mapdb_mybest_maxcombo(item,lv)=int(INIvalue):swbreak						//最大コンボ
+						case"Type":mapdb_mybest_cleartype(item,lv)=INIvalue:swbreak								//クリアの種類
+						case"Ability":mapdb_mybest_pfpoint(item,lv)=double(INIvalue):swbreak						//能力値
+						case"Date":mapdb_mybest_regdate(item,lv)=INIvalue:swbreak								//記録日時
+
+						case"Gauge_64"																	//ゲージ推移
+							sdim tmphexbuf
+							ConvHEXdec tmphexbuf,INIvalue
+							memcpy mapdb_mybest_gauge4binhex(item,lv),tmphexbuf,350
+						swbreak
+
+						case"Score_64":mapdb_mybest_score4binhex(item,lv)=INIvalue:swbreak
+
+					swend
+				}
+			loop
+
+	//初期状態
+	CreateMapItem MAPITEM_TYPE_GROUP,"",FALSE
+	SetWindowVisibleFlag TRUE
+
+	gsel 0,-1
+
+	gosub*scene_MusicSelect_Init
+	;gosub*scene_Gameplay_Init
+
+	duio_Change3DSquareImage duio_3DSquareID2UIsetID("gameplay_bg_effect_l0"),hdximg(igameplay_bg_sidelr)
+	duio_Change3DSquareImage duio_3DSquareID2UIsetID("gameplay_bg_effect_r0"),hdximg(igameplay_bg_sidelr)
+	duio_Change3DSquareImage duio_3DSquareID2UIsetID("gameplay_bg_grid"),hdximg(igameplay_bg_grid)
+
+	duio_ExportAllImage
+
+*MainLoop
+
+	FPSkeepCount_std=GetNowCount()
+
+	if ProcessMessage()==-1 :goto*Exit
+
+	//カーソル座標
+	cfunc64v GetMousePoint,varptr64(cursorPosX),varptr64(cursorPosY)
+	cursorStatus=GetMouseInput()
+
+	cursorPosX=int(double(cursorPosX)*(double(BufWidth)/double(DispWidth)))
+	cursorPosY=int(double(cursorPosY)*(double(BufHeight)/double(DispHeight)))
+	cursorWheelraw=(cfunc64f(GetMouseWheelRotVolF))
+	;cursorWheelEase=0
+	if cursorWheelraw<0&bfcursorWheelraw<0&cursorWheelraw!bfcursorWheelraw :cursorWheelEase=int((cursorWheelraw-bfcursorWheelraw)*40.0):cursorWheelCount=0
+	if cursorWheelraw>0&bfcursorWheelraw>0&cursorWheelraw!bfcursorWheelraw :cursorWheelEase=int((cursorWheelraw-bfcursorWheelraw)*40.0):cursorWheelCount=0
+	if (cursorWheelraw>0&bfcursorWheelraw<0)|(cursorWheelraw<0&bfcursorWheelraw>0) :cursorWheelEase=int(cursorWheelraw*40.0):cursorWheelCount=0
+	setease cursorWheelEase,0,ease_cubic_out
+	cursorWheel=getease(cursorWheelCount,320)
+	cursorWheelCount+(1000/limitf(CurFPS,1.0))
+
+	//画面の描画先の設定と初期化
+	SetDrawScreen hcommonLayer
+	ClearDrawScreen
+
+	dim VECTORpos:dim VECTORtarget
+	VECTORpos=d2f(0),d2f(-1000),d2f(1200)
+	VECTORtarget=d2f(0),d2f(1400),d2f(0)
+	cfunc64v SetCameraPositionAndTarget_UpVecY,varptr64(VECTORpos),varptr64(VECTORtarget)
+	SetupCamera_Perspective deg2rad(50.0)
+
+	//シーン別
+	switch curSceneTag
+		case"#MusicSelect"
+			gosub*scene_MusicSelect
+		swbreak
+		case"#Gameplay"
+			gosub*scene_Gameplay
+		swbreak
+	swend
+
+	SetDrawBlendMode DX_BLENDMODE_PMA_ALPHA,256
+	DrawGraph cursorPosX,cursorPosY,hdximg(icommon_cursor),TRUE
+
+	SetDrawScreen DX_SCREEN_BACK
+	ClearDrawScreen
+
+	DrawExtendGraph 0,0,DispWidth,DispHeight,hcommonLayer,TRUE
+
+	//デバッグ
+	CurFPS=double(cfunc64f(GetFPS))
+	SumFPS+CurFPS
+	if FrameCount\60==0 :AvgFPS=SumFPS/60.0:SumFPS=0.0
+	DrawOverlayString 0,0,"MainThread FPS="+strf("%.2f",CurFPS)
+	DrawOverlayString 0,20,"MainThread Average-FPS="+strf("%.2f",AvgFPS)
+	DrawOverlayString 0,40,"SubThread FPS="+strf("%.2f",CurFPS*double(SubThreadCount))
+
+	bfcursorStatus=cursorStatus
+	bfCursorWheelraw=cursorWheelraw
+
+	SceneCount++
+	FrameCount++
+
+	//サブスレッド
+	SubThreadCount=0
+	DrawThreadTime=GetNowCount()-FPSkeepCount_std
+	repeat SubThreadLimit
+
+		if (GetNowCount()-FPSkeepCount_std)>(1000/duio_GetFPS()-1) :break
+
+		switch curSceneTag
+			case"#Gameplay"
+				gosub*scene_Gameplay_subThread
+			swbreak
+		swend
+
+		SubThreadCount++
+		await 1
+	loop
+
+	ScreenFlip
+
+	goto*MainLoop
+
+*SystemError
+	ExportDebugLog
+	end
+
+*Exit
+	DxLib_End
+	end

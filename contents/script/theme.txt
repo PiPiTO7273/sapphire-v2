@@ -1,0 +1,308 @@
+
+//----- Music Select -----//
+
+	////// base //////
+
+		#MusicSelect @button common_exit graphic/common_exit.png 1860 22 25 25 &animation-in=fade,150,200,CUBIC_OUT &animation-in=zoom,150,200,1.2,CUBIC_OUT &layerlv=3 &event=game.exit &pushsound=pushbutton
+
+		#MusicSelect @image musicselect_bg_base graphic/musicselect_bg_base.png 0 0 &animation-in=fade,0,500,CUBIC_OUT &animation-in=zoom,0,500,1.5,CUBIC_OUT &layerlv=0
+
+		#MusicSelect @image musicselect_title graphic/musicselect_title.png 0 0 &animation-in=fade,0,350,CUBIC_OUT &animation-in=move,0,350,-128,0,CUBIC_OUT &layerlv=2
+		#MusicSelect @image musicselect_profile graphic/musicselect_profile.png 759 0 &animation-in=fade,20,350,CUBIC_OUT &animation-in=move,20,350,128,0,CUBIC_OUT &layerlv=2
+
+		#MusicSelect @text musicselect_text_guide 遊びたい楽曲を選択してくだサイ！ 112 152 rom1cm16 &animation-in=fade,50,350,CUBIC_OUT &animation-in=move,50,350,-128,0,CUBIC_OUT &animation-in=random.text,50,1000 &color=255,255,255 &layerlv=2
+
+		#MusicSelect @image musicselect_bg_artwork graphic/musicselect_bg_artwork.png 16 204 &animation-in=fade,120,350,CUBIC_OUT &animation-in=move,120,350,-128,0,CUBIC_OUT
+		#MusicSelect @image musicselect_artwork * 20 200 &animation-in=fade,100,350,CUBIC_OUT &animation-in=zoom,100,350,1.2,CUBIC_OUT &disable-imgalpha &imgwidth=300 &imgheight=300
+		#MusicSelect @image musicselect_activesonginfo graphic/musicselect_activesonginfo.png 80 230 &animation-in=zoom,100,300,0,CUBIC_OUT
+		#MusicSelect @image musicselect_activesonginfo_2 graphic/musicselect_activesonginfo_2.png 76 392 &animation-in=zoom,140,300,0,CUBIC_OUT
+
+		#MusicSelect @image musicselect_panel_mybest graphic/musicselect_panel_mybest.png 30 528 &animation-in=fade,200,350,CUBIC_OUT &animation-in=move,200,350,-128,0,CUBIC_OUT
+		#MusicSelect @image musicselect_panel_ranking graphic/musicselect_panel_ranking.png 30 787 &animation-in=fade,250,350,CUBIC_OUT &animation-in=move,250,350,-128,0,CUBIC_OUT
+
+		#MusicSelect @button musicselect_button_option graphic/musicselect_button_option.png 340 810 250 50 &animation-in=fade,500,300,CUBIC_OUT &animation-in=zoom,500,300,0.8,CUBIC_OUT &pushsound=pushbutton &event=musicselect_option
+		#MusicSelect @button musicselect_button_free graphic/musicselect_button_free.png 340 868 250 50 &animation-in=fade,550,300,CUBIC_OUT &animation-in=zoom,550,300,0.8,CUBIC_OUT &pushsound=pushbutton &hide
+		#MusicSelect @button musicselect_button_private graphic/musicselect_button_private.png 340 926 250 50 &animation-in=fade,600,300,CUBIC_OUT &animation-in=zoom,600,300,0.8,CUBIC_OUT &pushsound=pushbutton &hide
+		#MusicSelect @button musicselect_button_autoplay graphic/musicselect_button_autoplay.png 340 984 250 50 &animation-in=fade,650,300,CUBIC_OUT &animation-in=zoom,650,300,0.8,CUBIC_OUT &pushsound=pushbutton
+
+		#MusicSelect @button musicselect_button_folder graphic/musicselect_button_folder.png 759 83 284 54 &animation-in=fade,350,300,CUBIC_OUT &animation-in=zoom,350,300,0.8,CUBIC_OUT &layerlv=2 &event=folder_dropdown &pushsound=pushbutton
+		#MusicSelect @button musicselect_button_sort graphic/musicselect_button_sort.png 1059 83 284 54 &animation-in=fade,400,300,CUBIC_OUT &animation-in=zoom,400,400,0.8,CUBIC_OUT &layerlv=2 &event=sort_dropdown &pushsound=pushbutton
+		#MusicSelect @button musicselect_button_search graphic/musicselect_button_search.png 1359 83 284 54 &animation-in=fade,450,300,CUBIC_OUT &animation-in=zoom,450,300,0.8,CUBIC_OUT &layerlv=2 &event=search &pushsound=pushbutton
+
+		#MusicSelect @button musicselect_button_startplay graphic/musicselect_button_startplay.png 1695 860 259 259 &animation-in=fade,450,300,CUBIC_OUT &animation-in=zoom,450,300,0.8,CUBIC_OUT &animation-in=move,200,300,128,64,CUBIC_OUT &layerlv=1 &event=musicselect_decide &pushsound=decide
+
+		#MusicSelect @button musicselect_button_back graphic/musicselect_button_back.png 0 1020 240 60 &animation-in=fade,200,300,CUBIC_OUT &animation-in=move,200,300,-128,0,CUBIC_OUT &pushsound=pushbutton
+
+		#MusicSelect @image musicselect_itemscroll_bg graphic/musicselect_itemscroll_bg.png 1891 150 &animation-in=fade,350,300,CUBIC_OUT &animation-in=move,350,300,64,0,CUBIC_OUT
+
+		#MusicSelect @text musicselect_activeitem_title * 115 262 rom1cm28 &animation-in=fade,100,300,CUBIC_OUT &animation-in=move,100,300,-32,0,CUBIC_OUT &animation-in=random.text,100,400 &color=0,0,0 &layerlv=1
+		#MusicSelect @text musicselect_activeitem_artist * 115 305 rom1cm16 &animation-in=fade,130,300,CUBIC_OUT &animation-in=move,130,300,-32,0,CUBIC_OUT &animation-in=random.text,130,400 &color=50,50,50 &layerlv=1
+
+		#MusicSelect @text musicselect_activeitem_lvnormal * 190 342 ps16 &animation-in=fade,100,300,CUBIC_OUT &color=50,50,50 &layerlv=1
+		#MusicSelect @text musicselect_activeitem_lvhard * 350 342 ps16 &animation-in=fade,100,300,CUBIC_OUT &color=50,50,50 &layerlv=1
+		#MusicSelect @text musicselect_activeitem_lvchaos * 510 342 ps16 &animation-in=fade,100,300,CUBIC_OUT &color=50,50,50 &layerlv=1
+
+		#MusicSelect @text musicselect_activeitem_totalnotes * 200 400 ps16 &animation-in=fade,100,300,CUBIC_OUT &color=50,50,50 &layerlv=1
+		#MusicSelect @text musicselect_activeitem_bpm * 200 421 ps16 &animation-in=fade,130,300,CUBIC_OUT &color=50,50,50 &layerlv=1
+		#MusicSelect @text musicselect_activeitem_mapdesigner * 200 441 ps16 &animation-in=fade,160,300,CUBIC_OUT &color=50,50,50 &layerlv=1
+
+		rp:profile_text_animation>>&animation-in=fade,150,250,CUBIC_OUT &animation-in=move,150,250,-64,0,CUBIC_OUT &animation-in=random.text,150,250 &color=10,10,10 &layerlv=3
+		#MusicSelect @text musicselect_profile_name * 820 29 ps24 profile_text_animation
+		#MusicSelect @text musicselect_profile_badge * 820 10 rom1cm12 profile_text_animation
+		#MusicSelect @text musicselect_profile_pfpoint * 1053 31 ps24 profile_text_animation &align-center-size=54
+		#MusicSelect @text musicselect_profile_numtickets * 1340 12 ps16 profile_text_animation
+		#MusicSelect @text musicselect_profile_numfragments * 1340 40 ps16 profile_text_animation
+		#MusicSelect @text musicselect_profile_numlepus * 1522 12 ps16 profile_text_animation
+
+		rp:record_detail_animation>>&animation-in=fade,150,250,CUBIC_OUT &animation-in=move,150,250,-32,0,CUBIC_OUT &color=230,230,230 &layerlv=3
+		#MusicSelect @text musicselect_mybest_score * 90 566 ps32 record_detail_animation &animation-in=increase.text,150,700,8
+		#MusicSelect @text musicselect_mybest_pfpoint * 90 610 ps20 record_detail_animation &animation-in=increase.text,150,700,-3 &extratext={*sp}pts
+		#MusicSelect @text musicselect_mybest_numexcellent * 143 668 ps16 record_detail_animation &animation-in=increase.text,150,700,4
+		#MusicSelect @text musicselect_mybest_numgreat * 143 689 ps16 record_detail_animation &animation-in=increase.text,150,720,4
+		#MusicSelect @text musicselect_mybest_numgood * 143 710 ps16 record_detail_animation &animation-in=increase.text,150,740,4
+		#MusicSelect @text musicselect_mybest_numbad * 143 731 ps16 record_detail_animation &animation-in=increase.text,150,760,4
+		#MusicSelect @text musicselect_mybest_nummiss * 143 752 ps16 record_detail_animation &animation-in=increase.text,150,780,4
+		#MusicSelect @text musicselect_mybest_numexcellent_rate * 207 668 ps16 record_detail_animation &alpha=200 &animation-in=increase.text,150,700,-3 &extratext={*sp}%
+		#MusicSelect @text musicselect_mybest_numgreat_rate * 207 689 ps16 record_detail_animation &alpha=200 &animation-in=increase.text,150,720,-3 &extratext={*sp}%
+		#MusicSelect @text musicselect_mybest_numgood_rate * 207 710 ps16 record_detail_animation &alpha=200 &animation-in=increase.text,150,740,-3 &extratext={*sp}%
+		#MusicSelect @text musicselect_mybest_numbad_rate * 207 731 ps16 record_detail_animation &alpha=200 &animation-in=increase.text,150,760,-3 &extratext={*sp}%
+		#MusicSelect @text musicselect_mybest_nummiss_rate * 207 752 ps16 record_detail_animation &alpha=200 &animation-in=increase.text,150,780,-3 &extratext={*sp}%
+		#MusicSelect @text musicselect_mybest_rank * 474 654 ps16 record_detail_animation
+		#MusicSelect @text musicselect_mybest_maxcombo * 474 678 ps16 record_detail_animation &animation-in=increase.text,150,600,-1 &extratext={*sp}COMBO
+		#MusicSelect @text musicselect_mybest_cleartype * 474 708 ps16 record_detail_animation
+		#MusicSelect @text musicselect_mybest_regdate * 474 732 ps16 record_detail_animation
+		#MusicSelect @text musicselect_mybest_earlylate * 474 756 ps16 record_detail_animation
+
+		#MusicSelect @text musicselect_ir_myrank */* 60 980 ps16 &animation-in=fade,150,250,CUBIC_OUT
+		#MusicSelect @text musicselect_ir_myscore * 220 980 ps16 &animation-in=fade,150,250,CUBIC_OUT &animation-in=increase.text,0,780,8
+
+	////// dropdown menu //////
+
+		rp:folder_dropdown_animation>>&animation-in=fade,0,200,CUBIC_OUT &hide &layerlv=1 &pushsound=change
+		rp:sort_dropdown_animation>>&animation-in=fade,0,200,CUBIC_OUT &hide &layerlv=1 &pushsound=change
+		rp:dropdown_animation_move>>&animation-in=move,0,200
+
+		//folder
+			#MusicSelect @button musicselect_button_folder_all_dl graphic/musicselect_button_folder_all_dl.png 763 137 280 32 &event=folder_dropdown_all folder_dropdown_animation dropdown_animation_move,0,-32,CUBIC_OUT
+			#MusicSelect @button musicselect_button_folder_alllv_dl graphic/musicselect_button_folder_alllv_dl.png 763 169 280 32 &event=folder_dropdown_alllv folder_dropdown_animation dropdown_animation_move,0,-64,CUBIC_OUT
+			#MusicSelect @button musicselect_button_folder_lv1-4_dl graphic/musicselect_button_folder_lv1-4_dl.png 763 201 280 32 &event=folder_dropdown_lv1_4 folder_dropdown_animation dropdown_animation_move,0,-96,CUBIC_OUT
+			#MusicSelect @button musicselect_button_folder_lv5-8_dl graphic/musicselect_button_folder_lv5-8_dl.png 763 233 280 32 &event=folder_dropdown_lv5_8 folder_dropdown_animation dropdown_animation_move,0,-128,CUBIC_OUT
+			#MusicSelect @button musicselect_button_folder_lv9-11_dl graphic/musicselect_button_folder_lv9-11_dl.png 763 265 280 32 &event=folder_dropdown_lv9_11 folder_dropdown_animation dropdown_animation_move,0,-160,CUBIC_OUT
+			#MusicSelect @button musicselect_button_folder_lv12_dl graphic/musicselect_button_folder_lv12_dl.png 763 297 280 32 &event=folder_dropdown_lv12 folder_dropdown_animation dropdown_animation_move,0,-192,CUBIC_OUT
+			#MusicSelect @button musicselect_button_folder_assist_dl graphic/musicselect_button_folder_assist_dl.png 763 329 280 32 &event=folder_dropdown_assist folder_dropdown_animation dropdown_animation_move,0,-224,CUBIC_OUT
+			#MusicSelect @button musicselect_button_folder_clear_dl graphic/musicselect_button_folder_clear_dl.png 763 361 280 32 &event=folder_dropdown_clear folder_dropdown_animation dropdown_animation_move,0,-256,CUBIC_OUT
+			#MusicSelect @button musicselect_button_folder_expert_dl graphic/musicselect_button_folder_expert_dl.png 763 393 280 32 &event=folder_dropdown_expert folder_dropdown_animation dropdown_animation_move,0,-288,CUBIC_OUT
+			#MusicSelect @button musicselect_button_folder_madness_dl graphic/musicselect_button_folder_madness_dl.png 763 425 280 32 &event=folder_dropdown_madness folder_dropdown_animation dropdown_animation_move,0,-320,CUBIC_OUT
+			#MusicSelect @button musicselect_button_folder_fc_dl graphic/musicselect_button_folder_fc_dl.png 763 457 280 32 &event=folder_dropdown_fc folder_dropdown_animation dropdown_animation_move,0,-352,CUBIC_OUT
+			#MusicSelect @button musicselect_button_folder_allex_dl graphic/musicselect_button_folder_allex_dl.png 763 489 280 32 &event=folder_dropdown_allex folder_dropdown_animation dropdown_animation_move,0,-384,CUBIC_OUT
+			#MusicSelect @button musicselect_button_folder_normal_dl graphic/musicselect_button_folder_normal_dl.png 763 521 280 32 &event=folder_dropdown_normal folder_dropdown_animation dropdown_animation_move,0,-416,CUBIC_OUT
+			#MusicSelect @button musicselect_button_folder_hard_dl graphic/musicselect_button_folder_hard_dl.png 763 553 280 32 &event=folder_dropdown_hard folder_dropdown_animation dropdown_animation_move,0,-448,CUBIC_OUT
+			#MusicSelect @button musicselect_button_folder_chaos_dl graphic/musicselect_button_folder_chaos_dl.png 763 585 280 32 &event=folder_dropdown_chaos folder_dropdown_animation dropdown_animation_move,0,-480,CUBIC_OUT
+			#MusicSelect @button musicselect_button_folder_s1_dl graphic/musicselect_button_folder_s1_dl.png 763 617 280 32 &event=folder_dropdown_s1 folder_dropdown_animation dropdown_animation_move,0,-512,CUBIC_OUT
+
+		//sort
+			#MusicSelect @button musicselect_button_sort_default_dl graphic/musicselect_button_sort_default_dl.png 1063 137 280 32 &event=sort_dropdown_default sort_dropdown_animation dropdown_animation_move,0,-32,CUBIC_OUT
+			#MusicSelect @button musicselect_button_sort_name_dl graphic/musicselect_button_sort_name_dl.png 1063 169 280 32 &event=sort_dropdown_name sort_dropdown_animation dropdown_animation_move,0,-64,CUBIC_OUT
+			#MusicSelect @button musicselect_button_sort_level_dl graphic/musicselect_button_sort_level_dl.png 1063 201 280 32 &event=sort_dropdown_level sort_dropdown_animation dropdown_animation_move,0,-96,CUBIC_OUT
+			#MusicSelect @button musicselect_button_sort_score_dl graphic/musicselect_button_sort_score_dl.png 1063 233 280 32 &event=sort_dropdown_score sort_dropdown_animation dropdown_animation_move,0,-128,CUBIC_OUT
+			#MusicSelect @button musicselect_button_sort_bpm_dl graphic/musicselect_button_sort_bpm_dl.png 1063 265 280 32 &event=sort_dropdown_bpm sort_dropdown_animation dropdown_animation_move,0,-160,CUBIC_OUT
+			#MusicSelect @button musicselect_button_sort_cleartype_dl graphic/musicselect_button_sort_cleartype_dl.png 1063 297 280 32 &event=sort_dropdown_cleartype sort_dropdown_animation dropdown_animation_move,0,-192,CUBIC_OUT
+
+	////// Extra Dialog //////
+
+		rp:lvsel_style>>&layerlv=3 &hide
+		#MusicSelect @image musicselect_panel_levelselect graphic/musicselect_panel_levelselect.png 661 283 &animation-in=zoom,0,200,0,CUBIC_OUT &animation-in=fade,0,200,CUBIC_OUT lvsel_style
+		#MusicSelect @text musicselect_text_levelselect 遊びたい難易度を選択してくだサイ！ 691 296 rom1cm20 &animation-in=fade,100,350,CUBIC_OUT &animation-in=move,100,350,-128,0,CUBIC_OUT &animation-in=random.text,100,500 &color=255,255,255 lvsel_style
+		#MusicSelect @text musicselect_text_levelselect_title * 1057 450 rom1cm32 &animation-in=fade,150,350,CUBIC_OUT &animation-in=move,150,350,64,0,CUBIC_OUT lvsel_style
+		#MusicSelect @text musicselect_text_levelselect_artist * 1057 500 rom1cm16 &animation-in=fade,200,350,CUBIC_OUT &animation-in=move,200,350,64,0,CUBIC_OUT lvsel_style
+		#MusicSelect @button musicselect_levelselect_normal graphic/musicselect_levelselect_normal.png 1057 580 200 66 &animation-in=zoom,200,200,0.8,CUBIC_OUT &animation-in=fade,200,200,CUBIC_OUT lvsel_style &pushsound=decide
+		#MusicSelect @button musicselect_levelselect_hard graphic/musicselect_levelselect_hard.png 1287 580 200 66 &animation-in=zoom,250,200,0.8,CUBIC_OUT &animation-in=fade,250,200,CUBIC_OUT lvsel_style &pushsound=decide
+		#MusicSelect @button musicselect_levelselect_chaos graphic/musicselect_levelselect_chaos.png 1517 580 200 66 &animation-in=zoom,300,200,0.8,CUBIC_OUT &animation-in=fade,300,200,CUBIC_OUT lvsel_style &pushsound=decide
+		#MusicSelect @image musicselect_levelselect_artwork graphic/musicselect_levelselect_artwork.png 711 389 &animation-in=zoom,250,200,1.1,CUBIC_OUT &animation-in=fade,250,200,CUBIC_OUT lvsel_style &disable-imgalpha
+		#MusicSelect @button musicselect_levelselect_close graphic/musicselect_levelselect_close.png 1764 428 67 58 &animation-in=zoom,250,200,0,CUBIC_OUT &animation-in=fade,250,200,CUBIC_OUT &event=levelselect_close lvsel_style &pushsound=cancel
+		#MusicSelect @image musicselect_search_bg graphic/musicselect_search_bg.png 1359 145 &animation-in=zoom,0,200,0,CUBIC_OUT &animation-in=fade,0,200,CUBIC_OUT &animation-in=move,0,200,-200,-64,CUBIC_OUT &hide &layerlv=2
+
+//----- Play Option -----//
+
+	////// base //////
+		rp:playoption_style>>&layerlv=5 &color=0,0,0
+		#PlayOption @image playoption_dark graphic/common_bg_dark.png 0 0 &animation-in=fade,0,300,CUBIC_OUT &layerlv=3
+		#PlayOption @image playoption_bg graphic/playoption_bg.png 0 0 &animation-in=move,0,300,-700,0,CUBIC_OUT playoption_style
+		#PlayOption @image playoption_textlayer graphic/playoption_textlayer.png 36 141 &animation-in=move,200,350,-500,0,CUBIC_OUT &animation-in=fade,200,350,CUBIC_OUT playoption_style
+		#PlayOption @image playoption_sndvol_layer graphic/playoption_sndvol_layer.png 64 832 &animation-in=move,150,350,-500,0,CUBIC_OUT &animation-in=fade,150,350,CUBIC_OUT playoption_style
+		#PlayOption @button playoption_close_0 graphic/common_exit.png 630 40 25 25 &animation-in=fade,200,150,LINEAR &event=playoption_close playoption_style &pushsound=cancel
+		#PlayOption @button playoption_close_1 graphic/playoption_button_close.png 700 415 32 250 &animation-in=move,200,250,-700-32,0,CUBIC_OUT &event=playoption_close &pushsound=cancel &layerlv=4
+
+	////// container //////
+		////// object speed //////
+		#PlayOption @button playoption_button_objspeed_left graphic/playoption_button_left.png 60 206 50 35 &animation-in=zoom,200,250,0.4,CUBIC_OUT &animation-in=fade,200,250,CUBIC_OUT playoption_style &event=playoption_objspeed_left
+		#PlayOption @button playoption_button_objspeed_right graphic/playoption_button_right.png 194 206 50 35 &animation-in=zoom,250,250,0.4,CUBIC_OUT &animation-in=fade,250,250,CUBIC_OUT playoption_style &event=playoption_objspeed_right
+		#PlayOption @image playoption_valbg_objspeed graphic/playoption_value_bg_100.png 102 206 &animation-in=fade,300,250,LINEAR playoption_style
+		#PlayOption @text playoption_val_objspeed * 133 212 ps20 &animation-in=move,300,300,-64,0,CUBIC_OUT &animation-in=fade,300,300,CUBIC_OUT playoption_style &align-center-size=38
+
+		////// judge offset //////
+		#PlayOption @button playoption_button_judgeoffset_left graphic/playoption_button_left.png 370 206 50 35 &animation-in=zoom,250,250,0.4,CUBIC_OUT &animation-in=fade,250,250,CUBIC_OUT playoption_style &event=playoption_judgeoffset_left
+		#PlayOption @button playoption_button_judgeoffset_right graphic/playoption_button_right.png 530 206 50 35 &animation-in=zoom,300,250,0.4,CUBIC_OUT &animation-in=fade,300,250,CUBIC_OUT playoption_style &event=playoption_judgeoffset_right
+		#PlayOption @image playoption_valbg_judgeoffset graphic/playoption_value_bg_130.png 410 206 &animation-in=fade,350,250,LINEAR playoption_style
+		#PlayOption @text playoption_val_judgeoffset * 442 212 ps20 &animation-in=move,350,300,-64,0,CUBIC_OUT &animation-in=fade,350,300,CUBIC_OUT playoption_style &align-center-size=66
+
+		////// object placement //////
+		#PlayOption @button playoption_button_objplace_normal graphic/playoption_button_objplacement_normal.png 60 346 120 35 &animation-in=zoom,350,250,0.4,CUBIC_OUT &animation-in=fade,350,250,CUBIC_OUT playoption_style
+		#PlayOption @button playoption_button_objplace_random graphic/playoption_button_objplacement_random.png 196 346 120 35 &animation-in=zoom,350,250,0.4,CUBIC_OUT &animation-in=fade,350,250,CUBIC_OUT playoption_style
+		#PlayOption @button playoption_button_objplace_mirror graphic/playoption_button_objplacement_mirror.png 60 389 120 35 &animation-in=zoom,400,250,0.4,CUBIC_OUT &animation-in=fade,400,250,CUBIC_OUT playoption_style
+		#PlayOption @button playoption_button_objplace_half graphic/playoption_button_objplacement_half.png 196 389 120 35 &animation-in=zoom,400,250,0.4,CUBIC_OUT &animation-in=fade,400,250,CUBIC_OUT playoption_style
+		#PlayOption @button playoption_button_objplace_smirror graphic/playoption_button_objplacement_smirror.png 60 432 120 35 &animation-in=zoom,450,250,0.4,CUBIC_OUT &animation-in=fade,450,250,CUBIC_OUT playoption_style
+		#PlayOption @button playoption_button_objplace_single graphic/playoption_button_objplacement_single.png 196 432 120 35 &animation-in=zoom,450,250,0.4,CUBIC_OUT &animation-in=fade,450,250,CUBIC_OUT playoption_style
+
+		////// gauge difficulty //////
+		#PlayOption @button playoption_button_gauge_normal graphic/playoption_button_gauge_normal.png 370 346 120 35 &animation-in=zoom,400,250,0.4,CUBIC_OUT &animation-in=fade,400,250,CUBIC_OUT playoption_style
+		#PlayOption @button playoption_button_gauge_madness graphic/playoption_button_gauge_madness.png 506 346 120 35 &animation-in=zoom,400,250,0.4,CUBIC_OUT &animation-in=fade,400,250,CUBIC_OUT playoption_style
+		#PlayOption @button playoption_button_gauge_assist graphic/playoption_button_gauge_assist.png 370 389 120 35 &animation-in=zoom,450,250,0.4,CUBIC_OUT &animation-in=fade,450,250,CUBIC_OUT playoption_style
+		#PlayOption @button playoption_button_gauge_fc graphic/playoption_button_gauge_fc.png 506 389 120 35 &animation-in=zoom,450,250,0.4,CUBIC_OUT &animation-in=fade,450,250,CUBIC_OUT playoption_style
+		#PlayOption @button playoption_button_gauge_expert graphic/playoption_button_gauge_expert.png 370 432 120 35 &animation-in=zoom,500,250,0.4,CUBIC_OUT &animation-in=fade,500,250,CUBIC_OUT playoption_style
+		#PlayOption @button playoption_button_gauge_allex graphic/playoption_button_gauge_allex.png 506 432 120 35 &animation-in=zoom,500,250,0.4,CUBIC_OUT &animation-in=fade,500,250,CUBIC_OUT playoption_style
+
+		////// window layout //////
+		#PlayOption @button playoption_button_window_profile graphic/playoption_button_window_profile.png 60 618 180 35 &animation-in=zoom,500,250,0.4,CUBIC_OUT &animation-in=fade,500,250,CUBIC_OUT playoption_style
+		#PlayOption @button playoption_button_window_scoregraph graphic/playoption_button_window_scoregraph.png 60 657 180 35 &animation-in=zoom,550,250,0.4,CUBIC_OUT &animation-in=fade,550,250,CUBIC_OUT playoption_style
+		#PlayOption @button playoption_button_window_judge graphic/playoption_button_window_judge.png 60 696 180 35 &animation-in=zoom,600,250,0.4,CUBIC_OUT &animation-in=fade,600,250,CUBIC_OUT playoption_style
+
+		////// target score //////
+		#PlayOption @button playoption_button_target_ex graphic/playoption_button_target_ex.png 370 618 120 35 &animation-in=zoom,500,250,0.4,CUBIC_OUT &animation-in=fade,500,250,CUBIC_OUT playoption_style
+		#PlayOption @button playoption_button_target_s graphic/playoption_button_target_s.png 506 618 120 35 &animation-in=zoom,500,250,0.4,CUBIC_OUT &animation-in=fade,500,250,CUBIC_OUT playoption_style
+		#PlayOption @button playoption_button_target_aaa graphic/playoption_button_target_aaa.png 370 661 120 35 &animation-in=zoom,550,250,0.4,CUBIC_OUT &animation-in=fade,550,250,CUBIC_OUT playoption_style
+		#PlayOption @button playoption_button_target_aa graphic/playoption_button_target_aa.png 506 661 120 35 &animation-in=zoom,550,250,0.4,CUBIC_OUT &animation-in=fade,550,250,CUBIC_OUT playoption_style
+		#PlayOption @button playoption_button_target_a graphic/playoption_button_target_a.png 370 704 120 35 &animation-in=zoom,600,250,0.4,CUBIC_OUT &animation-in=fade,600,250,CUBIC_OUT playoption_style
+		#PlayOption @button playoption_button_target_100 graphic/playoption_button_target_100.png 506 704 120 35 &animation-in=zoom,600,250,0.4,CUBIC_OUT &animation-in=fade,600,250,CUBIC_OUT playoption_style
+		#PlayOption @button playoption_button_target_mybest graphic/playoption_button_target_mybest.png 370 747 180 35 &animation-in=zoom,650,250,0.4,CUBIC_OUT &animation-in=fade,650,250,CUBIC_OUT playoption_style
+		#PlayOption @button playoption_button_target_wr graphic/playoption_button_target_wr.png 370 790 180 35 &animation-in=zoom,650,250,0.4,CUBIC_OUT &animation-in=fade,650,250,CUBIC_OUT playoption_style
+
+		////// sound volume //////
+		#PlayOption @button playoption_button_volbgm_left graphic/playoption_button_left.png 140 826 50 35 &animation-in=zoom,500,250,0.4,CUBIC_OUT &animation-in=fade,500,250,CUBIC_OUT playoption_style &event=playoption_volbgm_left
+		#PlayOption @button playoption_button_volbgm_right graphic/playoption_button_right.png 274 826 50 35 &animation-in=zoom,500,250,0.4,CUBIC_OUT &animation-in=fade,500,250,CUBIC_OUT playoption_style &event=playoption_volbgm_right
+		#PlayOption @button playoption_button_volse_left graphic/playoption_button_left.png 140 869 50 35 &animation-in=zoom,550,250,0.4,CUBIC_OUT &animation-in=fade,550,250,CUBIC_OUT playoption_style &event=playoption_volse_left
+		#PlayOption @button playoption_button_volse_right graphic/playoption_button_right.png 274 869 50 35 &animation-in=zoom,550,250,0.4,CUBIC_OUT &animation-in=fade,550,250,CUBIC_OUT playoption_style &event=playoption_volse_right
+		#PlayOption @button playoption_button_volplay_left graphic/playoption_button_left.png 140 912 50 35 &animation-in=zoom,600,250,0.4,CUBIC_OUT &animation-in=fade,600,250,CUBIC_OUT playoption_style &event=playoption_volplay_left
+		#PlayOption @button playoption_button_volplay_right graphic/playoption_button_right.png 274 912 50 35 &animation-in=zoom,600,250,0.4,CUBIC_OUT &animation-in=fade,600,250,CUBIC_OUT playoption_style &event=playoption_volplay_right
+		#PlayOption @image playoption_valbg_volbgm graphic/playoption_value_bg_100.png 182 826 &animation-in=fade,600,250,LINEAR playoption_style
+		#PlayOption @text playoption_val_volbgm * 217 832 ps20 &animation-in=move,600,300,-64,0,CUBIC_OUT &animation-in=fade,600,300,CUBIC_OUT playoption_style &align-center-size=30
+		#PlayOption @image playoption_valbg_volse graphic/playoption_value_bg_100.png 182 869 &animation-in=fade,650,250,LINEAR playoption_style
+		#PlayOption @text playoption_val_volse * 217 875 ps20 &animation-in=move,650,300,-64,0,CUBIC_OUT &animation-in=fade,650,300,CUBIC_OUT playoption_style &align-center-size=30
+		#PlayOption @image playoption_valbg_volplay graphic/playoption_value_bg_100.png 182 912 &animation-in=fade,700,250,LINEAR playoption_style
+		#PlayOption @text playoption_val_volplay * 217 918 ps20 &animation-in=move,700,300,-64,0,CUBIC_OUT &animation-in=fade,700,300,CUBIC_OUT playoption_style &align-center-size=30
+
+	////// help //////
+		#PlayOption @button playoption_button_help_objspeed graphic/playoption_button_help.png 290 141 32 32 &animation-in=zoom,400,250,0,CUBIC_OUT playoption_style
+		#PlayOption @button playoption_button_help_judgeoffset graphic/playoption_button_help.png 600 141 32 32 &animation-in=zoom,400,250,0,CUBIC_OUT playoption_style
+		#PlayOption @button playoption_button_help_objplace graphic/playoption_button_help.png 290 281 32 32 &animation-in=zoom,400,250,0,CUBIC_OUT playoption_style
+		#PlayOption @button playoption_button_help_gauge graphic/playoption_button_help.png 600 281 32 32 &animation-in=zoom,400,250,0,CUBIC_OUT playoption_style
+		#PlayOption @button playoption_button_help_window graphic/playoption_button_help.png 290 553 32 32 &animation-in=zoom,400,250,0,CUBIC_OUT playoption_style
+		#PlayOption @button playoption_button_help_target graphic/playoption_button_help.png 600 553 32 32 &animation-in=zoom,400,250,0,CUBIC_OUT playoption_style
+		#PlayOption @button playoption_button_help_volume graphic/playoption_button_help.png 290 761 32 32 &animation-in=zoom,400,250,0,CUBIC_OUT playoption_style
+
+//----- Keyword Search , Nomatch Dialog -----//
+		#Dialog-KeywordSearch-Nomatch @image dialog_keywordsearch_nomatch graphic/dialog_keywordsearch_nomatch.png 933 390 &animation-in=zoom,0,200,0,CUBIC_OUT &animation-in=move,0,200,174,-395,CUBIC_OUT &hide
+		#Dialog-KeywordSearch-Nomatch @button dialog_keywordsearch_nomatch_ok graphic/common_dialog_ok_150x40.png 1208 589 150 40 &animation-in=fade,100,150,CUBIC_OUT &event=dialog_keywordsearch_nomatch_close &hide &pushsound=pushbutton
+
+//----- MusicDecide -----//
+		#MusicSelect-Decide @image musicdecide_square0_0 graphic/musicdecide_square0.png 137 166 &animation-in=zoom,200,800,0,CUBIC_OUT &animation-in=move,200,800,54,295,CUBIC_OUT
+		#MusicSelect-Decide @image musicdecide_square0_1 graphic/musicdecide_square0.png 137 756 &animation-in=zoom,200,800,0,CUBIC_OUT &animation-in=move,200,800,54,-295,CUBIC_OUT
+		#MusicSelect-Decide @image musicdecide_square1_0 graphic/musicdecide_square1.png 70 71 &animation-in=zoom,300,800,0,CUBIC_OUT &animation-in=move,300,800,161,430,CUBIC_OUT
+		#MusicSelect-Decide @image musicdecide_square1_1 graphic/musicdecide_square1.png 70 930 &animation-in=zoom,300,800,0,CUBIC_OUT &animation-in=move,300,800,161,-430,CUBIC_OUT
+		#MusicSelect-Decide @image musicdecide_ironline0 graphic/musicdecide_ironline.png 0 360 &animation-in=fade,200,400,CUBIC_OUT
+		#MusicSelect-Decide @image musicdecide_ironline1 graphic/musicdecide_ironline.png 0 620 &animation-in=fade,200,400,CUBIC_OUT
+		#MusicSelect-Decide @image musicdecide_bg_main graphic/musicdecide_bg_main.png 500 385 &animation-in=move,150,400,800,0,CUBIC_OUT &animation-in=fade,150,400,CUBIC_OUT
+		#MusicSelect-Decide @image musicdecide_artwork * 70 340 &imgwidth=400 &imgheight=400 &animation-in=zoom,500,500,1.3,CUBIC_OUT &animation-in=fade,500,500,CUBIC_OUT &disable-imgalpha
+		#MusicSelect-Decide @image musicdecide_level_img * 581 623 &animation-in=fade,500,400,CUBIC_OUT &layerlv=2 &imgwidth=64 &imgheight=33
+
+		#MusicSelect-Decide @text musicdecide_title * 580 460 rom1cm32 &animation-in=random.text,400,400 &animation-in=fade,400,400,CUBIC_OUT &animation-in=move,400,400,-80,0,CUBIC_OUT &color=0,0,0
+		#MusicSelect-Decide @text musicdecide_artist * 580 522 rom1cm20 &animation-in=random.text,450,400 &animation-in=fade,450,400,CUBIC_OUT &animation-in=move,450,400,-80,0,CUBIC_OUT &color=0,0,0
+		#MusicSelect-Decide @text musicdecide_level * 596 578 ps40 &animation-in=fade,500,400,CUBIC_OUT &color=0,0,0 &align-center-size=34
+		#MusicSelect-Decide @text musicdecide_bpm * 863 585 ps16 &animation-in=fade,500,400,CUBIC_OUT &animation-in=move,500,400,32,0,CUBIC_OUT &color=0,0,0
+		#MusicSelect-Decide @text musicdecide_totalnotes * 863 612 ps16 &animation-in=fade,500,400,CUBIC_OUT &animation-in=move,500,400,32,0,CUBIC_OUT &color=0,0,0
+
+		#MusicSelect-Decide @image musicdecide_left graphic/musicdecide_left.png 0 0 &animation-in=move,100,800,-16,0,CUBIC_OUT
+
+//----- Gameplay -----//
+	rp:gameplay_uitext_style>>&color=10,10,10 &layerlv=2
+	#Gameplay @3dcamera (0,-1000,1200) (0,1400,0) 50.0
+
+	////// Background //////
+		#Gameplay @3dsquare gameplay_bg_grid (-2000,0,0) (2000,4000,0) (2000,0,0) (-2000,4000,0) * &alpha=100
+		#Gameplay @3dsquare gameplay_bg_wall (-1500,4000,1100) (1500,4000,0) (1500,4000,1100) (-1500,4000,0) graphic/gameplay_bg_wall.png
+
+	////// Main Lane //////
+		#Gameplay @3dsquare gameplay_lane_main (400,300,0) (-400,7000,0) (-400,300,0) (400,7000,0) * &layerlv=1 &disable-imgalpha
+
+	////// Side Lane //////
+		#Gameplay @3dsquare gameplay_lane_side_l (700,250,200) (500,7000,100) (500,250,100) (700,7000,200) * &layerlv=1 &disable-imgalpha
+		#Gameplay @3dsquare gameplay_lane_side_r (-700,250,200) (-500,7000,100) (-500,250,100) (-700,7000,200) * &layerlv=1 &disable-imgalpha
+
+	////// Background Effect //////
+		#Gameplay @3dsquare gameplay_bg_effect_l0 (1200,-300,500) (850,7000,200) (850,-300,200) (1200,7000,500) * &layerlv=0
+		#Gameplay @3dsquare gameplay_bg_effect_r0 (-1200,-300,500) (-850,7000,200) (-850,-300,200) (-1200,7000,500) * &layerlv=0
+
+	////// Control Panel //////
+		#Gameplay @image gameplay_controlpanel graphic/gameplay_controlpanel.png 192 564 &layerlv=1
+
+	////// base //////
+		#Gameplay @image gameplay_title graphic/gameplay_title.png 310 0 &animation-in=move,0,300,0,-64,CUBIC_OUT &animation-in=fade,0,300,CUBIC_OUT &layerlv=1
+		#Gameplay @image gameplay_metadata graphic/gameplay_metadata.png 0 28 &animation-in=move,0,350,-200,0,CUBIC_OUT &animation-in=fade,0,350,CUBIC_OUT &layerlv=1
+		#Gameplay @image gameplay_profile graphic/gameplay_profile.png 20 320 &animation-in=move,50,360,-200,0,CUBIC_OUT &animation-in=fade,50,360,CUBIC_OUT &layerlv=1 &hide
+		#Gameplay @image gameplay_judge graphic/gameplay_judge.png 20 540 &animation-in=move,100,370,-200,0,CUBIC_OUT &animation-in=fade,100,370,CUBIC_OUT &layerlv=1 &hide
+		#Gameplay @image gameplay_score graphic/gameplay_score.png 1440 40 &animation-in=move,100,350,200,0,CUBIC_OUT &animation-in=fade,100,350,CUBIC_OUT &layerlv=1
+		#Gameplay @image gameplay_scoregraph graphic/gameplay_scoregraph.png 1474 260 &animation-in=move,100,350,200,0,CUBIC_OUT &animation-in=fade,100,350,CUBIC_OUT &layerlv=1 &hide
+
+		#Gameplay @text gameplay_title_text * 830 8 rom1cm20 &align-center-size=260 &animation-in=move,300,200,0,-16,CUBIC_OUT &animation-in=fade,300,200,CUBIC_OUT &layerlv=2
+
+	////// Metadata //////
+		#Gameplay @image gameplay_mapimg_shadow graphic/gameplay_bg_artwork.png 18 72 &animation-in=move,500,300,8,-8,CUBIC_OUT &animation-in=fade,500,100,CUBIC_OUT &layerlv=2
+		#Gameplay @image gameplay_mapimg * 26 64 &animation-in=zoom,200,400,1.2,CUBIC_OUT &animation-in=fade,200,400,CUBIC_OUT &layerlv=2 &disable-imgalpha &imgwidth=150 &imgheight=150
+		#Gameplay @image gameplay_lvimg * 28 217 &animation-in=move,300,300,-32,0,CUBIC_OUT &animation-in=fade,300,300,CUBIC_OUT &layerlv=2 &imgwidth=64 &imgheight=33
+		#Gameplay @text gameplay_lvvalue * 108 230 ps16 &animation-in=move,350,300,-32,0,CUBIC_OUT &animation-in=fade,350,300,CUBIC_OUT gameplay_uitext_style
+		#Gameplay @button gameplay_button_restart graphic/gameplay_button_restart.png 220 65 170 24 &event=gameplay_event_restart &animation-in=fade,250,300,CUBIC_OUT &animation-in=move,250,300,32,0,CUBIC_OUT &layerlv=2
+		#Gameplay @button gameplay_button_retire graphic/gameplay_button_retire.png 220 97 154 24 &event=gameplay_event_retire &animation-in=fade,280,300,CUBIC_OUT &animation-in=move,280,300,32,0,CUBIC_OUT &layerlv=2
+
+		#Gameplay @image gameplay_playtime graphic/gameplay_playtime.png 227 152 &animation-in=zoom,300,400,0,CUBIC_OUT &layerlv=2 
+		#Gameplay @text gameplay_playtime_value * 227 130 ps16 &animation-in=fade,200,200,LINEAR gameplay_uitext_style
+		#Gameplay @text gameplay_playtime_value_left * 397 130 ps16 &animation-in=fade,200,200,LINEAR &align-right-size=30 gameplay_uitext_style
+
+		#Gameplay @text gameplay_bpm BPM 242 180 ps16 &align-right-size=35 &animation-in=move,200,300,-32,0,CUBIC_OUT &animation-in=fade,200,300,CUBIC_OUT gameplay_uitext_style
+		#Gameplay @text gameplay_speed SPEED 226 212 ps16 &align-right-size=51 &animation-in=move,250,300,-32,0,CUBIC_OUT &animation-in=fade,250,300,CUBIC_OUT gameplay_uitext_style
+		#Gameplay @text gameplay_option OPTION 216 244 ps16 &align-right-size=61 &animation-in=move,300,300,-32,0,CUBIC_OUT &animation-in=fade,300,300,CUBIC_OUT gameplay_uitext_style
+		#Gameplay @text gameplay_bpm_value * 300 174 ps20 &animation-in=move,225,300,-32,0,CUBIC_OUT &animation-in=fade,225,300,CUBIC_OUT gameplay_uitext_style
+		#Gameplay @text gameplay_speed_value * 300 206 ps20 &animation-in=move,275,300,-32,0,CUBIC_OUT &animation-in=fade,275,300,CUBIC_OUT gameplay_uitext_style
+		#Gameplay @text gameplay_option_value * 300 238 ps20 &animation-in=move,325,300,-32,0,CUBIC_OUT &animation-in=fade,325,300,CUBIC_OUT gameplay_uitext_style
+
+	////// Profile //////
+		#Gameplay @text gameplay_profile_badge * 48 350 rom1cm14 &color=31,147,207 &layerlv=2 &animation-in=fade,300,350,CUBIC_OUT &animation-in=move,300,350,-64,0,CUBIC_OUT &animation-in=random.text,400,500 &hide
+		#Gameplay @text gameplay_profile_name * 48 373 rom1cm24 gameplay_uitext_style &animation-in=fade,350,350,CUBIC_OUT &animation-in=move,350,350,-64,0,CUBIC_OUT &animation-in=random.text,400,500 &hide
+		#Gameplay @text gameplay_profile_id * 127 411 ps14 gameplay_uitext_style &animation-in=fade,400,350,CUBIC_OUT &animation-in=move,400,350,-64,0,CUBIC_OUT &animation-in=random.text,450,500 &hide
+		#Gameplay @text gameplay_profile_pf * 158 436 ps20 gameplay_uitext_style &animation-in=fade,400,350,CUBIC_OUT &animation-in=move,400,350,-64,0,CUBIC_OUT &animation-in=increase.text,500,500,-3 &extratext={*sp}pts &hide
+		#Gameplay @image gameplay_status_online graphic/status_online.png 48 472 &animation-in=fade,450,300,LINEAR &layerlv=2 &hide
+		#Gameplay @image gameplay_status_offline graphic/status_offline.png 48 472 &animation-in=fade,450,300,LINEAR &layerlv=2 &hide
+		#Gameplay @image gameplay_status_playing graphic/status_playing.png 120 472 &animation-in=fade,450,500,LINEAR+LOOP &layerlv=2 &hide
+
+	////// Judge //////
+		#Gameplay @text gameplay_judgedisp_0 * 156 575+23*0 ps16 gameplay_uitext_style &animation-in=fade,320,350,CUBIC_OUT &animation-in=move,320,350,32,0,CUBIC_OUT &hide
+		#Gameplay @text gameplay_judgedisp_1 * 156 575+23*1 ps16 gameplay_uitext_style &animation-in=fade,340,350,CUBIC_OUT &animation-in=move,340,350,32,0,CUBIC_OUT &hide
+		#Gameplay @text gameplay_judgedisp_2 * 156 575+23*2 ps16 gameplay_uitext_style &animation-in=fade,360,350,CUBIC_OUT &animation-in=move,360,350,32,0,CUBIC_OUT &hide
+		#Gameplay @text gameplay_judgedisp_3 * 156 575+23*3 ps16 gameplay_uitext_style &animation-in=fade,380,350,CUBIC_OUT &animation-in=move,380,350,32,0,CUBIC_OUT &hide
+		#Gameplay @text gameplay_judgedisp_4 * 156 575+23*4 ps16 gameplay_uitext_style &animation-in=fade,400,350,CUBIC_OUT &animation-in=move,400,350,32,0,CUBIC_OUT &hide
+		#Gameplay @text gameplay_judgedisp_5 * 156 694 ps16 gameplay_uitext_style &animation-in=fade,420,350,CUBIC_OUT &animation-in=move,420,350,32,0,CUBIC_OUT &hide
+		#Gameplay @text gameplay_judgedisp_6 * 156 717 ps16 gameplay_uitext_style &animation-in=fade,440,350,CUBIC_OUT &animation-in=move,440,350,32,0,CUBIC_OUT &hide
+		#Gameplay @text gameplay_judgedisp_maxcombo * 156 747 ps16 gameplay_uitext_style &animation-in=fade,460,350,CUBIC_OUT &animation-in=move,460,350,32,0,CUBIC_OUT &hide
+
+	////// Score //////
+		#Gameplay @text gameplay_score * 1564 72 ps64 gameplay_uitext_style &animation-in=fade,250,350,CUBIC_OUT &animation-in=move,250,350,64,0,CUBIC_OUT
+		#Gameplay @text gameplay_abscore * 1578 158 ps24 gameplay_uitext_style &animation-in=fade,300,350,CUBIC_OUT &animation-in=move,300,350,64,0,CUBIC_OUT
+		#Gameplay @text gameplay_abscore_performance * 1725 156 ps14 gameplay_uitext_style &animation-in=fade,320,350,CUBIC_OUT &animation-in=move,320,350,64,0,CUBIC_OUT
+		#Gameplay @text gameplay_abscore_bonus * 1725 177 ps14 gameplay_uitext_style &animation-in=fade,340,350,CUBIC_OUT &animation-in=move,340,350,64,0,CUBIC_OUT
+
+	////// Combo //////
+		#Gameplay @image gameplay_combo graphic/gameplay_combo.png 934 580 &animation-in=fade,200,300,LINEAR &layerlv=4
+		#Gameplay @text gameplay_combo_value * 913 600 ps40 &align-center-size=95 &layerlv=4
+
+	////// Skin //////
+		ids<>:playtheme_0_name>>デフォルト
+		ids<>:playtheme_0_single_height>>32

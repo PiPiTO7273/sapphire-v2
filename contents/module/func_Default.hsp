@@ -1,0 +1,197 @@
+
+#module _default_
+
+	//任意の短形に(srcx,srcy)の座標が含まれているかどうか判定する
+	#defcfunc insquare int srcx,int srcy,int x1,int y1,int x2,int y2
+		return srcx>=x1&srcx<=x2&srcy>=y1&srcy<=y2
+
+	//イージング関数名から定数を取得
+	#defcfunc easename2prm str x
+		switch x
+			case"LINEAR":return ease_linear:swbreak
+			case"QUAD_IN":return ease_quad_in:swbreak
+			case"QUAD_OUT":return ease_quad_out:swbreak
+			case"QUAD_INOUT":return ease_quad_inout:swbreak
+			case"CUBIC_IN":return ease_cubic_in:swbreak
+			case"CUBIC_OUT":return ease_cubic_out:swbreak
+			case"CUBIC_INOUT":return ease_cubic_inout:swbreak
+			case"QUARTIC_IN":return ease_quartic_in:swbreak
+			case"QUARTIC_OUT":return ease_quartic_out:swbreak
+			case"QUARTIC_INOUT":return ease_quartic_inout:swbreak
+			case"BOUNCE_IN":return ease_bounce_in:swbreak
+			case"BOUNCE_OUT":return ease_bounce_out:swbreak
+			case"BOUNCE_INOUT":return ease_bounce_inout:swbreak
+			case"SHAKE_IN":return ease_shake_in:swbreak
+			case"SHAKE_OUT":return ease_shake_out:swbreak
+			case"SHAKE_INOUT":return ease_shake_inout:swbreak
+			case"LINEAR+LOOP":return ease_linear+ease_loop:swbreak
+		swend
+		return 0
+
+	//in→out,out→in
+	#defcfunc easein2out int n
+		switch n
+			case ease_quad_in:return ease_quad_out:swbreak
+			case ease_quad_out:return ease_quad_in:swbreak
+			case ease_cubic_in:return ease_cubic_out:swbreak
+			case ease_cubic_out:return ease_cubic_in:swbreak
+			case ease_quartic_in:return ease_quartic_out:swbreak
+			case ease_quartic_out:return ease_quartic_in:swbreak
+			case ease_bounce_in:return ease_bounce_out:swbreak
+			case ease_bounce_out:return ease_bounce_in:swbreak
+			case ease_shake_in:return ease_shake_out:swbreak
+			case ease_shake_out:return ease_shake_in:swbreak
+			default:return n:swbreak
+		swend
+		return
+
+	//要素を削除
+		#deffunc arraydels array v1, int ind
+			repeat length(v1)-ind-1,ind
+			v1(cnt) = v1(cnt+1)
+			loop
+			v1(length(v1)-1) = ""
+			return
+		#deffunc arraydeli array v1, int ind
+			repeat length(v1)-ind-1,ind
+			v1(cnt) = v1(cnt+1)
+			loop
+			v1(length(v1)-1) = 0
+			return
+		#deffunc arraydeld array v1, int ind
+			repeat length(v1)-ind-1,ind
+			v1(cnt) = v1(cnt+1)
+			loop
+			v1(length(v1)-1) = 0.0
+			return
+
+	//オーバーレイ表示
+	#deffunc DrawOverlayString int _x,int _y,str _body
+		SetDrawBlendMode DX_BLENDMODE_ALPHA,200
+		DrawBox _x,_y,_x+GetDrawStringWidth(_body,strlen(_body)),_y+GetFontSize(),$000000,TRUE
+		SetDrawBlendMode DX_BLENDMODE_ALPHA,256
+		DrawString _x,_y,_body,$FFFFFF
+		return
+
+	//スコア数値からランクを判定
+	#defcfunc GetScoreRank double _rate
+		if _rate>=100.0 :return"MAX"
+		if _rate>95.0 :return"EX+"
+		if _rate>90.0 :return"EX"
+		if _rate>86.6 :return"SSS"
+		if _rate>83.3 :return"SS"
+		if _rate>80.0 :return"S"
+		if _rate>75.0 :return"AAA+"
+		if _rate>70.0 :return"AAA"
+		if _rate>65.0 :return"AA+"
+		if _rate>60.0 :return"AA"
+		if _rate>55.0 :return"A+"
+		if _rate>50.0 :return"A"
+		if _rate>45.0 :return"B+"
+		if _rate>40.0 :return"B"
+		if _rate>35.0 :return"C+"
+		if _rate>30.0 :return"C"
+		if _rate>25.0 :return"D+"
+		if _rate>20.0 :return"D"
+		if _rate>15.0 :return"E+"
+		if _rate>10.0 :return"E"
+		if _rate>5.0 :return"F+"
+		if _rate>0.0 :return"F"
+		if _rate<=0.0 :return"---"
+		return"-"
+
+	//汎用背景
+	#deffunc DrawCommonBackground int _fid
+
+		SetDrawBlendMode DX_BLENDMODE_NOBLEND,256
+		DrawBox 0,0,BufWidth@,BufHeight@,$FFFFFF,TRUE
+
+		dim shapemovf:shapemovf=_fid/2
+
+		dim tmphid:tmphid=hdximg@(ishape_commonbg@)
+		SetDrawBlendMode DX_BLENDMODE_PMA_ALPHA,256
+		repeat 8
+		col=cnt
+		shapemovf+91
+		repeat 4
+			DrawGraph 364*col-364*cnt+shapemovf\364,364*cnt-shapemovf\364,tmphid,TRUE
+		loop
+		loop
+		return
+
+	//ミリ秒単位の値を渡すとMM:SSの形式の文字列に整形する
+	#defcfunc hm2str int x
+		return strf("%02d:%02d",x/1000/60,x/1000\60)
+
+	//難易度文字列→難易度区分の識別番号
+	#defcfunc difstr2difid str x
+		switch x
+			case"NORMAL":return 0:swbreak
+			case"HARD":return 1:swbreak
+			case"CHAOS":return 2:swbreak
+		swend
+		return 0
+
+	//能力値を計算する
+	#defcfunc GetPfPoint int _lev,int _score,int _maxcombo,int _dif
+		ddim tmpdouble,1
+		tmpdouble=10.0*(double(_lev)/10.0)*(double(_score)/10000000.0*1.5)*(1.0+double(_maxcombo)/1000.0)
+		switch _dif
+			case 0:tmpdouble+1.0*(double(_score)/10000000.0):swbreak
+			case 1:tmpdouble+1.25*(double(_score)/10000000.0):swbreak
+			case 2:tmpdouble+1.5*(double(_score)/10000000.0):swbreak
+		swend
+	return tmpdouble
+
+	//スコアグラフ用のデータをデコードする
+	#deffunc DecodeScoreGraphData str _raw,int _objmax,var _target
+		sdim rawbuf,strlen(_raw)
+		rawbuf=_raw
+		sdim _target,4*_objmax
+		if strmid(rawbuf,0,1)=="K" {
+			//新規格
+			strrep rawbuf,"K",""
+
+			ddim addobjscore:dim graphcurscore:dim bonusaddflag
+			addobjscore=double(10000000/_objmax)
+
+			repeat _objmax
+
+				//判定→スコア
+				switch strmid(rawbuf,cnt,1)
+					case"0":graphcurscore+int(addobjscore*1.0):swbreak	//EXCELLENT
+					case"1":graphcurscore+int(addobjscore*0.5):swbreak	//GREAT
+					case"2":graphcurscore+int(addobjscore*0.25):swbreak	//GOOD
+					case"3":graphcurscore+int(addobjscore*0.1):swbreak	//BAD
+					case"4":graphcurscore+int(addobjscore*1.0):swbreak	//MISS
+				swend
+
+				//ボーナス
+				if bonusaddflag==FALSE&strmid(rawbuf,cnt,1)=="0" {
+					graphcurscore+(10000000\_objmax)
+					bonusaddflag=TRUE
+				}
+
+				lpoke _target,4*cnt,graphcurscore
+			loop
+		} else {
+			//旧規格
+			ConvHEXdec _target,rawbuf
+			memexpand _target,4*_objmax
+
+			//データが欠損している場合、最後に記録されたスコアで埋める
+			/*dim decodelength:decodelength=stat
+			if decodelength<4*_objmax {
+				logmes GetTimeStamp()+" [Warning] Missing mybest graph data (length="+decodelength+" , required="+4*_objmax+")"
+				dim fillscore
+				fillscore=lpeek(_target,decodelength-4)
+				memexpand _target,4*_objmax
+				repeat (4*_objmax-decodelength)/4,decodelength/4
+					lpoke _target,4*cnt,fillscore
+				loop
+			}*/
+		}
+
+	return
+
+#global

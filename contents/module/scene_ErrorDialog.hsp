@@ -1,0 +1,24 @@
+
+#deffunc OpenErrorDialog str _code
+	switch _code
+
+		case"S2S0000"
+			dialog"ゲームの起動に失敗しました。\n\nエラーの詳細 :\n有効なセーブデータが見つかりませんでした。\n問題を解決するには、ゲームを再インストールしてください。\n\nエラーが発生したファイル :\n"+dir_default+"\\contents\\savedata.bin\n\nエラーコード : S2S0000",1,"起動エラー"
+		swbreak
+		case"S2S0001"
+			dialog"ゲームの起動に失敗しました。\n\nエラーの詳細 :\nセーブデータが破損しています。\n問題を解決するには、ゲームを再インストールしてください。\n\nエラーが発生したファイル :\n"+dir_default+"\\contents\\savedata.bin\n\nエラーコード : S2S0001",1,"起動エラー"
+		swbreak
+
+		case"MFM0000"
+			dialog"ファイルの読み込みに失敗しました。\n\nエラーの詳細 :\nファイルが存在しません。\n問題を解決するには、ゲームを再インストールしてください。\n\nエラーが発生したファイルが存在するディレクトリ :\n"+dir_default+"\\contents\\map\\\n\nエラーコード : MFM0000",1,"起動エラー"
+		swbreak
+		case"MFM0001"
+			dialog"ファイルの読み込みに失敗しました。\n\nエラーの詳細 :\nファイルが破損しています。\n問題を解決するには、ゲームを再インストールしてください。\n\nエラーが発生したファイルが存在するディレクトリ :\n"+dir_default+"\\contents\\map\\\n\nエラーコード : MFM0001",1,"起動エラー"
+		swbreak
+		case"MFM0002"
+			dialog"ファイルの読み込みに失敗しました。\n\nエラーの詳細 :\n楽曲データのチャンク情報が破損しています。\n問題を解決するには、ゲームを再インストールしてください。\n\nエラーが発生したファイルが存在するディレクトリ :\n"+dir_default+"\\contents\\map\\\n\nエラーコード : MFM0002",1,"起動エラー"
+		swbreak
+
+	swend
+
+	return

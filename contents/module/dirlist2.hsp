@@ -1,0 +1,121 @@
+//  dirlist2代替モジュール "dirlist2.hsp"  for HSP3.1b10 2007/07/10
+#ifdef dirlist2
+#define global DL2FULL
+#undef dirlist2h
+#undef dirlist2
+#undef dirlist2r
+#endif
+ 
+#module
+#define global dirlist2h(%1=0, %2=0) _dirlist2h %1, %2
+#define global dirlist2(%1, %2, %3=0, %4=0) _dirlist2 %1, %2, %3, %4
+#define global dirlist2r(%1) _dirlist2r %1
+ 
+#deffunc _dirlist2h int p1, int p2
+    if p1 {
+        PathMode = p1
+    } else {
+        PathMode = %10011111
+    }
+    if p2 {                         // 項目の区切り文字を設定（省略時は半角カンマ）
+        Separation = strf("%c", p2)
+    } else {
+        Separation = ","
+    }
+    return 0
+ 
+// 再帰検索命令（外部からは使用しません）
+#deffunc _serchdir str Target, local List
+    if SerchSubDir {                // ディレクトリを検索
+        chdir Target
+        notesel List
+        dirlist List, "*", 5
+        repeat notemax
+            notesel List
+            noteget stmp, cnt
+            _serchdir Target+"\\"+stmp;"
+        loop
+    }
+ 
+    chdir Target
+    dirlist List, FileMask, GetMode
+    notesel List
+    Files += notemax
+    repeat notemax
+        noteget stmp, cnt
+        NewLine = ""
+        if PathMode & %1 {          // ファイルのパス+ファイル名
+            NewLine += Target + "\\" + stmp + Separation;"
+        }
+        if PathMode & %10 {         // ファイル名
+            NewLine += stmp + Separation
+        }
+        if PathMode & %100 {        // ファイルのサイズ（byte）
+            exist stmp
+            NewLine += str(strsize) + Separation
+        }
+#ifdef DL2FULL
+        if PathMode & %1000 {       // 更新日（年月日）
+            fxtget@ TimeStamp, stmp
+            NewLine += str(TimeStamp(8)) + "/" + str(TimeStamp(9))+ "/" + str(TimeStamp(11)) + Separation
+        }
+        if PathMode & %10000 {      // 更新日（時分秒）
+            if (PathMode & %1000) == 0 : fxtget@ TimeStamp, stmp
+            NewLine += str(TimeStamp(12)) + ":" + str(TimeStamp(13))+ ":" + str(TimeStamp(14)) + Separation
+        }
+#endif
+        if PathMode & %10000000 {   // ファイルのパス
+            NewLine += Target + Separation
+        }
+ 
+        if PathMode {               // 最後の区切り文字を削除
+            poke NewLine, strlen(NewLine) - strlen(Separation), 0
+        }
+ 
+        if DirSeparation != '\\' {  // フォルダ区切り文字を変更
+            i = 0
+            repeat
+                tmp = instr(NewLine, i, "\\");"
+                if tmp < 0 : break
+                poke NewLine, tmp + i, DirSeparation
+                i += tmp + 1
+            loop
+        }
+        Note += NewLine + "\n"
+    loop
+    return
+ 
+#deffunc _dirlist2 var p1, str s, int p2, int p3
+#ifdef DL2FULL
+    dim TimeStamp, 24               // タイムスタンプ取得用
+#endif
+    Note = ""                       // リスト格納用文字列変数
+    StartDir = dir_cur              // 命令実行時のカレントフォルダ
+ 
+    FileMask = s                    // ファイルマスク
+    Files = 0                       // ファイルの数（statに代入）
+ 
+    SerchSubDir = p2 & %1           // サブフォルダを検索するか否か
+    GetMode =  3 - (p2 & %10)       // 隠しファイル・システムファイルを含めるか否か
+ 
+    if p3 {                         // ディレクトリの区切り文字を設定（省略時は\）
+        DirSeparation = p3
+    } else {
+        DirSeparation = '\\'
+    }
+ 
+    _serchdir StartDir              // カレントディレクトリを検索
+    notesel Note
+    p1 = strlen(Note)
+    if Note != "" {                 // 最後の改行を削除
+        poke Note, p1 - 2, 0
+    }
+ 
+    chdir StartDir
+    return Files
+ 
+#deffunc _dirlist2r var v
+    v = Note
+    sdim Note, 4
+    return 0
+#global

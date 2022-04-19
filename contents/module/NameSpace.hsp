@@ -1,0 +1,254 @@
+
+#const UI_BUTTON_HOVERTIME	100
+#const UI_BUTTON_PUSHTIME	100
+
+#const UI_EASEIN_ZOOM		1
+#const UI_EASEIN_FADE		2
+#const UI_EASEIN_MOVE		4
+#const UI_EASEIN_RANDOMTEXT	8
+#const UI_EASEIN_INCREASETEXT	16
+
+#const UI_EASEOUT_ZOOM		-1
+#const UI_EASEOUT_FADE		-2
+#const UI_EASEOUT_MOVE		-4
+#const UI_EASEOUT_RANDOMTEXT	-8
+
+#const UI_ALIGN_LEFT		0
+#const UI_ALIGN_RIGHT		1
+#const UI_ALIGN_CENTER		2
+#const UI_ALIGN_CENTER_XY	3
+
+#enum ibg_common		=	0
+#enum itmplayer
+#enum ishape_commonbg
+#enum icommon_cursor
+
+#enum icommon_ironline
+#enum icommon_bglayer
+#enum imusicselect_bg_songitem
+#enum imusicselect_item_normal
+#enum imusicselect_item_hard
+#enum imusicselect_item_chaos
+
+#enum imusicselect_folder_all
+#enum imusicselect_folder_alllv
+#enum imusicselect_folder_lv1_4
+#enum imusicselect_folder_lv5_8
+#enum imusicselect_folder_lv9_11
+#enum imusicselect_folder_lv12
+#enum imusicselect_folder_assist
+#enum imusicselect_folder_clear
+#enum imusicselect_folder_expert
+#enum imusicselect_folder_madness
+#enum imusicselect_folder_fc
+#enum imusicselect_folder_allex
+#enum imusicselect_folder_normal
+#enum imusicselect_folder_hard
+#enum imusicselect_folder_chaos
+#enum imusicselect_folder_s1
+
+#enum imusicselect_sort_default
+#enum imusicselect_sort_name
+#enum imusicselect_sort_level
+#enum imusicselect_sort_score
+#enum imusicselect_sort_bpm
+#enum imusicselect_sort_cleartype
+
+#enum imusicselect_itemscroll_circle
+
+#enum imusicselect_ir
+
+#enum imusicselect_ir_icon_1
+#enum imusicselect_ir_icon_2
+#enum imusicselect_ir_icon_3
+#enum imusicselect_ir_icon_other
+
+#enum imusicselect_levelsel_normalorg
+#enum imusicselect_levelsel_normal
+#enum imusicselect_levelsel_hardorg
+#enum imusicselect_levelsel_hard
+#enum imusicselect_levelsel_chaosorg
+#enum imusicselect_levelsel_chaos
+
+#enum iplayoption_enabled_120
+#enum iplayoption_enabled_180
+#enum iplayoption_objplace_normal_enabled
+#enum iplayoption_objplace_random_enabled
+#enum iplayoption_objplace_mirror_enabled
+#enum iplayoption_objplace_half_enabled
+#enum iplayoption_objplace_smirror_enabled
+#enum iplayoption_objplace_single_enabled
+#enum iplayoption_gauge_normal_enabled
+#enum iplayoption_gauge_madness_enabled
+#enum iplayoption_gauge_assist_enabled
+#enum iplayoption_gauge_fc_enabled
+#enum iplayoption_gauge_expert_enabled
+#enum iplayoption_gauge_allex_enabled
+#enum iplayoption_window_profile_enabled
+#enum iplayoption_window_scoregraph_enabled
+#enum iplayoption_window_judge_enabled
+#enum iplayoption_target_ex_enabled
+#enum iplayoption_target_s_enabled
+#enum iplayoption_target_aaa_enabled
+#enum iplayoption_target_aa_enabled
+#enum iplayoption_target_a_enabled
+#enum iplayoption_target_100_enabled
+#enum iplayoption_target_mybest_enabled
+#enum iplayoption_target_wr_enabled
+
+#enum igameplay_bg_sidelr
+#enum igameplay_bgorg_side_0
+
+#enum igameplay_bg_grid
+#enum igameplay_bgorg_grid_0
+
+#enum igameplay_copybuf
+#enum igameplay_bg_lane
+#enum igameplay_lane
+#enum igameplay_bg_sidelane
+#enum igameplay_sidelane_l
+#enum igameplay_sidelane_r
+#enum igameplay_note_hold_long
+
+#enum igameplay_note_single_0
+#enum igameplay_note_hold_0
+
+#enum igameplay_judge_excellent
+#enum igameplay_judge_great
+#enum igameplay_judge_good
+#enum igameplay_judge_bad
+#enum igameplay_judge_miss
+
+#enum igameplay_laneeffect
+
+#enum igameplay_graph_cur
+#enum igameplay_graph_mybest
+#enum igameplay_graph_target
+#enum igameplay_graph_reward
+
+#enum igameplay_playtime_pre
+
+#enum ogameplay_controlpanel		=	0
+
+#const MAPITEM_TYPE_GROUP		0
+#const MAPITEM_TYPE_SINGLE		1
+
+#enum MAPITEM_SORT_DEFAULT	=	0
+#enum MAPITEM_SORT_NAME
+#enum MAPITEM_SORT_LEVEL
+#enum MAPITEM_SORT_SCORE
+#enum MAPITEM_SORT_BPM
+#enum MAPITEM_SORT_CLEARTYPE
+
+#enum JUDGEID_EXCELLENT		=	0
+#enum JUDGEID_GREAT
+#enum JUDGEID_GOOD
+#enum JUDGEID_BAD
+#enum JUDGEID_MISS
+#enum JUDGEID_EARLY
+#enum JUDGEID_LATE
+
+//譜面フォーマットの各チャンクの識別番号
+#const ID_DUMMY			0
+#const ID_TITLE			1
+#const ID_ARTIST			2
+#const ID_SOURCE			3
+#const ID_LEVEL			4
+#const ID_ARTWORK			5
+#const ID_RESOURCEID		6
+#const ID_MAPDESIGN			7
+#const ID_BGVIDEO_COMMON		8
+#const ID_BGVIDEO_PATH		9
+#const ID_BGAUDIO			10
+#const ID_RELEASE			11
+#const ID_UNLOCKINFO		12
+#const ID_TOTALOFFSET		13
+#const ID_EVENTOFFSET		14
+#const ID_BGVIDEO_OFFSET		15
+#const ID_BGAUDIO_OFFSET		16
+#const ID_AUDIOENCODE		17
+
+#const ID_SOUNDSET			18
+#const ID_SOUNDPLAY			19
+#const ID_BPM				20
+#const ID_NOTESINGLE		21
+#const ID_NOTEHOLDSTART		22
+//#const ID_NOTEHOLDEND		23		//廃止
+
+#const ID_EXTEND	254
+#const ID_EOF		255
+
+#enum ID_DIFFICULTY_NORMAL	=	0
+#enum ID_DIFFICULTY_HARD
+#enum ID_DIFFICULTY_CHAOS
+
+#enum ID_OBJTYPE_SINGLE		=	0
+#enum ID_OBJTYPE_HOLDSTART
+#enum ID_OBJTYPE_HOLDEND
+
+#const jWid_Excellent	40
+#const jWid_Great		80
+#const jWid_Good		120
+#const jWid_Bad		160
+#const jWid_Miss		240
+
+#const Pretime		3000
+
+#const SubThreadLimit		4		//サブスレッドの最大処理回数
+#const AudioBufferSize		0		//オーディオバッファサイズ（0で自動）
+#const TexLv				4		//テクスチャの画質（数値が上がるほど荒くなる）
+#const MSAAflag			1		//アンチエイリアスを有効にするフラグ
+#const SndEventThread		0		//ゲームプレイのサウンドイベント処理を行うスレッド（0=メインスレッド,1=サブスレッド,2=処理しない）
+#const GameplayWindowLayout	1+2+4	//1=プロフィール,2=スコアグラフ,4=判定の詳細情報
+
+#const UIlayout_Profile		1
+#const UIlayout_ScoreGraph	2
+#const UIlayout_Judge		4
+
+//オブジェクトの配置オプション（後方互換性の値）
+#const PLAYOPT_ID_OBJPLACE_NORMAL_OLD		0
+#const PLAYOPT_ID_OBJPLACE_MIRROR_OLD		1
+#const PLAYOPT_ID_OBJPLACE_SMIRROR_OLD		2
+#const PLAYOPT_ID_OBJPLACE_RANDOM_OLD		5
+//オブジェクトの配置オプション
+#enum PLAYOPT_ID_OBJPLACE_NORMAL		=	100	
+#enum PLAYOPT_ID_OBJPLACE_RANDOM
+#enum PLAYOPT_ID_OBJPLACE_MIRROR
+#enum PLAYOPT_ID_OBJPLACE_HALF
+#enum PLAYOPT_ID_OBJPLACE_SMIRROR
+#enum PLAYOPT_ID_OBJPLACE_SINGLE
+
+//ゲージの難易度（後方互換性の値）
+#const PLAYOPT_ID_GAUGE_ASSIST_OLD		0
+#const PLAYOPT_ID_GAUGE_NORMAL_OLD		1
+#const PLAYOPT_ID_GAUGE_EXPERT_OLD		2
+#const PLAYOPT_ID_GAUGE_MADNESS_OLD	3
+
+#enum PLAYOPT_ID_GAUGE_NORMAL		=	100
+#enum PLAYOPT_ID_GAUGE_MADNESS
+#enum PLAYOPT_ID_GAUGE_ASSIST
+#enum PLAYOPT_ID_GAUGE_AR_FC		//Auto Restart
+#enum PLAYOPT_ID_GAUGE_EXPERT
+#enum PLAYOPT_ID_GAUGE_AR_ALLEX	//Auto Restart
+
+//目標スコア（後方互換性の値）
+#const PLAYOPT_ID_TARGET_MAX_OLD			0
+#const PLAYOPT_ID_TARGET_EX_OLD			1
+#const PLAYOPT_ID_TARGET_SSS_OLD			2
+#const PLAYOPT_ID_TARGET_SS_OLD			3
+#const PLAYOPT_ID_TARGET_S_OLD			4
+#const PLAYOPT_ID_TARGET_AAA_OLD			5
+#const PLAYOPT_ID_TARGET_AA_OLD			6
+#const PLAYOPT_ID_TARGET_A_OLD			7
+#const PLAYOPT_ID_TARGET_B_OLD			8
+#const PLAYOPT_ID_TARGET_MYBEST_OLD		9
+#const PLAYOPT_ID_TARGET_ONLINETOP_OLD		10
+
+#enum PLAYOPT_ID_TARGET_EX		=	100
+#enum PLAYOPT_ID_TARGET_S
+#enum PLAYOPT_ID_TARGET_AAA
+#enum PLAYOPT_ID_TARGET_AA
+#enum PLAYOPT_ID_TARGET_A
+#enum PLAYOPT_ID_TARGET_100
+#enum PLAYOPT_ID_TARGET_MYBEST
+#enum PLAYOPT_ID_TARGET_WR

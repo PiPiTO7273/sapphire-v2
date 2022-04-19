@@ -1,0 +1,1521 @@
+
+#deffunc duio_Init
+
+	logmes GetTimeStamp()+" [duio-thread] Initializing thread..."
+
+	//ボタン
+		sdim UIset_Button_Tag
+		sdim UIset_Button_ID
+		dim UIset_Button_hImg
+		dim UIset_Button_X
+		dim UIset_Button_Y
+		dim UIset_Button_Width
+		dim UIset_Button_drawWidth
+		dim UIset_Button_Height
+		dim UIset_Button_drawHeight
+		dim UIset_Button_hoverCount
+		dim UIset_Button_rawpushCount
+		dim UIset_Button_pushCount
+		dim UIset_Button_drawOffsetX
+		dim UIset_Button_drawOffsetY
+		dim UIset_Button_drawLevel
+		dim UIset_Button_count
+
+		dim UIset_Button_Alpha
+		dim UIset_Button_Enabled
+		dim UIset_Button_DrawFlag
+		sdim UIset_Button_PushEvent
+		dim UIset_Button_Outroflag
+		dim UIset_Button_EnableAlpha
+		dim UIset_Button_hPushSound
+
+		dim UIset_Button_In_Mode				//シーンが開始したときに再生するエフェクトの種類
+		dim UIset_Button_EaseIn_Zoom_Delay		//ズームインの遅延時間
+		dim UIset_Button_EaseIn_Zoom_Length	//ズームインの継続時間
+		ddim UIset_Button_EaseIn_Zoom_prmN,1	//ズームインのパラメータN（拡大率）
+		dim UIset_Button_EaseIn_Zoom_EaseFunc	//ズームインのイージング関数
+		dim UIset_Button_EaseIn_Fade_Delay		//フェードインの遅延時間
+		dim UIset_Button_EaseIn_Fade_Length	//フェードインの継続時間
+		dim UIset_Button_EaseIn_Fade_EaseFunc	//フェードインのイージング関数
+		dim UIset_Button_EaseIn_Move_Delay		//移動の遅延時間
+		dim UIset_Button_EaseIn_Move_Length	//移動の継続時間
+		dim UIset_Button_EaseIn_Move_X		//移動の開始Xオフセット
+		dim UIset_Button_EaseIn_Move_Y		//移動の開始Yオフセット
+		dim UIset_Button_EaseIn_Move_EaseFunc	//移動のイージング関数
+
+		dim UIset_Button_max
+		sdim UIset_Button_onEventStack	//直前に実行されたイベントID
+
+	//IDSデータ（システムDB）
+		sdim idsDB_Key
+		sdim idsDB_Value
+		dim idsDB_max
+
+	//最適化済みスクリプト
+		sdim UIsetscript_Optimized
+		UIsetscript_Optimized="\n// duio-x64-compiled script\n// (c) 2022 puoro.\n// - Built on "+gettime(0)+"/"+gettime(1)+"/"+gettime(3)+" "+gettime(4)+":"+strf("%02d",gettime(5))+":"+strf("%02d",gettime(6))+"\n\n"
+
+	//テキストオブジェクト
+		sdim UIset_Text_Tag
+		sdim UIset_Text_ID
+		sdim UIset_Text_Body
+		sdim UIset_Text_drawBody
+		dim UIset_Text_X
+		dim UIset_Text_drawOffsetX
+		dim UIset_Text_Y
+		dim UIset_Text_drawOffsetY
+		dim UIset_Text_Width
+		dim UIset_Text_Height
+		dim UIset_Text_Align
+		dim UIset_Text_hFont
+		dim UIset_Text_Alpha
+		dim UIset_Text_Color
+		dim UIset_Text_RandomLevel
+		dim UIset_Text_drawLevel
+		dim UIset_Text_count
+		dim UIset_Text_Outroflag
+		sdim UIset_Text_Extra
+
+		dim UIset_Text_DrawFlag
+		dim UIset_Text_In_Mode				//シーンが開始したときに再生するエフェクトの種類
+		dim UIset_Text_EaseIn_Fade_Delay		//フェードインの遅延時間
+		dim UIset_Text_EaseIn_Fade_Length		//フェードインの継続時間
+		dim UIset_Text_EaseIn_Fade_EaseFunc	//フェードインのイージング関数
+		dim UIset_Text_EaseIn_Move_Delay		//移動の遅延時間
+		dim UIset_Text_EaseIn_Move_Length		//移動の継続時間
+		dim UIset_Text_EaseIn_Move_X			//移動の開始Xオフセット
+		dim UIset_Text_EaseIn_Move_Y			//移動の開始Yオフセット
+		dim UIset_Text_EaseIn_Move_EaseFunc	//移動のイージング関数
+		dim UIset_Text_EaseIn_Random_Delay		//ランダム文字列エフェクトの遅延時間
+		dim UIset_Text_EaseIn_Random_Length	//ランダム文字列エフェクトの継続時間
+		dim UIset_Text_EaseIn_Increase_Delay	//数値増加エフェクトの遅延時間
+		dim UIset_Text_EaseIn_Increase_Length	//数値増加エフェクトの継続時間
+		dim UIset_Text_EaseIn_Increase_Digit	//数値増加エフェクトの桁数
+
+		sdim UIset_Text_RandomString
+		UIset_Text_RandomString="abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!?"
+		dim UIset_Text_RandomString_Length
+		UIset_Text_RandomString_Length=strlen(UIset_Text_RandomString)
+
+		dim UIset_Text_max
+
+	//画像オブジェクト
+		sdim UIset_Image_Tag
+		sdim UIset_Image_ID
+		dim UIset_Image_hImg
+		dim UIset_Image_X
+		dim UIset_Image_drawOffsetX
+		dim UIset_Image_Y
+		dim UIset_Image_drawOffsetY
+		dim UIset_Image_Alpha
+		dim UIset_Image_DrawFlag
+		dim UIset_Image_Width
+		dim UIset_Image_Height
+		dim UIset_Image_drawWidth
+		dim UIset_Image_drawHeight
+		dim UIset_Image_drawLevel
+		dim UIset_Image_count
+		dim UIset_Image_Outroflag
+		dim UIset_Image_EnableAlpha
+
+		dim UIset_Image_In_Mode				//シーンが開始したときに再生するエフェクトの種類
+		dim UIset_Image_EaseIn_Zoom_Delay		//ズームインの遅延時間
+		dim UIset_Image_EaseIn_Zoom_Length		//ズームインの継続時間
+		ddim UIset_Image_EaseIn_Zoom_prmN,1	//ズームインのパラメータN（拡大率）
+		dim UIset_Image_EaseIn_Zoom_EaseFunc	//ズームインのイージング関数
+		dim UIset_Image_EaseIn_Fade_Delay		//フェードインの遅延時間
+		dim UIset_Image_EaseIn_Fade_Length		//フェードインの継続時間
+		dim UIset_Image_EaseIn_Fade_EaseFunc	//フェードインのイージング関数
+		dim UIset_Image_EaseIn_Move_Delay		//移動の遅延時間
+		dim UIset_Image_EaseIn_Move_Length		//移動の継続時間
+		dim UIset_Image_EaseIn_Move_X			//移動の開始Xオフセット
+		dim UIset_Image_EaseIn_Move_Y			//移動の開始Yオフセット
+		dim UIset_Image_EaseIn_Move_EaseFunc	//移動のイージング関数
+
+		dim UIset_Image_max
+
+	//3D四角形
+		sdim UIset_3dsq_Tag
+		sdim UIset_3dsq_ID
+		dim UIset_3dsq_hImg
+		dim UIset_3dsq_plx1
+		dim UIset_3dsq_plx2
+		dim UIset_3dsq_plx3
+		dim UIset_3dsq_plx4
+		dim UIset_3dsq_ply1
+		dim UIset_3dsq_ply2
+		dim UIset_3dsq_ply3
+		dim UIset_3dsq_ply4
+		dim UIset_3dsq_plz1
+		dim UIset_3dsq_plz2
+		dim UIset_3dsq_plz3
+		dim UIset_3dsq_plz4
+		dim UIset_3dsq_Alpha
+		dim UIset_3dsq_DrawFlag
+		dim UIset_3dsq_drawLevel
+		dim UIset_3dsq_count
+		dim UIset_3dsq_OutroFlag
+		dim UIset_3dsq_EnableAlpha
+
+		dim UIset_3dsq_In_Mode
+		dim UIset_3dsq_EaseIn_Fade_Delay
+		dim UIset_3dsq_EaseIn_Fade_Length
+		dim UIset_3dsq_EaseIn_Fade_EaseFunc
+
+		dim UIset_3dsq_max
+
+	//3Dカメラ
+		dim UIset_3dsq_Camera_Position
+		dim UIset_3dsq_Camera_Target
+		ddim UIset_3dsq_Camera_fov,1
+
+		ddim CurDUIObasedFPS,1
+
+	//数値計算モジュール初期化
+		mfx_init
+
+	//アクティブシーン
+		sdim UIset_curActiveScene
+
+	return
+
+#defcfunc duio_fx str _fx
+
+	dim tmpfx_error,1,1
+	mfx_newFml _fx,tmpfx_error
+	mfx_selFml stat
+
+	ddim tmpfx_result,1
+	dim tmpfx_error,1,1,1,1
+	tmpfx_result=double(mfx_calc(tmpfx_error))
+	return tmpfx_result
+
+#defcfunc fxint str _fx
+	return int(duio_fx(_fx))
+
+#deffunc duio_LoadScript str _scriptpath,str _compiledpath
+
+	logmes GetTimeStamp()+" [duio-thread] Loading script... \""+_scriptpath+"\""
+
+	//ファイル読み込み
+		sdim UIsetscript_FilePath
+		exist _compiledpath
+		if strsize==-1 {
+			UIsetscript_FilePath=_scriptpath
+		} else {
+			UIsetscript_FilePath=_compiledpath
+			logmes GetTimeStamp()+" [duio-build-ac] Compiled file \""+_compiledpath+"\" found."
+		}
+		exist UIsetscript_FilePath
+		sdim UIsetscript_FileBuf,strsize
+		notesel UIsetscript_FileBuf
+		noteload UIsetscript_FilePath
+
+	//インクルード処理
+		dim progressed_include
+		repeat	//v2zip形式
+			progressed_include=0
+			if instr(UIsetscript_FileBuf,0,"include:script@v2z>>")!-1 {
+				sdim UIsetscript_linearr,notemax
+				split UIsetscript_FileBuf,"\n",UIsetscript_linearr
+				repeat length(UIsetscript_linearr)
+					if instr(UIsetscript_linearr(cnt),0,"include:script@v2z>>")!-1 {
+						strrep UIsetscript_linearr(cnt),"include:script@v2z>>",""
+						sdim UIsetscript_tmpincludePath:UIsetscript_tmpincludePath=UIsetscript_linearr(cnt)
+						notesel UIsetscript_linearr(cnt)
+						UIsetscript_linearr(cnt)=v2zip_Load("contents/"+UIsetscript_tmpincludePath)
+						strrep UIsetscript_linearr(cnt),"{*CRLF}","\n"
+					}
+				loop
+				sdim UIsetscript_FileBuf
+				repeat length(UIsetscript_linearr)
+					UIsetscript_FileBuf+UIsetscript_linearr(cnt)+"\n"
+				loop
+			} else :progressed_include++
+			if instr(UIsetscript_FileBuf,0,"include:script>>")!-1 {
+				sdim UIsetscript_linearr,notemax
+				split UIsetscript_FileBuf,"\n",UIsetscript_linearr
+				repeat length(UIsetscript_linearr)
+					if instr(UIsetscript_linearr(cnt),0,"include:script>>")!-1 {
+						strrep UIsetscript_linearr(cnt),"include:script>>",""
+						sdim UIsetscript_tmpincludePath:UIsetscript_tmpincludePath=UIsetscript_linearr(cnt)
+						notesel UIsetscript_linearr(cnt)
+						noteload"contents/"+UIsetscript_tmpincludePath
+						strrep UIsetscript_linearr(cnt),"{*CRLF}","\n"
+					}
+				loop
+				sdim UIsetscript_FileBuf
+				repeat length(UIsetscript_linearr)
+					UIsetscript_FileBuf+UIsetscript_linearr(cnt)+"\n"
+				loop
+			} else:progressed_include++
+			if progressed_include==2 :break
+		loop
+
+	//改行変換
+		strrep UIsetscript_FileBuf,"{*CRLF}","\n"
+	//タブ削除
+		strrep UIsetscript_FileBuf,"\t",""
+
+	//メモリノートパッドの内容を配列変数に分解
+		logmes GetTimeStamp()+" [duio-build-ac] process 1-1 > Decomposing into an array..."
+		sdim UIsetscript_linearr,notemax
+		split UIsetscript_FileBuf,"\n",UIsetscript_linearr
+
+	//解析
+
+		dim UIset_maxdrawLev
+
+		logmes GetTimeStamp()+" [duio-build-ac] process 2-1 > Parsing syntax..."
+		repeat length(UIsetscript_linearr)
+			if strmid(UIsetscript_linearr(cnt),0,2)=="//" :continue	//コメント行を無視
+			if strmid(UIsetscript_linearr(cnt),0,3)=="rp:" {	//置換ワード
+				strrep UIsetscript_linearr(cnt),"rp:",""
+				sdim UIsetscript_ReplaceKey
+				sdim UIsetscript_ReplaceWord
+				split UIsetscript_linearr(cnt),">>",UIsetscript_ReplaceKey,UIsetscript_ReplaceWord
+				repeat length(UIsetscript_linearr)
+					strrep UIsetscript_linearr(cnt),UIsetscript_ReplaceKey,UIsetscript_ReplaceWord
+				loop
+				UIsetscript_linearr(cnt)=""
+			}
+			if strmid(UIsetscript_linearr(cnt),0,6)=="ids<>:" {	//システムDB
+				sdim UIsetscript_parsetmp:UIsetscript_parsetmp=UIsetscript_linearr(cnt)
+				strrep UIsetscript_parsetmp,"ids<>:",""
+				split UIsetscript_parsetmp,">>",idsDB_Key(idsDB_max),idsDB_Value(idsDB_max)
+				idsDB_max++
+			}
+
+			if UIsetscript_linearr(cnt)=="" :continue	//空行を無視
+
+			if strmid(UIsetscript_linearr(cnt),0,1)=="#" {
+
+				sdim UIsetscript_linediv
+				split UIsetscript_linearr(cnt)," ",UIsetscript_linediv
+
+				repeat length(UIsetscript_linediv)
+					strrep UIsetscript_linediv(cnt),"{*sp}"," "
+				loop
+
+				if length(UIsetscript_linediv)==1 :end
+
+				//コンポーネント別処理
+				switch UIsetscript_linediv(1)
+
+					case"0-000-**"	//@button
+						UIset_Button_Tag(UIset_Button_max)=UIsetscript_linediv(0)
+						UIset_Button_ID(UIset_Button_max)=UIsetscript_linediv(2)
+						UIset_Button_hImg(UIset_Button_max)=LoadGraph("contents/"+UIsetscript_linediv(3))
+						UIset_Button_X(UIset_Button_max)=fxint(UIsetscript_linediv(4))
+						UIset_Button_Y(UIset_Button_max)=fxint(UIsetscript_linediv(5))
+						UIset_Button_Width(UIset_Button_max)=fxint(UIsetscript_linediv(6))
+						UIset_Button_Height(UIset_Button_max)=fxint(UIsetscript_linediv(7))
+
+						UIset_Button_Alpha(UIset_Button_max)=255
+						UIset_Button_Enabled(UIset_Button_max)=TRUE
+						UIset_Button_DrawFlag(UIset_Button_max)=TRUE
+						UIset_Button_hoverCount(UIset_Button_max)=0
+						UIset_Button_rawpushCount(UIset_Button_max)=0
+						UIset_Button_pushCount(UIset_Button_max)=0
+						UIset_Button_PushEvent(UIset_Button_max)="ID:"+UIset_Button_ID(UIset_Button_max)
+						UIset_Button_In_Mode(UIset_Button_max)=0
+						UIset_Button_drawLevel(UIset_Button_max)=0
+						UIset_Button_drawWidth(UIset_Button_max)=0
+						UIset_Button_drawHeight(UIset_Button_max)=0
+						UIset_Button_count(UIset_Button_max)=0
+						UIset_Button_Outroflag(UIset_Button_max)=0
+						UIset_Button_drawOffsetX(UIset_Button_max)=0
+						UIset_Button_drawOffsetY(UIset_Button_max)=0
+						UIset_Button_EnableAlpha(UIset_Button_max)=TRUE
+						UIset_Button_hPushSound(UIset_Button_max)=-1
+
+						UIset_Button_EaseIn_Zoom_Delay(UIset_Button_max)=0
+						UIset_Button_EaseIn_Zoom_Length(UIset_Button_max)=0
+						UIset_Button_EaseIn_Zoom_prmN(UIset_Button_max)=0.0
+						UIset_Button_EaseIn_Zoom_EaseFunc(UIset_Button_max)=0
+						UIset_Button_EaseIn_Fade_Delay(UIset_Button_max)=0
+						UIset_Button_EaseIn_Fade_Length(UIset_Button_max)=0
+						UIset_Button_EaseIn_Fade_EaseFunc(UIset_Button_max)=0
+						UIset_Button_EaseIn_Move_Delay(UIset_Button_max)=0
+						UIset_Button_EaseIn_Move_Length(UIset_Button_max)=0
+						UIset_Button_EaseIn_Move_X(UIset_Button_max)=0
+						UIset_Button_EaseIn_Move_Y(UIset_Button_max)=0
+						UIset_Button_EaseIn_Move_EaseFunc(UIset_Button_max)=0
+
+						if length(UIsetscript_linediv)>8 {
+							repeat length(UIsetscript_linediv)-8,8
+								sdim UIsetscript_ExtraOption
+								sdim UIsetscript_ExtraParam
+								split UIsetscript_linediv(cnt),"=",UIsetscript_ExtraOption,UIsetscript_ExtraParam
+
+								switch UIsetscript_ExtraOption
+									case"0x0000"	//&alpha オブジェクトの不透明度
+										UIset_Button_Alpha(UIset_Button_max)=fxint(UIsetscript_ExtraParam)
+									swbreak
+									case"0x0001"	//&disabled オブジェクトを既定で無効化する
+										UIset_Button_Enabled(UIset_Button_max)=FALSE
+									swbreak
+									case"0x0002"	//&hide オブジェクトを既定で描画しない
+										UIset_Button_DrawFlag(UIset_Button_max)=FALSE
+									swbreak
+									case"0x0003"	//&event ボタンが押されたときに発生するイベントID
+										UIset_Button_PushEvent(UIset_Button_max)=UIsetscript_ExtraParam
+									swbreak
+									case"0x0004"	//&animation-in シーン開始時に再生するアニメーション
+										sdim tmpstr
+										split UIsetscript_ExtraParam,",",tmpstr
+										switch tmpstr(0)
+
+											case"0x000A"	//zoom
+												UIset_Button_In_Mode(UIset_Button_max)=UIset_Button_In_Mode(UIset_Button_max)|UI_EASEIN_ZOOM
+												UIset_Button_EaseIn_Zoom_Delay(UIset_Button_max)=fxint(tmpstr(1))
+												UIset_Button_EaseIn_Zoom_Length(UIset_Button_max)=fxint(tmpstr(2))
+												UIset_Button_EaseIn_Zoom_prmN(UIset_Button_max)=duio_fx(tmpstr(3))
+												UIset_Button_EaseIn_Zoom_EaseFunc(UIset_Button_max)=easename2prm(tmpstr(4))
+											swbreak
+
+											case"0x000B"	//fade
+												UIset_Button_In_Mode(UIset_Button_max)=UIset_Button_In_Mode(UIset_Button_max)|UI_EASEIN_FADE
+												UIset_Button_EaseIn_Fade_Delay(UIset_Button_max)=fxint(tmpstr(1))
+												UIset_Button_EaseIn_Fade_Length(UIset_Button_max)=fxint(tmpstr(2))
+												UIset_Button_EaseIn_Fade_EaseFunc(UIset_Button_max)=easename2prm(tmpstr(3))
+											swbreak
+
+											case"0x000C"	//move
+												UIset_Button_In_Mode(UIset_Button_max)=UIset_Button_In_Mode(UIset_Button_max)|UI_EASEIN_MOVE
+												UIset_Button_EaseIn_Move_Delay(UIset_Button_max)=fxint(tmpstr(1))
+												UIset_Button_EaseIn_Move_Length(UIset_Button_max)=fxint(tmpstr(2))
+												UIset_Button_EaseIn_Move_X(UIset_Button_max)=fxint(tmpstr(3))
+												UIset_Button_EaseIn_Move_Y(UIset_Button_max)=fxint(tmpstr(4))
+												UIset_Button_EaseIn_Move_EaseFunc(UIset_Button_max)=easename2prm(tmpstr(5))
+											swbreak
+
+										swend
+									swbreak
+									case"0x0009"	//&layerlv
+										UIset_Button_drawLevel(UIset_Button_max)=fxint(UIsetscript_ExtraParam)
+										if UIset_maxdrawLev<fxint(UIsetscript_ExtraParam) :UIset_maxdrawLev=fxint(UIsetscript_ExtraParam)
+									swbreak
+									case"0x000E"	//disable-imgalpha
+										UIset_Button_EnableAlpha(UIset_Button_max)=FALSE
+									swbreak
+									case"0x0013"	//pushsound
+										repeat length(commonsndDB_Key)
+											if commonsndDB_Key(cnt)==UIsetscript_ExtraParam {
+												UIset_Button_hPushSound(UIset_Button_max)=commonsndDB_hChannel(cnt)
+											}
+										loop
+									swbreak
+								swend
+							loop
+						}
+
+						UIset_Button_max++
+					swbreak
+
+					case"0-001-**"	//@text
+
+						UIset_Text_Tag(UIset_Text_max)=UIsetscript_linediv(0)
+						UIset_Text_ID(UIset_Text_max)=UIsetscript_linediv(2)
+						UIset_Text_Body(UIset_Text_max)=UIsetscript_linediv(3)
+						UIset_Text_X(UIset_Text_max)=fxint(UIsetscript_linediv(4))
+						UIset_Text_Y(UIset_Text_max)=fxint(UIsetscript_linediv(5))
+						repeat length(fontDB_Key)
+							if fontDB_Key(cnt)==UIsetscript_linediv(6) {
+								UIset_Text_hFont(UIset_Text_max)=fontDB_Value(cnt)
+							}
+						loop
+
+						UIset_Text_DrawFlag(UIset_Text_max)=TRUE
+						UIset_Text_Alpha(UIset_Text_max)=255
+						UIset_Text_Color(UIset_Text_max)=$FFFFFF
+						UIset_Text_drawLevel(UIset_Text_max)=0
+						UIset_Text_count(UIset_Text_max)=0
+						UIset_Text_Outroflag(UIset_Text_max)=0
+						UIset_Text_Align(UIset_Text_max)=UI_ALIGN_LEFT
+						UIset_Text_In_Mode(UIset_Text_max)=0
+						UIset_Text_Extra(UIset_Text_max)=""
+
+						if length(UIsetscript_linediv)>7 {
+							repeat length(UIsetscript_linediv)-7,7
+								sdim UIsetscript_ExtraOption
+								sdim UIsetscript_ExtraParam
+								split UIsetscript_linediv(cnt),"=",UIsetscript_ExtraOption,UIsetscript_ExtraParam
+
+								switch UIsetscript_ExtraOption
+									case"0x0000"	//&alpha
+										UIset_Text_Alpha(UIset_Text_max)=fxint(UIsetscript_ExtraParam)
+									swbreak
+									case"0x0002"	//&hide
+										UIset_Text_DrawFlag(UIset_Text_max)=FALSE
+									swbreak
+									case"0x0005"	//&align-right-size
+										UIset_Text_Align(UIset_Text_max)=UI_ALIGN_RIGHT
+										UIset_Text_Width(UIset_Text_max)=fxint(UIsetscript_ExtraParam)
+									swbreak
+									case"0x0006"	//&align-center-size
+										UIset_Text_Align(UIset_Text_max)=UI_ALIGN_CENTER
+										UIset_Text_Width(UIset_Text_max)=fxint(UIsetscript_ExtraParam)
+									swbreak
+									case"0x0007"	//&align-centerxy-size
+										UIset_Text_Align(UIset_Text_max)=UI_ALIGN_CENTER_XY
+										sdim tmpstr
+										split UIsetscript_ExtraParam,",",tmpstr
+										UIset_Text_Width(UIset_Text_max)=fxint(tmpstr(0))
+										UIset_Text_Height(UIset_Text_max)=fxint(tmpstr(1))
+									swbreak
+
+									case"0x0008"	//&color
+										sdim tmpstr
+										split UIsetscript_ExtraParam,",",tmpstr
+										UIset_Text_Color(UIset_Text_max)=GetColor(fxint(tmpstr(0)),fxint(tmpstr(1)),fxint(tmpstr(2)))
+									swbreak
+
+									case"0x0004"	//&animation-in シーン開始時に再生するアニメーション
+										sdim tmpstr
+										split UIsetscript_ExtraParam,",",tmpstr
+										switch tmpstr(0)
+
+											case"0x000B"	//fade
+												UIset_Text_In_Mode(UIset_Text_max)=UIset_Text_In_Mode(UIset_Text_max)|UI_EASEIN_FADE
+												UIset_Text_EaseIn_Fade_Delay(UIset_Text_max)=fxint(tmpstr(1))
+												UIset_Text_EaseIn_Fade_Length(UIset_Text_max)=fxint(tmpstr(2))
+												UIset_Text_EaseIn_Fade_EaseFunc(UIset_Text_max)=easename2prm(tmpstr(3))
+											swbreak
+
+											case"0x000C"	//move
+												UIset_Text_In_Mode(UIset_Text_max)=UIset_Text_In_Mode(UIset_Text_max)|UI_EASEIN_MOVE
+												UIset_Text_EaseIn_Move_Delay(UIset_Text_max)=fxint(tmpstr(1))
+												UIset_Text_EaseIn_Move_Length(UIset_Text_max)=fxint(tmpstr(2))
+												UIset_Text_EaseIn_Move_X(UIset_Text_max)=fxint(tmpstr(3))
+												UIset_Text_EaseIn_Move_Y(UIset_Text_max)=fxint(tmpstr(4))
+												UIset_Text_EaseIn_Move_EaseFunc(UIset_Text_max)=easename2prm(tmpstr(5))
+											swbreak
+
+											case"0x000D"	//random.text
+												UIset_Text_In_Mode(UIset_Text_max)=UIset_Text_In_Mode(UIset_Text_max)|UI_EASEIN_RANDOMTEXT
+												UIset_Text_EaseIn_Random_Delay(UIset_Text_max)=fxint(tmpstr(1))
+												UIset_Text_EaseIn_Random_Length(UIset_Text_max)=fxint(tmpstr(2))
+											swbreak
+
+											case"0x000F"	//increase.text
+												UIset_Text_In_Mode(UIset_Text_max)=UIset_Text_In_Mode(UIset_Text_max)|UI_EASEIN_INCREASETEXT
+												UIset_Text_EaseIn_Increase_Delay(UIset_Text_max)=fxint(tmpstr(1))
+												UIset_Text_EaseIn_Increase_Length(UIset_Text_max)=fxint(tmpstr(2))
+												UIset_Text_EaseIn_Increase_Digit(UIset_Text_max)=fxint(tmpstr(3))
+											swbreak
+
+										swend
+									swbreak
+									case"0x0009"	//&layerlv
+										UIset_Text_drawLevel(UIset_Text_max)=fxint(UIsetscript_ExtraParam)
+										if UIset_maxdrawLev<fxint(UIsetscript_ExtraParam) :UIset_maxdrawLev=fxint(UIsetscript_ExtraParam)
+									swbreak
+									case"0x0010"	//&extra
+										UIset_Text_Extra(UIset_Text_max)=UIsetscript_ExtraParam
+									swbreak
+								swend
+							loop
+						}
+
+						UIset_Text_max++
+					swbreak
+
+					case"0-002-**"	//@image
+						UIset_Image_Tag(UIset_Image_max)=UIsetscript_linediv(0)
+						UIset_Image_ID(UIset_Image_max)=UIsetscript_linediv(2)
+						UIset_Image_hImg(UIset_Image_max)=LoadGraph("contents/"+UIsetscript_linediv(3))
+						UIset_Image_X(UIset_Image_max)=fxint(UIsetscript_linediv(4))
+						UIset_Image_Y(UIset_Image_max)=fxint(UIsetscript_linediv(5))
+
+						cfunc64v GetGraphSize,UIset_Image_hImg(UIset_Image_max),varptr64(UIset_Image_Width(UIset_Image_max)),varptr64(UIset_Image_Height(UIset_Image_max))
+
+						UIset_Image_Alpha(UIset_Image_max)=255
+						UIset_Image_DrawFlag(UIset_Image_max)=TRUE
+						UIset_Image_drawLevel(UIset_Image_max)=0
+						UIset_Image_count(UIset_Image_max)=0
+						UIset_Image_Outroflag(UIset_Image_max)=0
+						UIset_Image_In_Mode(UIset_Image_max)=0
+						UIset_Image_EnableAlpha(UIset_Image_max)=TRUE
+
+						if length(UIsetscript_linediv)>6 {
+							repeat length(UIsetscript_linediv)-6,6
+								sdim UIsetscript_ExtraOption
+								sdim UIsetscript_ExtraParam
+								split UIsetscript_linediv(cnt),"=",UIsetscript_ExtraOption,UIsetscript_ExtraParam
+
+								switch UIsetscript_ExtraOption
+									case"0x0000"	//&alpha
+										UIset_Image_Alpha(UIset_Image_max)=fxint(UIsetscript_ExtraParam)
+									swbreak
+									case"0x0002"	//&hide
+										UIset_Image_DrawFlag(UIset_Image_max)=FALSE
+									swbreak
+									case"0x0004"	//&animation-in シーン開始時に再生するアニメーション
+										sdim tmpstr
+										split UIsetscript_ExtraParam,",",tmpstr
+										switch tmpstr(0)
+
+											case"0x000A"	//zoom
+												UIset_Image_In_Mode(UIset_Image_max)=UIset_Image_In_Mode(UIset_Image_max)|UI_EASEIN_ZOOM
+												UIset_Image_EaseIn_Zoom_Delay(UIset_Image_max)=fxint(tmpstr(1))
+												UIset_Image_EaseIn_Zoom_Length(UIset_Image_max)=fxint(tmpstr(2))
+												UIset_Image_EaseIn_Zoom_prmN(UIset_Image_max)=duio_fx(tmpstr(3))
+												UIset_Image_EaseIn_Zoom_EaseFunc(UIset_Image_max)=easename2prm(tmpstr(4))
+											swbreak
+
+											case"0x000B"	//fade
+												UIset_Image_In_Mode(UIset_Image_max)=UIset_Image_In_Mode(UIset_Image_max)|UI_EASEIN_FADE
+												UIset_Image_EaseIn_Fade_Delay(UIset_Image_max)=fxint(tmpstr(1))
+												UIset_Image_EaseIn_Fade_Length(UIset_Image_max)=fxint(tmpstr(2))
+												UIset_Image_EaseIn_Fade_EaseFunc(UIset_Image_max)=easename2prm(tmpstr(3))
+											swbreak
+
+											case"0x000C"	//move
+												UIset_Image_In_Mode(UIset_Image_max)=UIset_Image_In_Mode(UIset_Image_max)|UI_EASEIN_MOVE
+												UIset_Image_EaseIn_Move_Delay(UIset_Image_max)=fxint(tmpstr(1))
+												UIset_Image_EaseIn_Move_Length(UIset_Image_max)=fxint(tmpstr(2))
+												UIset_Image_EaseIn_Move_X(UIset_Image_max)=fxint(tmpstr(3))
+												UIset_Image_EaseIn_Move_Y(UIset_Image_max)=fxint(tmpstr(4))
+												UIset_Image_EaseIn_Move_EaseFunc(UIset_Image_max)=easename2prm(tmpstr(5))
+											swbreak
+										swend
+									swbreak
+									case"0x0009"	//&layerlv
+										UIset_Image_drawLevel(UIset_Image_max)=fxint(UIsetscript_ExtraParam)
+										if UIset_maxdrawLev<fxint(UIsetscript_ExtraParam) :UIset_maxdrawLev=fxint(UIsetscript_ExtraParam)
+									swbreak
+									case"0x000E"	//disable-imgalpha
+										UIset_Image_EnableAlpha(UIset_Image_max)=FALSE
+									swbreak
+									case"0x0011"	//&imgwidth
+										UIset_Image_Width(UIset_Image_max)=fxint(UIsetscript_ExtraParam)
+									swbreak
+									case"0x0012"	//&imgheight
+										UIset_Image_Height(UIset_Image_max)=fxint(UIsetscript_ExtraParam)
+									swbreak
+								swend
+							loop
+						}
+
+						UIset_Image_max++
+					swbreak
+
+					case"0-003-**"	//@3dsquare
+						UIset_3dsq_Tag(UIset_3dsq_max)=UIsetscript_linediv(0)
+						UIset_3dsq_ID(UIset_3dsq_max)=UIsetscript_linediv(2)
+						UIset_3dsq_hImg(UIset_3dsq_max)=LoadGraph("contents/"+UIsetscript_linediv(7))
+
+						sdim UIset_3dsq_tmpstruct_xyz
+						strrep UIsetscript_linediv(3),"(",""
+						strrep UIsetscript_linediv(3),")",""
+						split UIsetscript_linediv(3),",",UIset_3dsq_tmpstruct_xyz
+						UIset_3dsq_plx1(UIset_3dsq_max)=fxint(UIset_3dsq_tmpstruct_xyz(0))
+						UIset_3dsq_ply1(UIset_3dsq_max)=fxint(UIset_3dsq_tmpstruct_xyz(1))
+						UIset_3dsq_plz1(UIset_3dsq_max)=fxint(UIset_3dsq_tmpstruct_xyz(2))
+
+						sdim UIset_3dsq_tmpstruct_xyz
+						strrep UIsetscript_linediv(4),"(",""
+						strrep UIsetscript_linediv(4),")",""
+						split UIsetscript_linediv(4),",",UIset_3dsq_tmpstruct_xyz
+						UIset_3dsq_plx2(UIset_3dsq_max)=fxint(UIset_3dsq_tmpstruct_xyz(0))
+						UIset_3dsq_ply2(UIset_3dsq_max)=fxint(UIset_3dsq_tmpstruct_xyz(1))
+						UIset_3dsq_plz2(UIset_3dsq_max)=fxint(UIset_3dsq_tmpstruct_xyz(2))
+
+						sdim UIset_3dsq_tmpstruct_xyz
+						strrep UIsetscript_linediv(5),"(",""
+						strrep UIsetscript_linediv(5),")",""
+						split UIsetscript_linediv(5),",",UIset_3dsq_tmpstruct_xyz
+						UIset_3dsq_plx3(UIset_3dsq_max)=fxint(UIset_3dsq_tmpstruct_xyz(0))
+						UIset_3dsq_ply3(UIset_3dsq_max)=fxint(UIset_3dsq_tmpstruct_xyz(1))
+						UIset_3dsq_plz3(UIset_3dsq_max)=fxint(UIset_3dsq_tmpstruct_xyz(2))
+
+						sdim UIset_3dsq_tmpstruct_xyz
+						strrep UIsetscript_linediv(6),"(",""
+						strrep UIsetscript_linediv(6),")",""
+						split UIsetscript_linediv(6),",",UIset_3dsq_tmpstruct_xyz
+						UIset_3dsq_plx4(UIset_3dsq_max)=fxint(UIset_3dsq_tmpstruct_xyz(0))
+						UIset_3dsq_ply4(UIset_3dsq_max)=fxint(UIset_3dsq_tmpstruct_xyz(1))
+						UIset_3dsq_plz4(UIset_3dsq_max)=fxint(UIset_3dsq_tmpstruct_xyz(2))
+
+						UIset_3dsq_Alpha(UIset_3dsq_max)=255
+						UIset_3dsq_DrawFlag(UIset_3dsq_max)=TRUE
+						UIset_3dsq_count(UIset_3dsq_max)=0
+						UIset_3dsq_drawLevel(UIset_3dsq_max)=0
+						UIset_3dsq_OutroFlag(UIset_3dsq_max)=0
+						UIset_3dsq_EnableAlpha(UIset_3dsq_max)=TRUE
+
+						if length(UIsetscript_linediv)>7 {
+							repeat length(UIsetscript_linediv)-7,7
+								sdim UIsetscript_ExtraOption
+								sdim UIsetscript_ExtraParam
+								split UIsetscript_linediv(cnt),"=",UIsetscript_ExtraOption,UIsetscript_ExtraParam
+
+								switch UIsetscript_ExtraOption
+									case"0x0000"	//&alpha
+										UIset_3dsq_Alpha(UIset_3dsq_max)=fxint(UIsetscript_ExtraParam)
+									swbreak
+									case"0x0002"	//&hide
+										UIset_3dsq_DrawFlag(UIset_3dsq_max)=FALSE
+									swbreak
+									case"0x0009"	//&layerlv
+										UIset_3dsq_drawLevel(UIset_3dsq_max)=fxint(UIsetscript_ExtraParam)
+										if UIset_maxdrawLev<fxint(UIsetscript_ExtraParam) :UIset_maxdrawLev=fxint(UIsetscript_ExtraParam)
+									swbreak
+								swend
+							loop
+						}
+
+						UIset_3dsq_max++
+					swbreak
+
+					case"0-004-**"	//@3dcamera
+						sdim UIset_3dcamera_tmpstruct_xyz
+						strrep UIsetscript_linediv(2),"(",""
+						strrep UIsetscript_linediv(2),")",""
+						split UIsetscript_linediv(2),",",UIset_3dcamera_tmpstruct_xyz
+						UIset_3dsq_Camera_Position=d2f(double(UIset_3dcamera_tmpstruct_xyz(0))),d2f(double(UIset_3dcamera_tmpstruct_xyz(1))),d2f(double(UIset_3dcamera_tmpstruct_xyz(2)))
+
+						sdim UIset_3dcamera_tmpstruct_xyz
+						strrep UIsetscript_linediv(3),"(",""
+						strrep UIsetscript_linediv(3),")",""
+						split UIsetscript_linediv(3),",",UIset_3dcamera_tmpstruct_xyz
+						UIset_3dsq_Camera_Target=d2f(double(UIset_3dcamera_tmpstruct_xyz(0))),d2f(double(UIset_3dcamera_tmpstruct_xyz(1))),d2f(double(UIset_3dcamera_tmpstruct_xyz(2)))
+
+						UIset_3dsq_Camera_fov=double(UIsetscript_linediv(4))
+					swbreak
+
+				swend
+			}
+
+			UIsetscript_Optimized+UIsetscript_linearr(cnt)+"\n"
+		loop
+
+		UIset_maxdrawLev++
+
+	//最適化済みスクリプトを保存
+		logmes GetTimeStamp()+" [duio-build-ac] 2-2 Saving compiled script..."
+		exist _compiledpath
+		if strsize==-1 {
+			notesel UIsetscript_Optimized
+			;notesave _compiledpath
+		}
+
+	logmes GetTimeStamp()+" [duio-build-ac] <Success>"
+
+	return
+
+#deffunc duio_LoadFontData str _dirpath
+	//フォントデータ読み込み
+		chdir _dirpath
+		sdim direxp
+		dirlist direxp,"*.dat",1
+
+	//キーと値に分解
+		sdim fontDB_Key
+		dim fontDB_Value
+		strrep direxp,".dat",""
+		split direxp,"\n",fontDB_Key
+		repeat length(fontDB_Key)
+			if fontDB_Key(cnt)=="" :continue
+			logmes GetTimeStamp()+" [duio-build-ac] Loading fontdata \""+fontDB_Key(cnt)+"\""
+			fontDB_Value(cnt)=LoadFontDataToHandle(fontDB_Key(cnt)+".dat")
+		loop
+		chdir dir_default
+
+	return
+
+#deffunc duio_LoadSoundData str _dirpath
+	//サウンドデータ読み込み
+		chdir _dirpath
+		sdim direxp
+		dirlist direxp,"*.wav",1
+
+	//キーと値に分解
+		sdim commonsndDB_Key
+		dim commonsndDB_hSample
+		dim commonsndDB_hChannel
+		strrep direxp,".wav",""
+		split direxp,"\n",commonsndDB_Key
+		repeat length(commonsndDB_Key)
+			if commonsndDB_Key(cnt)=="" :continue
+			logmes GetTimeStamp()+" [duio-build-ac] Loading sounddata \""+commonsndDB_Key(cnt)+"\""
+
+			commonsndDB_hSample(cnt)=cfunc64i(BASS_SampleLoad,FALSE,commonsndDB_Key(cnt)+".wav",0,0,16,0)
+			if commonsndDB_hSample(cnt)==0 {
+				logmes GetTimeStamp()+" [Warning] Failed to load audio sample (\""+commonsndDB_Key(cnt)+".wav"+"\",Code="+BASS_ErrorGetCode()+")"
+			}
+
+			commonsndDB_hChannel(cnt)=cfunc64i(BASS_SampleGetChannel,commonsndDB_hSample(cnt),0)
+			if commonsndDB_hChannel(cnt)==0 {
+				logmes GetTimeStamp()+" [Warning] Failed to load audio channel (\""+commonsndDB_Key(cnt)+".wav"+"\",Code="+BASS_ErrorGetCode()+")"
+			}
+		loop
+		chdir dir_default
+
+	return
+
+#deffunc duio_Draw str _scenetag
+
+	;CurDUIObasedFPS=limitf(double(cfunc64f(GetFPS)),1.0)
+	CurDUIObasedFPS=60
+
+	if UIset_curActiveScene==""|UIset_curActiveScene==_scenetag {
+		UIset_Button_hoverFlag=FALSE
+		UIset_Button_onEventStack=""
+		repeat UIset_maxdrawLev
+			UIset_curdrawLev=(UIset_maxdrawLev-1)-cnt
+			repeat UIset_Button_max
+				i=cnt
+				if UIset_curdrawLev!UIset_Button_drawLevel(i) :continue
+				if _scenetag!UIset_Button_Tag(i) :continue
+				//カウンタ処理
+				if insquare(cursorPosX,cursorPosY,UIset_Button_X(i),UIset_Button_Y(i),UIset_Button_X(i)+UIset_Button_Width(i),UIset_Button_Y(i)+UIset_Button_Height(i))&UIset_Button_Enabled(i)&UIset_Button_DrawFlag(i)&UIset_Button_hoverFlag==FALSE {
+					UIset_Button_hoverFlag=TRUE
+					if cursorStatus&MOUSE_INPUT_LEFT {
+						UIset_Button_pushCount(i)+(1000/int(CurDUIObasedFPS))*2
+						UIset_Button_rawpushCount(i)+1000/int(CurDUIObasedFPS)
+					} else {
+						UIset_Button_rawpushCount(i)=0
+					}
+					if (cursorStatus&MOUSE_INPUT_LEFT)==FALSE&(bfcursorStatus&MOUSE_INPUT_LEFT)==TRUE {
+						UIset_Button_onEventStack=UIset_Button_PushEvent(i)
+
+						if UIset_Button_hPushSound(i)!-1 {
+							cfunc64v BASS_ChannelSetPosition,UIset_Button_hPushSound(i),0,0
+							cfunc64v BASS_ChannelPlay,UIset_Button_hPushSound(i)
+						}
+
+						logmes GetTimeStamp()+" [duio-scenesvc] @button event (id="+UIset_Button_ID(i)+" , event="+UIset_Button_onEventStack+")"
+					}
+					UIset_Button_hoverCount(i)+1000/int(CurDUIObasedFPS)
+					UIset_Button_curHover=i
+				} else {
+					UIset_Button_hoverCount(i)-1000/int(CurDUIObasedFPS)
+				}
+
+				UIset_Button_pushCount(i)-1000/int(CurDUIObasedFPS)
+
+				//限界値設定
+				UIset_Button_hoverCount(i)=limit(UIset_Button_hoverCount(i),0,UI_BUTTON_HOVERTIME)
+				UIset_Button_pushCount(i)=limit(UIset_Button_pushCount(i),0,UI_BUTTON_PUSHTIME)
+			loop
+		loop
+	}
+
+	repeat UIset_maxdrawLev
+		UIset_curdrawLev=cnt
+
+		//画像
+			repeat UIset_Image_max
+				i=cnt
+				if _scenetag==UIset_Image_Tag(i)&UIset_Image_DrawFlag(i)&UIset_curdrawLev==UIset_Image_drawLevel(i) {
+					SetDrawBlendMode DX_BLENDMODE_PMA_ALPHA,UIset_Image_Alpha(i)
+
+					UIset_Image_drawWidth(i)=UIset_Image_Width(i)
+					UIset_Image_drawHeight(i)=UIset_Image_Height(i)
+
+					//シーン開始時のエフェクト
+					UIset_Image_drawOffsetX(i)=0
+					UIset_Image_drawOffsetY(i)=0
+					if UIset_Image_In_Mode(i)!0 {
+						if UIset_Image_In_Mode(i)&UI_EASEIN_ZOOM {
+							if UIset_Image_Outroflag(i) {
+								setease UIset_Image_EaseIn_Zoom_prmN(i),1.0,easein2out(UIset_Image_EaseIn_Zoom_EaseFunc(i))
+							} else {
+								setease UIset_Image_EaseIn_Zoom_prmN(i),1.0,UIset_Image_EaseIn_Zoom_EaseFunc(i)
+							}
+							UIset_Image_drawWidth(i)=int(double(UIset_Image_drawWidth(i))*geteasef(UIset_Image_count(i)*(1000/int(CurDUIObasedFPS))-UIset_Image_EaseIn_Zoom_Delay(i),UIset_Image_EaseIn_Zoom_Length(i)))
+							UIset_Image_drawHeight(i)=int(double(UIset_Image_drawHeight(i))*geteasef(UIset_Image_count(i)*(1000/int(CurDUIObasedFPS))-UIset_Image_EaseIn_Zoom_Delay(i),UIset_Image_EaseIn_Zoom_Length(i)))
+						}
+						if UIset_Image_In_Mode(i)&UI_EASEIN_FADE {
+							if UIset_Image_Outroflag(i) {
+								setease 0,UIset_Image_Alpha(i),easein2out(UIset_Image_EaseIn_Fade_EaseFunc(i))
+							} else {
+								setease 0,UIset_Image_Alpha(i),UIset_Image_EaseIn_Fade_EaseFunc(i)
+							}
+							SetDrawBlendMode DX_BLENDMODE_PMA_ALPHA,getease(UIset_Image_count(i)*(1000/int(CurDUIObasedFPS))-UIset_Image_EaseIn_Fade_Delay(i),UIset_Image_EaseIn_Fade_Length(i))
+						}
+						if UIset_Image_In_Mode(i)&UI_EASEIN_MOVE {
+							if UIset_Image_Outroflag(i) {
+								setease UIset_Image_EaseIn_Move_X(i),0,easein2out(UIset_Image_EaseIn_Move_EaseFunc(i))
+							} else {
+								setease UIset_Image_EaseIn_Move_X(i),0,UIset_Image_EaseIn_Move_EaseFunc(i)
+							}
+							UIset_Image_drawOffsetX(i)=getease(UIset_Image_count(i)*(1000/int(CurDUIObasedFPS))-UIset_Image_EaseIn_Move_Delay(i),UIset_Image_EaseIn_Move_Length(i))
+							if UIset_Image_Outroflag(i) {
+								setease UIset_Image_EaseIn_Move_Y(i),0,easein2out(UIset_Image_EaseIn_Move_EaseFunc(i))
+							} else {
+								setease UIset_Image_EaseIn_Move_Y(i),0,UIset_Image_EaseIn_Move_EaseFunc(i)
+							}
+							UIset_Image_drawOffsetY(i)=getease(UIset_Image_count(i)*(1000/int(CurDUIObasedFPS))-UIset_Image_EaseIn_Move_Delay(i),UIset_Image_EaseIn_Move_Length(i))
+						}
+					}
+
+					//描画
+					if UIset_Image_X(i)>-UIset_Image_Width(i)&UIset_Image_Y(i)>-UIset_Image_Height(i)&UIset_Image_X(i)<BufWidth&UIset_Image_Y(i)<BufHeight {
+						DrawExtendGraph UIset_Image_X(i)+UIset_Image_Width(i)/2-UIset_Image_drawWidth(i)/2+UIset_Image_drawOffsetX(i),UIset_Image_Y(i)+UIset_Image_Height(i)/2-UIset_Image_drawHeight(i)/2+UIset_Image_drawOffsetY(i),UIset_Image_X(i)+UIset_Image_Width(i)/2+UIset_Image_drawWidth(i)/2+UIset_Image_drawOffsetX(i),UIset_Image_Y(i)+UIset_Image_Height(i)/2+UIset_Image_drawHeight(i)/2+UIset_Image_drawOffsetY(i),UIset_Image_hImg(i),UIset_Image_EnableAlpha(i)
+					}
+
+					if UIset_Image_Outroflag(i) {
+						UIset_Image_count(i)--
+						if UIset_Image_count(i)<0 :UIset_Image_count(i)=0:UIset_Image_DrawFlag(i)=FALSE
+					} else {
+						UIset_Image_count(i)++
+					}
+				}
+			loop
+
+		//ボタン
+			repeat UIset_Button_max
+				i=cnt
+				if _scenetag==UIset_Button_Tag(i)&UIset_Button_DrawFlag(i)&UIset_curdrawLev==UIset_Button_drawLevel(i) {
+
+					//ホバー判定
+					setease 1,1.05,ease_cubic_out
+					UIset_Button_drawWidth(i)=int(double(UIset_Button_Width(i))*geteasef(UIset_Button_hoverCount(i),UI_BUTTON_HOVERTIME))
+					UIset_Button_drawHeight(i)=int(double(UIset_Button_Height(i))*geteasef(UIset_Button_hoverCount(i),UI_BUTTON_HOVERTIME))
+
+					//プッシュ判定
+					if UIset_Button_pushCount(i)!0 {
+						setease 1.05,0.95,ease_cubic_out
+						UIset_Button_drawWidth(i)=int(double(UIset_Button_Width(i))*geteasef(UIset_Button_pushCount(i),UI_BUTTON_PUSHTIME))
+						UIset_Button_drawHeight(i)=int(double(UIset_Button_Height(i))*geteasef(UIset_Button_pushCount(i),UI_BUTTON_PUSHTIME))
+					}
+
+					SetDrawBlendMode DX_BLENDMODE_PMA_ALPHA,UIset_Button_Alpha(i)
+
+					//シーン開始時のエフェクト
+					UIset_Button_drawOffsetX(i)=0
+					UIset_Button_drawOffsetY(i)=0
+					if UIset_Button_In_Mode(i)!0 {
+						if UIset_Button_In_Mode(i)&UI_EASEIN_ZOOM {
+							if UIset_Button_Outroflag(i) {
+								setease UIset_Button_EaseIn_Zoom_prmN(i),1.0,easein2out(UIset_Button_EaseIn_Zoom_EaseFunc(i))
+							} else {
+								setease UIset_Button_EaseIn_Zoom_prmN(i),1.0,UIset_Button_EaseIn_Zoom_EaseFunc(i)
+							}
+							UIset_Button_drawWidth(i)=int(double(UIset_Button_drawWidth(i))*geteasef(UIset_Button_count(i)*(1000/int(CurDUIObasedFPS))-UIset_Button_EaseIn_Zoom_Delay(i),UIset_Button_EaseIn_Zoom_Length(i)))
+							UIset_Button_drawHeight(i)=int(double(UIset_Button_drawHeight(i))*geteasef(UIset_Button_count(i)*(1000/int(CurDUIObasedFPS))-UIset_Button_EaseIn_Zoom_Delay(i),UIset_Button_EaseIn_Zoom_Length(i)))
+						}
+						if UIset_Button_In_Mode(i)&UI_EASEIN_FADE {
+							if UIset_Button_Outroflag(i) {
+								setease 0,UIset_Button_Alpha(i),easein2out(UIset_Button_EaseIn_Fade_EaseFunc(i))
+							} else {
+								setease 0,UIset_Button_Alpha(i),UIset_Button_EaseIn_Fade_EaseFunc(i)
+							}
+							SetDrawBlendMode DX_BLENDMODE_PMA_ALPHA,getease(UIset_Button_count(i)*(1000/int(CurDUIObasedFPS))-UIset_Button_EaseIn_Fade_Delay(i),UIset_Button_EaseIn_Fade_Length(i))
+						}
+						if UIset_Button_In_Mode(i)&UI_EASEIN_MOVE {
+							if UIset_Button_Outroflag(i) {
+								setease UIset_Button_EaseIn_Move_X(i),0,easein2out(UIset_Button_EaseIn_Move_EaseFunc(i))
+							} else {
+								setease UIset_Button_EaseIn_Move_X(i),0,UIset_Button_EaseIn_Move_EaseFunc(i)
+							}
+							UIset_Button_drawOffsetX(i)=getease(UIset_Button_count(i)*(1000/int(CurDUIObasedFPS))-UIset_Button_EaseIn_Move_Delay(i),UIset_Button_EaseIn_Move_Length(i))
+							if UIset_Button_Outroflag(i) {
+								setease UIset_Button_EaseIn_Move_Y(i),0,easein2out(UIset_Button_EaseIn_Move_EaseFunc(i))
+							} else {
+								setease UIset_Button_EaseIn_Move_Y(i),0,UIset_Button_EaseIn_Move_EaseFunc(i)
+							}
+							UIset_Button_drawOffsetY(i)=getease(UIset_Button_count(i)*(1000/int(CurDUIObasedFPS))-UIset_Button_EaseIn_Move_Delay(i),UIset_Button_EaseIn_Move_Length(i))
+						}
+					}
+
+					//描画
+					DrawExtendGraph UIset_Button_X(i)+UIset_Button_Width(i)/2-UIset_Button_drawWidth(i)/2+UIset_Button_drawOffsetX(i),UIset_Button_Y(i)+UIset_Button_Height(i)/2-UIset_Button_drawHeight(i)/2+UIset_Button_drawOffsetY(i),UIset_Button_X(i)+UIset_Button_Width(i)/2+UIset_Button_drawWidth(i)/2+UIset_Button_drawOffsetX(i),UIset_Button_Y(i)+UIset_Button_Height(i)/2+UIset_Button_drawHeight(i)/2+UIset_Button_drawOffsetY(i),UIset_Button_hImg(i),UIset_Button_EnableAlpha(i)
+
+					if UIset_Button_Outroflag(i) {
+						UIset_Button_count(i)--
+						if UIset_Button_count(i)<0 :UIset_Button_count(i)=0:UIset_Button_DrawFlag(i)=FALSE
+					} else {
+						UIset_Button_count(i)++
+					}
+				}
+			loop
+
+		//テキスト
+			repeat UIset_Text_max
+				i=cnt
+				if _scenetag==UIset_Text_Tag(i)&UIset_Text_DrawFlag(i)&UIset_curdrawLev==UIset_Text_drawLevel(i) {
+					SetDrawBlendMode DX_BLENDMODE_ALPHA,UIset_Text_Alpha(i)
+
+					UIset_Text_drawOffsetX(i)=0
+					UIset_Text_drawOffsetY(i)=0
+					UIset_Text_drawBody(i)=UIset_Text_Body(i)
+					if UIset_Text_In_Mode(i)!0 {
+						if UIset_Text_In_Mode(i)&UI_EASEIN_FADE {
+							if UIset_Text_Outroflag(i) {
+								setease 0,UIset_Text_Alpha(i),easein2out(UIset_Text_EaseIn_Fade_EaseFunc(i))
+							} else {
+								setease 0,UIset_Text_Alpha(i),UIset_Text_EaseIn_Fade_EaseFunc(i)
+							}
+							SetDrawBlendMode DX_BLENDMODE_ALPHA,getease(UIset_Text_count(i)*(1000/int(CurDUIObasedFPS))-UIset_Text_EaseIn_Fade_Delay(i),UIset_Text_EaseIn_Fade_Length(i))
+						}
+						if UIset_Text_In_Mode(i)&UI_EASEIN_MOVE {
+							if UIset_Text_Outroflag(i) {
+								setease UIset_Text_EaseIn_Move_X(i),0,easein2out(UIset_Text_EaseIn_Move_EaseFunc(i))
+							} else {
+								setease UIset_Text_EaseIn_Move_X(i),0,UIset_Text_EaseIn_Move_EaseFunc(i)
+							}
+							UIset_Text_drawOffsetX(i)=getease(UIset_Text_count(i)*(1000/int(CurDUIObasedFPS))-UIset_Text_EaseIn_Move_Delay(i),UIset_Text_EaseIn_Move_Length(i))
+							if UIset_Text_Outroflag(i) {
+								setease UIset_Text_EaseIn_Move_Y(i),0,easein2out(UIset_Text_EaseIn_Move_EaseFunc(i))
+							} else {
+								setease UIset_Text_EaseIn_Move_Y(i),0,UIset_Text_EaseIn_Move_EaseFunc(i)
+							}
+							UIset_Text_drawOffsetY(i)=getease(UIset_Text_count(i)*(1000/int(CurDUIObasedFPS))-UIset_Text_EaseIn_Move_Delay(i),UIset_Text_EaseIn_Move_Length(i))
+						}
+						if UIset_Text_In_Mode(i)&UI_EASEIN_RANDOMTEXT {
+							setease strlen(UIset_Text_Body(i)),0,ease_linear
+							UIset_Text_RandomLevel=getease(UIset_Text_count(i)*(1000/int(CurDUIObasedFPS))-UIset_Text_EaseIn_Random_Delay(i),UIset_Text_EaseIn_Random_Length(i))
+
+							if UIset_Text_RandomLevel!0 {
+								UIset_Text_drawBody(i)=strmid(UIset_Text_Body(i),0,strlen(UIset_Text_Body(i))-UIset_Text_RandomLevel)
+								repeat UIset_Text_RandomLevel/2
+									UIset_Text_drawBody(i)+strmid(UIset_Text_RandomString,rnd(UIset_Text_RandomString_Length-1),1)
+								loop
+								UIset_Text_drawBody(i)+UIset_Text_Extra(i)
+							}
+						}
+						if UIset_Text_In_Mode(i)&UI_EASEIN_INCREASETEXT {
+							setease 0,int(UIset_Text_Body(i)),ease_cubic_out
+							if UIset_Text_EaseIn_Increase_Digit(i)==-1 {	//桁数処理なし
+								UIset_Text_drawBody(i)=str(getease(UIset_Text_count(i)*(1000/int(CurDUIObasedFPS))-UIset_Text_EaseIn_Increase_Delay(i),UIset_Text_EaseIn_Increase_Length(i)))
+							} else {
+								if UIset_Text_EaseIn_Increase_Digit(i)<0 {	//小数点以下指定
+									UIset_Text_drawBody(i)=strf("%."+(UIset_Text_EaseIn_Increase_Digit(i)*-1-1)+"f",getease(UIset_Text_count(i)*(1000/int(CurDUIObasedFPS))-UIset_Text_EaseIn_Increase_Delay(i),UIset_Text_EaseIn_Increase_Length(i)))
+								} else {	//整数値指定
+									UIset_Text_drawBody(i)=strf("%0"+UIset_Text_EaseIn_Increase_Digit(i)+"d",getease(UIset_Text_count(i)*(1000/int(CurDUIObasedFPS))-UIset_Text_EaseIn_Increase_Delay(i),UIset_Text_EaseIn_Increase_Length(i)))
+								}
+							}
+						}
+					}
+					UIset_Text_drawBody(i)+UIset_Text_Extra(i)
+
+					switch UIset_Text_Align(i)
+						case UI_ALIGN_LEFT
+							DrawStringToHandle UIset_Text_X(i)+UIset_Text_drawOffsetX(i),UIset_Text_Y(i)+UIset_Text_drawOffsetY(i),UIset_Text_drawBody(i),UIset_Text_Color(i),UIset_Text_hFont(i)
+						swbreak
+						case UI_ALIGN_RIGHT
+							DrawStringXAlignRightToHandle UIset_Text_X(i)+UIset_Text_drawOffsetX(i),UIset_Text_Y(i)+UIset_Text_drawOffsetY(i),UIset_Text_drawBody(i),UIset_Text_Width(i),UIset_Text_Color(i),UIset_Text_hFont(i)
+						swbreak
+						case UI_ALIGN_CENTER
+							DrawStringXCenterToHandle UIset_Text_X(i)+UIset_Text_drawOffsetX(i),UIset_Text_Y(i)+UIset_Text_drawOffsetY(i),UIset_Text_drawBody(i),UIset_Text_Width(i),UIset_Text_Color(i),UIset_Text_hFont(i)
+						swbreak
+						case UI_ALIGN_CENTER_XY
+							DrawStringXYCenterToHandle UIset_Text_X(i)+UIset_Text_drawOffsetX(i),UIset_Text_Y(i)+UIset_Text_drawOffsetY(i),UIset_Text_drawBody(i),UIset_Text_Width(i),UIset_Text_Height(i),UIset_Text_Color(i),UIset_Text_hFont(i)
+						swbreak
+					swend
+
+					if UIset_Text_Outroflag(i) {
+						UIset_Text_count(i)--
+						if UIset_Text_count(i)<0 :UIset_Text_count(i)=0:UIset_Text_DrawFlag(i)=FALSE
+					} else {
+						UIset_Text_count(i)++
+					}
+				}
+			loop
+		
+		//3Dカメラ設定
+			cfunc64v SetCameraPositionAndTarget_UpVecY,varptr64(UIset_3dsq_Camera_Position),varptr64(UIset_3dsq_Camera_Target)
+			SetupCamera_Perspective deg2rad(UIset_3dsq_Camera_fov)
+
+		//3D四角形
+			repeat UIset_3dsq_max
+				i=cnt
+				if _scenetag==UIset_3dsq_Tag(i)&UIset_3dsq_DrawFlag(i)&UIset_curdrawLev==UIset_3dsq_drawLevel(i) {
+					SetDrawBlendMode DX_BLENDMODE_PMA_ALPHA,UIset_3dsq_Alpha(i)
+
+					dim UIset_3dsq_Vertex3d,12,6
+					UIset_3dsq_Vertex3d(0,0)=d2f(UIset_3dsq_plx1(i))
+					UIset_3dsq_Vertex3d(1,0)=d2f(UIset_3dsq_ply1(i))
+					UIset_3dsq_Vertex3d(2,0)=d2f(UIset_3dsq_plz1(i))
+					UIset_3dsq_Vertex3d(3,0)=d2f(0)
+					UIset_3dsq_Vertex3d(4,0)=d2f(1)
+					UIset_3dsq_Vertex3d(5,0)=d2f(0)
+					UIset_3dsq_Vertex3d(6,0)=$FFFFFFFF
+					UIset_3dsq_Vertex3d(7,0)=$FFFFFFFF
+					UIset_3dsq_Vertex3d(8,0)=d2f(0)
+					UIset_3dsq_Vertex3d(9,0)=d2f(1)
+
+					UIset_3dsq_Vertex3d(0,1)=d2f(UIset_3dsq_plx2(i))
+					UIset_3dsq_Vertex3d(1,1)=d2f(UIset_3dsq_ply2(i))
+					UIset_3dsq_Vertex3d(2,1)=d2f(UIset_3dsq_plz2(i))
+					UIset_3dsq_Vertex3d(3,1)=d2f(0)
+					UIset_3dsq_Vertex3d(4,1)=d2f(1)
+					UIset_3dsq_Vertex3d(5,1)=d2f(0)
+					UIset_3dsq_Vertex3d(6,1)=$FFFFFFFF
+					UIset_3dsq_Vertex3d(7,1)=$FFFFFFFF
+					UIset_3dsq_Vertex3d(8,1)=d2f(1)
+					UIset_3dsq_Vertex3d(9,1)=d2f(0)
+
+					UIset_3dsq_Vertex3d(0,2)=d2f(UIset_3dsq_plx3(i))
+					UIset_3dsq_Vertex3d(1,2)=d2f(UIset_3dsq_ply3(i))
+					UIset_3dsq_Vertex3d(2,2)=d2f(UIset_3dsq_plz3(i))
+					UIset_3dsq_Vertex3d(3,2)=d2f(0)
+					UIset_3dsq_Vertex3d(4,2)=d2f(1)
+					UIset_3dsq_Vertex3d(5,2)=d2f(0)
+					UIset_3dsq_Vertex3d(6,2)=$FFFFFFFF
+					UIset_3dsq_Vertex3d(7,2)=$FFFFFFFF
+					UIset_3dsq_Vertex3d(8,2)=d2f(1)
+					UIset_3dsq_Vertex3d(9,2)=d2f(1)
+
+					UIset_3dsq_Vertex3d(0,3)=d2f(UIset_3dsq_plx2(i))
+					UIset_3dsq_Vertex3d(1,3)=d2f(UIset_3dsq_ply2(i))
+					UIset_3dsq_Vertex3d(2,3)=d2f(UIset_3dsq_plz2(i))
+					UIset_3dsq_Vertex3d(3,3)=d2f(0)
+					UIset_3dsq_Vertex3d(4,3)=d2f(1)
+					UIset_3dsq_Vertex3d(5,3)=d2f(0)
+					UIset_3dsq_Vertex3d(6,3)=$FFFFFFFF
+					UIset_3dsq_Vertex3d(7,3)=$FFFFFFFF
+					UIset_3dsq_Vertex3d(8,3)=d2f(1)
+					UIset_3dsq_Vertex3d(9,3)=d2f(0)
+
+					UIset_3dsq_Vertex3d(0,4)=d2f(UIset_3dsq_plx1(i))
+					UIset_3dsq_Vertex3d(1,4)=d2f(UIset_3dsq_ply1(i))
+					UIset_3dsq_Vertex3d(2,4)=d2f(UIset_3dsq_plz1(i))
+					UIset_3dsq_Vertex3d(3,4)=d2f(0)
+					UIset_3dsq_Vertex3d(4,4)=d2f(1)
+					UIset_3dsq_Vertex3d(5,4)=d2f(0)
+					UIset_3dsq_Vertex3d(6,4)=$FFFFFFFF
+					UIset_3dsq_Vertex3d(7,4)=$FFFFFFFF
+					UIset_3dsq_Vertex3d(8,4)=d2f(0)
+					UIset_3dsq_Vertex3d(9,4)=d2f(1)
+
+					UIset_3dsq_Vertex3d(0,5)=d2f(UIset_3dsq_plx4(i))
+					UIset_3dsq_Vertex3d(1,5)=d2f(UIset_3dsq_ply4(i))
+					UIset_3dsq_Vertex3d(2,5)=d2f(UIset_3dsq_plz4(i))
+					UIset_3dsq_Vertex3d(3,5)=d2f(0)
+					UIset_3dsq_Vertex3d(4,5)=d2f(1)
+					UIset_3dsq_Vertex3d(5,5)=d2f(0)
+					UIset_3dsq_Vertex3d(6,5)=$FFFFFFFF
+					UIset_3dsq_Vertex3d(7,5)=$FFFFFFFF
+					UIset_3dsq_Vertex3d(8,5)=d2f(0)
+					UIset_3dsq_Vertex3d(9,5)=d2f(0)
+
+					cfunc64v DrawPolygon3D,varptr64(UIset_3dsq_Vertex3d),2,UIset_3dsq_hImg(i),UIset_3dsq_EnableAlpha(i)
+				}
+			loop
+	loop
+
+	return
+
+#deffunc duio_idsWrite str _key,str _value
+	idsDB_Key(idsDB_max)=_key
+	idsDB_Value(idsDB_max)=_value
+	idsDB_max++
+	return
+
+#defcfunc duio_idsGet str _key
+	sdim idsres
+	repeat idsDB_max
+		if idsDB_Key(cnt)==_key :idsres=idsDB_Value(cnt)
+	loop
+	return idsres
+
+#deffunc duio_CreateButton str _tag,str _id,int _himg,int _x,int _y,int _width,int _height
+
+	logmes GetTimeStamp()+" [duio-callfunc] New Object (tag="+_tag+" , id="+_id+" , event=* , hImg="+_himg
+
+	//ボタンオブジェクト
+	UIset_Button_Tag(UIset_Button_max)=_tag
+	UIset_Button_ID(UIset_Button_max)=_id
+	UIset_Button_hImg(UIset_Button_max)=_himg
+	UIset_Button_X(UIset_Button_max)=_x
+	UIset_Button_Y(UIset_Button_max)=_y
+	UIset_Button_Width(UIset_Button_max)=_width
+	UIset_Button_Height(UIset_Button_max)=_height
+
+	UIset_Button_Alpha(UIset_Button_max)=255
+	UIset_Button_Enabled(UIset_Button_max)=TRUE
+	UIset_Button_DrawFlag(UIset_Button_max)=TRUE
+	UIset_Button_hoverCount(UIset_Button_max)=0
+	UIset_Button_rawpushCount(UIset_Button_max)=0
+	UIset_Button_pushCount(UIset_Button_max)=0
+	UIset_Button_PushEvent(UIset_Button_max)=""
+	UIset_Button_In_Mode(UIset_Button_max)=0
+	UIset_Button_drawLevel(UIset_Button_max)=0
+	UIset_Button_count(UIset_Button_max)=0
+	UIset_Button_Outroflag(UIset_Button_max)=0
+	UIset_Button_drawWidth(UIset_Button_max)=0
+	UIset_Button_drawHeight(UIset_Button_max)=0
+	UIset_Button_drawOffsetX(UIset_Button_max)=0
+	UIset_Button_drawOffsetY(UIset_Button_max)=0
+	UIset_Button_EnableAlpha(UIset_Button_max)=TRUE
+	UIset_Button_hPushSound(UIset_Button_max)=-1
+
+	UIset_Button_EaseIn_Zoom_Delay(UIset_Button_max)=0
+	UIset_Button_EaseIn_Zoom_Length(UIset_Button_max)=0
+	UIset_Button_EaseIn_Zoom_prmN(UIset_Button_max)=0.0
+	UIset_Button_EaseIn_Zoom_EaseFunc(UIset_Button_max)=0
+	UIset_Button_EaseIn_Fade_Delay(UIset_Button_max)=0
+	UIset_Button_EaseIn_Fade_Length(UIset_Button_max)=0
+	UIset_Button_EaseIn_Fade_EaseFunc(UIset_Button_max)=0
+	UIset_Button_EaseIn_Move_Delay(UIset_Button_max)=0
+	UIset_Button_EaseIn_Move_Length(UIset_Button_max)=0
+	UIset_Button_EaseIn_Move_X(UIset_Button_max)=0
+	UIset_Button_EaseIn_Move_Y(UIset_Button_max)=0
+	UIset_Button_EaseIn_Move_EaseFunc(UIset_Button_max)=0
+
+	UIset_Button_max++
+	return UIset_Button_max-1
+
+#deffunc duio_DeleteButton int _uisetid
+	arraydels UIset_Button_Tag,_uisetid
+	arraydels UIset_Button_ID,_uisetid
+	arraydeli UIset_Button_hImg,_uisetid
+	arraydeli UIset_Button_X,_uisetid
+	arraydeli UIset_Button_Y,_uisetid
+	arraydeli UIset_Button_Width,_uisetid
+	arraydeli UIset_Button_drawWidth,_uisetid
+	arraydeli UIset_Button_Height,_uisetid
+	arraydeli UIset_Button_drawHeight,_uisetid
+	arraydeli UIset_Button_hoverCount,_uisetid
+	arraydeli UIset_Button_rawpushCount,_uisetid
+	arraydeli UIset_Button_pushCount,_uisetid
+	arraydeli UIset_Button_drawOffsetX,_uisetid
+	arraydeli UIset_Button_drawOffsetY,_uisetid
+	arraydeli UIset_Button_drawLevel,_uisetid
+	arraydeli UIset_Button_count,_uisetid
+	arraydeli UIset_Button_Alpha,_uisetid
+	arraydeli UIset_Button_Enabled,_uisetid
+	arraydeli UIset_Button_DrawFlag,_uisetid
+	arraydels UIset_Button_PushEvent,_uisetid
+	arraydeli UIset_Button_Outroflag,_uisetid
+	arraydeli UIset_Button_In_Mode,_uisetid
+	arraydeli UIset_Button_EaseIn_Zoom_Delay,_uisetid
+	arraydeli UIset_Button_EaseIn_Zoom_Length,_uisetid
+	arraydeld UIset_Button_EaseIn_Zoom_prmN,_uisetid
+	arraydeli UIset_Button_EaseIn_Zoom_EaseFunc,_uisetid
+	arraydeli UIset_Button_EaseIn_Fade_Delay,_uisetid
+	arraydeli UIset_Button_EaseIn_Fade_Length,_uisetid
+	arraydeli UIset_Button_EaseIn_Fade_EaseFunc,_uisetid
+	arraydeli UIset_Button_EaseIn_Move_Delay,_uisetid
+	arraydeli UIset_Button_EaseIn_Move_Length,_uisetid
+	arraydeli UIset_Button_EaseIn_Move_X,_uisetid
+	arraydeli UIset_Button_EaseIn_Move_Y,_uisetid
+	arraydeli UIset_Button_EaseIn_Move_EaseFunc,_uisetid
+	arraydeli UIset_Button_EnableAlpha,_uisetid
+	arraydeli UIset_Button_hPushSound,_uisetid
+	UIset_Button_max--
+
+	return
+
+#defcfunc duio_GetFontHandle str _name
+	dim tmpFontHandle
+	repeat length(fontDB_Key)
+		if fontDB_Key(cnt)==_name :tmpFontHandle=fontDB_Value(cnt):break
+	loop
+	return tmpFontHandle
+
+#deffunc duio_SetButtonPositionX int _uisetid,int _value
+	UIset_Button_X(_uisetid)=_value
+	return
+
+#deffunc duio_SetButtonPositionY int _uisetid,int _value
+	UIset_Button_Y(_uisetid)=_value
+	return
+
+#defcfunc duio_GetButtonPositionY int _uisetid
+	return UIset_Button_Y(_uisetid)
+
+#deffunc duio_AddInButtonAnimation_Zoom int _uisetid,int _delay,int _length,double _prmn,int _func
+	UIset_Button_In_Mode(_uisetid)=UIset_Button_In_Mode(_uisetid)|UI_EASEIN_ZOOM
+	UIset_Button_EaseIn_Zoom_Delay(_uisetid)=_delay
+	UIset_Button_EaseIn_Zoom_Length(_uisetid)=_length
+	UIset_Button_EaseIn_Zoom_prmN(_uisetid)=_prmn
+	UIset_Button_EaseIn_Zoom_EaseFunc(_uisetid)=_func
+	return
+
+#deffunc duio_AddInImageAnimation_Move int _uisetid,int _delay,int _length,int _x,int _y,int _func
+	UIset_Image_In_Mode(_uisetid)=UIset_Image_In_Mode(_uisetid)|UI_EASEIN_MOVE
+	UIset_Image_EaseIn_Move_Delay(_uisetid)=_delay
+	UIset_Image_EaseIn_Move_Length(_uisetid)=_length
+	UIset_Image_EaseIn_Move_X(_uisetid)=_x
+	UIset_Image_EaseIn_Move_Y(_uisetid)=_y
+	UIset_Image_EaseIn_Move_EaseFunc(_uisetid)=_func
+	return
+
+#deffunc duio_ChangeButtonImage int _uisetid,int _h
+	UIset_Button_hImg(_uisetid)=_h
+	return
+
+#deffunc duio_ChangeImage int _uisetid,int _h
+	UIset_Image_hImg(_uisetid)=_h
+	return
+
+#deffunc duio_Change3DSquareImage int _uisetid,int _h
+	UIset_3dsq_hImg(_uisetid)=_h
+	return
+
+#deffunc duio_ChangeTextBody int _uisetid,str _body
+	if _uisetid==-1 {
+		logmes GetTimeStamp()+" [Warning] Invaild UIsetID (Type=TEXT,Body="+_body+")"
+		return
+	}
+	UIset_Text_Body(_uisetid)=_body
+	return
+
+#deffunc duio_SetButtonCount int _uisetid,int _count
+	UIset_Button_count(_uisetid)=_count/(1000/int(CurDUIObasedFPS))
+	return
+
+#deffunc duio_SetImageCount int _uisetid,int _count
+	UIset_Image_count(_uisetid)=_count/(1000/int(CurDUIObasedFPS))
+	return
+
+#defcfunc duio_GetImageCount int _uisetid
+	return UIset_Image_count(_uisetid)*(1000/int(CurDUIObasedFPS))
+
+#deffunc duio_SetTextCount int _uisetid,int _count
+	UIset_Text_count(_uisetid)=_count/(1000/int(CurDUIObasedFPS))
+	return
+
+#defcfunc duio_GetButtonEventStack
+	return UIset_Button_onEventStack
+
+#deffunc duio_SetButtonVisible int _uisetid,int _val
+	if _val :duio_SetButtonOutro _uisetid,FALSE
+	UIset_Button_DrawFlag(_uisetid)=_val
+	return
+
+#deffunc duio_SetButtonEnable int _uisetid,int _val
+	UIset_Button_Enabled(_uisetid)=_val
+	return
+
+#defcfunc duio_GetButtonVisible int _uisetid
+	return UIset_Button_DrawFlag(_uisetid)
+
+#deffunc duio_SetImageVisible int _uisetid,int _val
+	if _val :duio_SetImageOutro _uisetid,FALSE
+	UIset_Image_DrawFlag(_uisetid)=_val
+	return
+
+#defcfunc duio_GetTextVisible int _uisetid
+	return UIset_Text_DrawFlag(_uisetid)
+
+#defcfunc duio_GetImageOutroFlag int _uisetid
+	return UIset_Image_Outroflag(_uisetid)
+
+#deffunc duio_SetTextVisible int _uisetid,int _val
+	if _val :duio_SetTextOutro _uisetid,FALSE
+	UIset_Text_DrawFlag(_uisetid)=_val
+	return
+
+#defcfunc duio_GetImageVisible int _uisetid
+	return UIset_Image_DrawFlag(_uisetid)
+
+#defcfunc duio_ButtonID2UIsetID str _id
+	dim tmpuisetid:tmpuisetid=-1
+	repeat UIset_Button_max
+		if UIset_Button_ID(cnt)==_id :tmpuisetid=cnt
+	loop
+	if tmpuisetid==-1 {
+		logmes GetTimeStamp()+" [duio-scenesvc] Invalid Object ID (Type=Button , ID="+_id+")"
+		duio_ExportAllButton
+	}
+	return tmpuisetid
+
+#defcfunc duio_ImageID2UIsetID str _id
+	dim tmpuisetid:tmpuisetid=-1
+	repeat UIset_Image_max
+		if UIset_Image_ID(cnt)==_id :tmpuisetid=cnt
+	loop
+	if tmpuisetid==-1 {
+		logmes GetTimeStamp()+" [duio-scenesvc] Invalid Object ID (Type=Image , ID="+_id+")"
+		duio_ExportAllImage
+	}
+	return tmpuisetid
+
+#defcfunc duio_TextID2UIsetID str _id
+	dim tmpuisetid:tmpuisetid=-1
+	repeat UIset_Text_max
+		if UIset_Text_ID(cnt)==_id :tmpuisetid=cnt
+	loop
+	if tmpuisetid==-1 {
+		logmes GetTimeStamp()+" [duio-scenesvc] Invalid Object ID (Type=Text , ID="+_id+")"
+		duio_ExportAllText
+	}
+	return tmpuisetid
+
+#defcfunc duio_3DSquareID2UIsetID str _id
+	dim tmpuisetid:tmpuisetid=-1
+	repeat UIset_3dsq_max
+		if UIset_3dsq_ID(cnt)==_id :tmpuisetid=cnt
+	loop
+	return tmpuisetid
+
+#deffunc duio_SetButtonOutro int _uisetid,int _flag
+	if _flag {
+		UIset_Button_Outroflag(_uisetid)=TRUE
+		if UIset_Button_In_Mode(_uisetid)&UI_EASEIN_ZOOM {
+			UIset_Button_count(_uisetid)=(UIset_Button_EaseIn_Zoom_Length(_uisetid)+UIset_Button_EaseIn_Zoom_Delay(_uisetid))/(1000/int(CurDUIObasedFPS))
+		}
+		if UIset_Button_In_Mode(_uisetid)&UI_EASEIN_FADE {
+			UIset_Button_count(_uisetid)=(UIset_Button_EaseIn_Fade_Length(_uisetid)+UIset_Button_EaseIn_Fade_Delay(_uisetid))/(1000/int(CurDUIObasedFPS))
+		}
+		if UIset_Button_In_Mode(_uisetid)&UI_EASEIN_MOVE {
+			UIset_Button_count(_uisetid)=(UIset_Button_EaseIn_Move_Length(_uisetid)+UIset_Button_EaseIn_Move_Delay(_uisetid))/(1000/int(CurDUIObasedFPS))
+		}
+	} else {
+		UIset_Button_Outroflag(_uisetid)=FALSE
+		UIset_Button_count(_uisetid)=0
+	}
+	return
+
+#deffunc duio_SetAllButtonOutro str _tag
+	repeat UIset_Button_max
+		if UIset_Button_Tag(cnt)==_tag :duio_SetButtonOutro cnt,TRUE
+	loop
+	return
+
+#deffunc duio_SetAllButtonVisible str _tag,int _value
+	repeat UIset_Button_max
+		if UIset_Button_Tag(cnt)==_tag :duio_SetButtonVisible cnt,_value
+	loop
+	return
+
+#deffunc duio_SetImageOutro int _uisetid,int _flag
+	if _uisetid==-1 :return
+	if _flag {
+		UIset_Image_Outroflag(_uisetid)=TRUE
+		if UIset_Image_In_Mode(_uisetid)&UI_EASEIN_ZOOM {
+			UIset_Image_count(_uisetid)=UIset_Image_EaseIn_Zoom_Length(_uisetid)/(1000/int(CurDUIObasedFPS))
+		}
+		if UIset_Image_In_Mode(_uisetid)&UI_EASEIN_FADE {
+			UIset_Image_count(_uisetid)=UIset_Image_EaseIn_Fade_Length(_uisetid)/(1000/int(CurDUIObasedFPS))
+		}
+		if UIset_Image_In_Mode(_uisetid)&UI_EASEIN_MOVE {
+			UIset_Image_count(_uisetid)=UIset_Image_EaseIn_Move_Length(_uisetid)/(1000/int(CurDUIObasedFPS))
+		}
+	} else {
+		UIset_Image_Outroflag(_uisetid)=FALSE
+		UIset_Image_count(_uisetid)=0
+	}
+	return
+
+#deffunc duio_SetAllImageOutro str _tag
+	repeat UIset_Image_max
+		if UIset_Image_Tag(cnt)==_tag :duio_SetImageOutro cnt,TRUE
+	loop
+	return
+
+#deffunc duio_SetAllImageVisible str _tag,int _value
+	repeat UIset_Image_max
+		if UIset_Image_Tag(cnt)==_tag :duio_SetImageVisible cnt,_value
+	loop
+	return
+
+#deffunc duio_SetTextOutro int _uisetid,int _flag
+	if _flag {
+		UIset_Text_Outroflag(_uisetid)=TRUE
+		if UIset_Text_In_Mode(_uisetid)&UI_EASEIN_ZOOM {
+			UIset_Text_count(_uisetid)=UIset_Text_EaseIn_Zoom_Length(_uisetid)/(1000/int(CurDUIObasedFPS))
+		}
+		if UIset_Text_In_Mode(_uisetid)&UI_EASEIN_FADE {
+			UIset_Text_count(_uisetid)=UIset_Text_EaseIn_Fade_Length(_uisetid)/(1000/int(CurDUIObasedFPS))
+		}
+		if UIset_Text_In_Mode(_uisetid)&UI_EASEIN_MOVE {
+			UIset_Text_count(_uisetid)=UIset_Text_EaseIn_Move_Length(_uisetid)/(1000/int(CurDUIObasedFPS))
+		}
+	} else {
+		UIset_Text_Outroflag(_uisetid)=FALSE
+		UIset_Text_count(_uisetid)=0
+	}
+	return
+
+#deffunc duio_SetAllTextOutro str _tag
+	repeat UIset_Text_max
+		if UIset_Text_Tag(cnt)==_tag :duio_SetTextOutro cnt,TRUE
+	loop
+	return
+
+#deffunc duio_SetAllTextVisible str _tag,int _value
+	repeat UIset_Text_max
+		if UIset_Text_Tag(cnt)==_tag :duio_SetTextVisible cnt,_value
+	loop
+	return
+
+#deffunc duio_SetButtonEvent int _uisetid,str _event
+	logmes GetTimeStamp()+" [duio-callfunc] Edit Object (n="+_uisetid+" , event="+_event
+	UIset_Button_PushEvent(_uisetid)=_event
+	return
+
+#defcfunc duio_GetButtonEvent int _uisetid
+	return UIset_Button_PushEvent(_uisetid)
+
+#defcfunc duio_GetButtonhImg int _uisetid
+	return UIset_Button_hImg(_uisetid)
+
+#defcfunc duio_GetHoverButtonUIsetID
+	return UIset_Button_curHover
+
+#deffunc duio_ExportAllButton
+	logmes GetTimeStamp()+" [duio-debug] Export All Button Information >>"
+	repeat UIset_Button_max
+		sdim tmpstr
+		if UIset_Button_DrawFlag(cnt) :tmpstr+"DRAW ":else:tmpstr+"HIDE "
+		if UIset_Button_Outroflag(cnt) :tmpstr+"OUTRO ":else:tmpstr+"INTRO "
+		if UIset_Button_Enabled(cnt) :tmpstr+"ENABLED ":else:tmpstr+"DISABLED "
+		logmes" - "+strf("%04d",cnt)+":"+UIset_Button_ID(cnt)+","+UIset_Button_PushEvent(cnt)+",("+UIset_Button_X(cnt)+","+UIset_Button_Y(cnt)+"),hImg="+UIset_Button_hImg(cnt)+",ex:"+tmpstr
+	loop
+	return
+
+#deffunc duio_ExportAllImage
+	logmes GetTimeStamp()+" [duio-debug] Export All Image Information >>"
+	logmes" - object:"+UIset_Image_max
+	repeat UIset_Image_max
+		sdim tmpstr
+		if UIset_Image_DrawFlag(cnt) :tmpstr+"DRAW ":else:tmpstr+"HIDE "
+		if UIset_Image_Outroflag(cnt) :tmpstr+"OUTRO ":else:tmpstr+"INTRO "
+		logmes" - "+strf("%04d",cnt)+":"+UIset_Image_ID(cnt)+",("+UIset_Image_X(cnt)+","+UIset_Image_Y(cnt)+"),hImg="+UIset_Image_hImg(cnt)+",ex:"+tmpstr
+	loop
+	return
+
+#deffunc duio_ExportAllText
+	logmes GetTimeStamp()+" [duio-debug] Export All Text Information >>"
+	repeat UIset_Text_max
+		sdim tmpstr
+		if UIset_Text_DrawFlag(cnt) :tmpstr+"DRAW ":else:tmpstr+"HIDE "
+		if UIset_Text_Outroflag(cnt) :tmpstr+"OUTRO ":else:tmpstr+"INTRO "
+		logmes" - "+strf("%04d",cnt)+":"+UIset_Text_ID(cnt)+","+"("+UIset_Text_X(cnt)+","+UIset_Text_Y(cnt)+"),Body="+UIset_Text_Body(cnt)+",ex:"+tmpstr
+	loop
+	return
+
+#defcfunc duio_GetFPS
+	return limit(CurDUIObasedFPS,1,1000)
+
+#deffunc duio_SetButtonPushSound int _uisetid,str _key
+	repeat length(commonsndDB_Key)
+		if _key==commonsndDB_Key(cnt) {
+			UIset_Button_hPushSound(_uisetid)=commonsndDB_hChannel(cnt)
+		}
+	loop
+
+	return
+
+#deffunc duio_InitAllCount str _tag
+	repeat UIset_Button_max
+		if UIset_Button_Tag(cnt)==_tag {
+			UIset_Button_count(cnt)=0
+		}
+	loop
+	repeat UIset_Image_max
+		if UIset_Image_Tag(cnt)==_tag {
+			UIset_Image_count(cnt)=0
+		}
+	loop
+	repeat UIset_Text_max
+		if UIset_Text_Tag(cnt)==_tag {
+			UIset_Text_count(cnt)=0
+		}
+	loop
+	return
+
+#deffunc duio_SetActiveScene str _tag
+	UIset_curActiveScene=_tag
+	return
+
+#defcfunc duio_GetButtonPushTime int _uisetid
+	return UIset_Button_rawpushCount(_uisetid)

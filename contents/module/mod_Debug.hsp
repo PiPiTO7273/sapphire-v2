@@ -1,0 +1,98 @@
+
+#undef logmes
+#module
+#deffunc logmes str p1
+	#ifdef _debug
+	if (hStd==0) {
+		AllocConsole
+		hStd=cfunc64i(GetStdHandle,-11)
+	}
+	sdim s:s=p1+"\n"
+	cnvstoa s,s
+	cfunc64v WriteConsole,hStd,s,strlen(s),0,0
+	#endif
+	if vartype(__globallog)==4 :sdim __globallog
+	__globallog+s
+	return
+
+#defcfunc GetTimeStamp
+	return strf("[%04d/%02d/%02d %02d:%02d:%02d.%03d]",gettime(0),gettime(1),gettime(3),gettime(4),gettime(5),gettime(6),gettime(7))
+
+#deffunc LoadAllImgResource
+	dirlist2h 1,0
+	dirlist2 dirlist_size,"*.png",1,'\\'
+	sdim dirlist_buf,dirlist_size
+	dirlist2r dirlist_buf
+	strrep dirlist_buf,dir_cur+"\\",""
+	strrep dirlist_buf,"\\","/"
+	
+	sdim imgbank_path
+	split dirlist_buf,"\n",imgbank_path
+	dim imgbank_handle,length(imgbank_path)
+
+	repeat length(imgbank_path)
+		imgbank_handle(cnt)=__LoadGraph(imgbank_path(cnt))
+		logmes GetTimeStamp()+" [duio-imgbank] LOAD "+imgbank_path(cnt)+" [handle="+imgbank_handle(cnt)+"]"
+	loop
+
+	return
+
+#defcfunc LoadGraph str _path
+
+	dim tmphimg
+	repeat length(imgbank_path)
+		if getpath(_path,16)==imgbank_path(cnt) {
+			tmphimg=imgbank_handle(cnt)
+			logmes GetTimeStamp()+" [duio-imgbank] SEARCH "+_path+" [handle="+imgbank_handle(cnt)+"]"
+		}
+	loop
+
+	if tmphimg==0 :return __LoadGraph(_path):else:return tmphimg
+
+	return
+
+#defcfunc MakeScreen int _x,int _y,int _flag
+	logmes GetTimeStamp()+" [dxlib] Create Image \""+_x+"x"+_y+"\""
+	return __MakeScreen(_x,_y,_flag)
+
+#deffunc ExportDebugLog
+	notesel __globallog
+	notesave"contents/duio-log.txt"
+	return
+
+#global
+
+*DrawInitDebugMsg
+
+	logmes"*----------------------------*"
+	logmes""
+	logmes"    Sapphire v2.xx Project    "
+	logmes"  (c) 2019-2022 puoro. Games  "
+	logmes""
+	logmes"*----------------------------*"
+	logmes""
+	logmes"   <STAFF>"
+	logmes"     Game/UI Design     - Okuzawa Yoshihito (piyapipitox)"
+	logmes"     Programming        - Okuzawa Yoshihito (piyapipitox)"
+	logmes"     Debugger           - Okuzawa Yoshihito (piyapipitox)"
+	logmes"     Icon Design        - Icons8 (https://icons8.com)"
+	logmes""
+	logmes"     Music              - cosmo@ñ\ëñP (CHEMICAL SYSTEM) , IOSYS , è„äCÉAÉäÉXå∂ûŸíc , ETIA. , Jenga ,"
+	logmes"                          SHIKI , DJ Myosuke , Laur , HARDCORE TANO*C , Yunomi , Lime (Kankitsu) ,"
+	logmes"                          xi , ÉoÉãÅ[Éì , LeaF , EBIMAYO , t+pazolite , d-elf.com"
+	logmes"     Background Design  - Okuzawa Yoshihito (piyapipitox) , Beeple (MichaelJoseph Winkelmann)"
+	logmes""
+	logmes"     Dynamic UI Language (Input-Output Module) , duio-parse Copyright (c) 2022 puoro. Games"
+	logmes"     DX Library Copyright (C) 2001-2021 Takumi Yamada."
+	logmes"     BASS Audio Library Copyright (c) 1999-2021 Un4seen Developments Ltd. All rights reserved."
+	logmes"     mod_fx v5.1.0 Copyright (c) 2015 motchy"
+	logmes""
+	logmes"   <System Information>"
+	logmes"     Runtime            - HSP3.6 x64"
+	logmes"     Module/Plugin      - DX Library , BASS Audio Library , hspint64 , duio-parse"
+	logmes"     Build Environment  - "+sysinfo(0)
+	logmes""
+	logmes"*----------------------------*"
+	logmes""
+	
+	return

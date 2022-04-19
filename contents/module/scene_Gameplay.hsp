@@ -1,0 +1,995 @@
+
+*scene_Gameplay_Init
+
+	logmes GetTimeStamp()+" [gameplay] Initializing ..."
+
+	cfunc64v BASS_GetInfo,varptr64(struct_BASS_INFO)
+
+	duio_SetActiveScene"#Gameplay"
+
+	dim curScore			//スコア（10000000満点）
+	ddim curPfScore		//パフォーマンス評価
+	ddim curBonusScore		//ボーナス
+	ddim curAbilityScore	//能力値（curPfScore+curBonusScore）
+
+	dim sysclock_std	//システムタイマー基準によるプレイ開始時間
+	dim sysclock_cur	//システムタイマー基準によるプレイ経過時間
+
+	dim curJudge,7		//判定（Excellent,Great,Good,Bad,Miss,Early,Late）
+	dim curCombo		//現在のコンボ
+	dim maxCombo		//最大コンボ
+
+	ddim curBPMvalue,1	//現在のBPM値
+	ddim AddSpeed,1	//ユーザー指定の速度値
+	sdim PlayOptionList	//使用オプション
+	dim FrameTime		//1フレームあたりの時間
+	dim Mapload_updateinterval_std
+	PlayOptionList="-"
+	dup AddSpeed,pfreg_AddSpeed
+
+	dim obj_holdstartid
+	dim obj_holddrawheight
+
+	dim NearNoteID,6		//最も近いオブジェクトのID
+	dim NearNoteGap,6		//最も近いオブジェクトとの時間差（絶対値）
+	dim NearNoteSign,6		//最も近いオブジェクトとの時間差（符号,0=early,1=late）
+	dim ProgLaneID
+	dim ProgLongNoteID,6
+	dim KeyAssignID,6
+	dim KeybtJudge,2,6
+	dim JudgeNoteGap,6
+	dim JudgeDispCount
+	dim JudgeDispType
+	dim JudgeDisphImg
+	dim LaneParticleCount,6
+	dim LaneParticlehImg,6
+	dim LaneEffectCount,6
+	dim LaneWidth
+	dim LaneHeight
+	dim JudgeOffset
+	;JudgeOffset=-70
+
+	dup JudgeOffset,pfreg_JudgeOffset
+
+	dim curScore_dispease
+	dim curScore_dispcount
+
+	LaneWidth=128/TexLv
+	LaneHeight=2048/TexLv
+	JudgeDispCount=-1
+	repeat 6
+		ProgLongNoteID(cnt)=-1
+		LaneParticleCount(cnt)=-1
+		LaneEffectCount(cnt)=201
+	loop
+
+	dim item:dim lv
+	item=curselect_item
+	lv=curselect_lv
+
+	sdim curmap_Title	//プレイ中の譜面タイトル
+	curmap_Title=mapdb_title(item,lv)+" / "+mapdb_artist(item,lv)
+
+	//UIパーツ
+		duio_ChangeTextBody duio_TextID2UIsetID("gameplay_title_text"),curmap_Title
+		duio_ChangeImage duio_ImageID2UIsetID("gameplay_mapimg"),mapdb_hartwork(item,lv)
+		duio_ChangeTextBody duio_TextID2UIsetID("gameplay_option_value"),PlayOptionList
+		duio_ChangeTextBody duio_TextID2UIsetID("gameplay_lvvalue"),"Lv."+mapdb_level(item,lv)
+		duio_ChangeImage duio_ImageID2UIsetID("gameplay_lvimg"),hdximg(imusicselect_item_normal+mapdb_difficulty(item,lv))
+
+		if GameplayWindowLayout&UIlayout_Profile {
+			//プロフィールウィンドウ
+
+			logmes GetTimeStamp()+" [gameplay] Setup Profile Window..."
+
+			duio_ChangeTextBody duio_TextID2UIsetID("gameplay_profile_badge"),pfreg_Badge
+			duio_ChangeTextBody duio_TextID2UIsetID("gameplay_profile_name"),pfreg_dispname
+			duio_ChangeTextBody duio_TextID2UIsetID("gameplay_profile_id"),PlayerID
+			duio_ChangeTextBody duio_TextID2UIsetID("gameplay_profile_pf"),str(pfreg_PFpoint)
+
+			duio_SetImageVisible duio_ImageID2UIsetID("gameplay_status_online"),FALSE
+			duio_SetImageVisible duio_ImageID2UIsetID("gameplay_status_offline"),FALSE
+
+			duio_SetTextVisible duio_TextID2UIsetID("gameplay_profile_badge"),TRUE
+			duio_SetTextVisible duio_TextID2UIsetID("gameplay_profile_name"),TRUE
+			duio_SetTextVisible duio_TextID2UIsetID("gameplay_profile_id"),TRUE
+			duio_SetTextVisible duio_TextID2UIsetID("gameplay_profile_pf"),TRUE
+			duio_SetImageVisible duio_ImageID2UIsetID("gameplay_status_playing"),TRUE
+			duio_SetImageVisible duio_ImageID2UIsetID("gameplay_status_online"),TRUE
+
+			duio_SetImageVisible duio_ImageID2UIsetID("gameplay_profile"),TRUE
+		}
+		if GameplayWindowLayout&UIlayout_ScoreGraph {
+			//スコアグラフ
+
+			logmes GetTimeStamp()+" [gameplay] Setup ScoreGraph Window..."
+
+			duio_SetImageVisible duio_ImageID2UIsetID("gameplay_scoregraph"),TRUE
+		}
+		if GameplayWindowLayout&UIlayout_Judge {
+			//判定の詳細情報
+
+			logmes GetTimeStamp()+" [gameplay] Setup Judge Window..."
+
+			duio_SetImageVisible duio_ImageID2UIsetID("gameplay_judge"),TRUE
+
+			repeat 7
+				duio_SetTextVisible duio_TextID2UIsetID("gameplay_judgedisp_"+cnt),TRUE
+			loop
+			duio_SetTextVisible duio_TextID2UIsetID("gameplay_judgedisp_maxcombo"),TRUE
+		}
+
+		duio_Change3DSquareImage duio_3DSquareID2UIsetID("gameplay_lane_main"),hdximg(igameplay_lane)
+		duio_Change3DSquareImage duio_3DSquareID2UIsetID("gameplay_lane_side_l"),hdximg(igameplay_sidelane_l)
+		duio_Change3DSquareImage duio_3DSquareID2UIsetID("gameplay_lane_side_r"),hdximg(igameplay_sidelane_r)
+
+	//譜面データ解析
+		sdim tmpmapbuf,map_buf_size(item,lv)
+		dim binpos:dim binlength
+		memcpy tmpmapbuf,map_buf(item,lv),map_buf_size(item,lv),0,0
+
+		//リソース関連
+			sdim bgaudio_path
+			bgaudio_path="audio.ogg"
+			dim bgaudio_hsample
+			dim bgaudio_hchannel
+			dim bgmplayoffset
+			dim TotalOffset
+
+		//キーサウンドDB
+			dim sndDB_hsample
+			dim sndDB_hchannel
+			sdim sndDB_exformat		//拡張子
+
+		//サウンドイベント
+			dim sndPlayEvent_timing
+			dim sndPlayEvent_hchannel
+			ddim sndPlayEvent_volume,1
+			dim sndPlayEvent_playflag
+			dim sndPlayEvent_max
+
+		//BPM
+			dim bpmevent_timing
+			ddim bpmevent_value,1
+			dim bpmevent_max
+
+		//オブジェクト
+			dim objType		//種類
+			dim objLength		//長さ
+			dim objTiming		//タイミング
+			dim objChannel		//チャンネル番号（レーンID）
+			dim objhSndDB		//サウンドのハンドル
+			ddim objVolume,1	//サウンドの音量
+			ddim objbpm,1		//BPM
+			dim objJudgeFlag
+			dim objActiveFlag
+			dim objmax
+			dim graphcaptureID
+
+		//フラグ管理
+			dim mapconfig_flag
+			dim mapconfig_sidenoteflag
+			dim mapconfig_finishflag
+			dim mapconfig_playlength
+
+			//プレイ終了の判定方法（0=BGMの再生が終了したら,1=最後のオブジェクトが判定されたら）
+			dim mapconfig_sndmode
+			mapconfig_sndmode=0
+
+		sdim binpkg_path
+		binpkg_path="contents/maps/"+mapdb_resource(item,lv)+"/musicdata.pkg"
+		exist binpkg_path	//キーサウンドが存在するか
+		if strsize!-1 {
+			binpkg_Load binpkg_path
+			mapconfig_sndmode=1
+		}
+
+		mapconfig_flag=lpeek(tmpmapbuf,4)
+		if mapconfig_flag&1 {
+			mapconfig_sidenoteflag=TRUE
+		}
+
+		binpos=8
+		Mapload_updateinterval_std=GetNowCount()
+		repeat
+
+			switch peek(tmpmapbuf,binpos)
+				case ID_TITLE:binpos+2+peek(tmpmapbuf,binpos+1):swbreak
+				case ID_ARTIST:binpos+2+peek(tmpmapbuf,binpos+1):swbreak
+				case ID_SOURCE:binpos+2+peek(tmpmapbuf,binpos+1):swbreak
+				case ID_RESOURCEID:binpos+2+peek(tmpmapbuf,binpos+1):swbreak
+				case ID_ARTWORK:binpos+2+peek(tmpmapbuf,binpos+1):swbreak
+				case ID_MAPDESIGN:binpos+2+peek(tmpmapbuf,binpos+1):swbreak
+				case ID_LEVEL:binpos+2:swbreak
+				case ID_RELEASE:binpos+5:swbreak
+
+				case ID_BGVIDEO_COMMON:binpos+2:swbreak
+				case ID_BGVIDEO_PATH:binpos+2+peek(tmpmapbuf,binpos+1):swbreak
+				case ID_BGAUDIO
+					binlength=peek(tmpmapbuf,binpos+1)
+					sdim bgaudio_path,binlength
+					memcpy bgaudio_path,tmpmapbuf,binlength,0,binpos+2
+					binpos+2+binlength
+				swbreak
+				case ID_UNLOCKINFO:binpos+6:swbreak
+				case ID_TOTALOFFSET
+					TotalOffset=wpeek(tmpmapbuf,binpos+1)-32768
+					binpos+3
+				swbreak
+				case ID_EVENTOFFSET:binpos+3:swbreak
+				case ID_BGVIDEO_OFFSET:binpos+3:swbreak
+				case ID_BGAUDIO_OFFSET
+					bgmplayoffset=wpeek(tmpmapbuf,binpos+1)-32768
+					binpos+3
+				swbreak
+				case ID_AUDIOENCODE
+					binlength=peek(tmpmapbuf,binpos+1)
+					memcpy sndDB_exformat,tmpmapbuf,binlength,0,binpos+2
+					binpos+2+binlength
+				swbreak
+
+				case ID_SOUNDSET
+					binlength=peek(tmpmapbuf,binpos+3)
+
+					//一時的に使用する変数の初期化
+					sdim sndDB_tmpbin
+					sdim sndDB_searchfilename,binlength
+					dim sndDB_regnum
+
+					//ファイル名抽出
+					memcpy sndDB_searchfilename,tmpmapbuf,binlength,0,binpos+4
+					sndDB_searchfilename+"."+sndDB_exformat
+
+					sndDB_regnum=wpeek(tmpmapbuf,binpos+1)
+
+					//バイナリ取得
+					binpkg_CopytoBuffer sndDB_tmpbin,binpkg_GetIndex(sndDB_searchfilename)
+					if stat!0 {
+						logmes GetTimeStamp()+" [Warning] Failed to search data from package (\""+sndDB_searchfilename+"\",Code="+stat+")"
+					} else {
+
+						//サンプル作成
+						sndDB_hsample(sndDB_regnum)=cfunc64i(BASS_SampleLoad,TRUE,varptr64(sndDB_tmpbin),0,binpkg_GetFileLength(binpkg_GetIndex(sndDB_searchfilename)),64,0)
+						if sndDB_hsample(sndDB_regnum)==0 {
+							logmes GetTimeStamp()+" [Warning] Failed to load audio sample (\""+sndDB_searchfilename+"\",Code="+BASS_ErrorGetCode()+")"
+						}
+
+						//チャンネル作成
+						sndDB_hchannel(sndDB_regnum)=cfunc64i(BASS_SampleGetChannel,sndDB_hsample(sndDB_regnum),0)
+						if sndDB_hchannel(sndDB_regnum)==0 {
+							logmes GetTimeStamp()+" [Warning] Failed to load audio channel (\""+sndDB_searchfilename+"\",Code="+BASS_ErrorGetCode()+")"
+						}
+
+					}
+
+					binpos+4+binlength
+				swbreak
+
+				case ID_SOUNDPLAY
+					//イベント発生時間(ms)
+					sndPlayEvent_timing(sndPlayEvent_max)=lpeek(tmpmapbuf,binpos+1)
+
+					//サウンド登録番号
+					dim sndDB_regnum
+					sndDB_regnum=wpeek(tmpmapbuf,binpos+5)
+					if sndDB_regnum>=length(sndDB_hchannel) {
+						logmes GetTimeStamp()+" [Warning] Failed to load event (ID="+sndDB_regnum+")"
+					} else {
+						sndPlayEvent_hchannel(sndPlayEvent_max)=sndDB_hchannel(sndDB_regnum)
+					}
+
+					//音量
+					sndPlayEvent_volume(sndPlayEvent_max)=double(peek(tmpmapbuf,binpos+7))/100.0
+
+					sndPlayEvent_playflag(sndPlayEvent_max)=FALSE
+
+					sndPlayEvent_max++
+					binpos+8
+				swbreak
+
+				case ID_BPM
+					bpmevent_timing(bpmevent_max)=lpeek(tmpmapbuf,binpos+1)
+					bpmevent_value(bpmevent_max)=f2d(lpeek(tmpmapbuf,binpos+5))
+
+					logmes GetTimeStamp()+" [Gameplay] BPM event ("+bpmevent_max+") "+bpmevent_timing(bpmevent_max)+"ms , "+bpmevent_value(bpmevent_max)
+
+					bpmevent_max++
+
+					binpos+9
+				swbreak
+				case ID_NOTEHOLDSTART
+
+					objChannel(objmax)=peek(tmpmapbuf,binpos+1)
+					objTiming(objmax)=lpeek(tmpmapbuf,binpos+2)
+					objLength(objmax)=lpeek(tmpmapbuf,binpos+6)
+					objhSndDB(objmax)=wpeek(tmpmapbuf,binpos+10)
+					objVolume(objmax)=double(peek(tmpmapbuf,binpos+12))/100.0
+
+					objbpm(objmax)=0.0
+					objType(objmax)=ID_OBJTYPE_HOLDSTART
+					objJudgeFlag(objmax)=FALSE
+					objActiveFlag(objmax)=FALSE
+
+					logmes GetTimeStamp()+" [Gameplay] NOTE_HOLD ("+objmax+") "+objTiming(objmax)+"ms , "+objLength(objmax)+"ms , ch"+objChannel(objmax)
+
+					objmax++
+
+					objChannel(objmax)=peek(tmpmapbuf,binpos+1)
+					objTiming(objmax)=objTiming(objmax-1)+objLength(objmax-1)
+					objhSndDB(objmax)=-1
+					objVolume(objmax)=0.0
+
+					objbpm(objmax)=0.0
+					objType(objmax)=ID_OBJTYPE_HOLDEND
+					objLength(objmax)=0
+					objJudgeFlag(objmax)=FALSE
+					objActiveFlag(objmax)=FALSE
+					objmax++
+
+					binpos+13
+				swbreak
+				case ID_NOTESINGLE
+
+					objChannel(objmax)=peek(tmpmapbuf,binpos+1)
+					objTiming(objmax)=lpeek(tmpmapbuf,binpos+2)
+					objhSndDB(objmax)=wpeek(tmpmapbuf,binpos+6)
+					objVolume(objmax)=double(peek(tmpmapbuf,binpos+8))/100.0
+
+					logmes GetTimeStamp()+" [Gameplay] NOTE_SINGLE ("+objmax+") "+objTiming(objmax)+"ms , ch"+objChannel(objmax)
+
+					objbpm(objmax)=0.0
+					objType(objmax)=ID_OBJTYPE_SINGLE
+					objLength(objmax)=0
+					objJudgeFlag(objmax)=FALSE
+					objActiveFlag(objmax)=FALSE
+					objmax++
+
+					binpos+9
+				swbreak
+
+				case ID_EOF:break:swbreak
+			swend
+
+			//検索位置がファイルサイズを超えたら終了
+			if binpos+1>map_buf_size(item,lv) :break
+
+			if (GetNowCount()-Mapload_updateinterval_std)>(1000/duio_GetFPS())-1 {
+				gosub*scene_Gameplay_UpdateLoadScreen
+				Mapload_updateinterval_std=GetNowCount()
+			}
+
+		loop
+
+	//BPM変更点を最後に追加
+		bpmevent_timing(bpmevent_max)=objTiming(objmax-1)
+		bpmevent_value(bpmevent_max)=bpmevent_value(bpmevent_max-1)
+		bpmevent_max++
+
+	//準備時間
+		repeat objmax
+			//準備時間＋全体オフセット
+			objTiming(cnt)+Pretime+TotalOffset
+			if mapconfig_sidenoteflag==FALSE :objChannel(cnt)++
+		loop
+		repeat sndPlayEvent_max
+			sndPlayEvent_timing(cnt)+Pretime
+		loop
+		repeat bpmevent_max
+			if cnt==0 :continue
+			bpmevent_timing(cnt)+Pretime
+		loop
+
+	//BPM値をノーツに割り当て
+		dim SearchNoteID
+		repeat objmax
+			objbpm(SearchNoteID)=0.0
+			repeat bpmevent_max
+				if bpmevent_timing(cnt)<objTiming(SearchNoteID) {
+					objbpm(SearchNoteID)=bpmevent_value(cnt)
+				}
+			loop
+
+			SearchNoteID++
+		loop
+
+	//BGM読み込み
+		dim bgmplayflag
+		bgaudio_path="contents/maps/"+mapdb_resource(item,lv)+"/"+bgaudio_path
+		bgaudio_hsample=cfunc64i(BASS_SampleLoad,FALSE,bgaudio_path,0,0,1,0)
+		if bgaudio_hsample==0 {
+			logmes GetTimeStamp()+" [Warning] Failed to load audio sample (\""+bgaudio_path+"\",Code="+BASS_ErrorGetCode()+")"
+		}
+
+		bgaudio_hchannel=cfunc64i(BASS_SampleGetChannel,bgaudio_hsample,0)
+		if bgaudio_hchannel==0 {
+			logmes GetTimeStamp()+" [Warning] Failed to load audio channel (\""+bgaudio_path+"\",Code="+BASS_ErrorGetCode()+")"
+		}
+
+		BASS_ChannelSetAttribute bgaudio_hchannel,BASS_ATTRIB_VOL,d2f(double(volume_BGM)/100.0)
+
+	//ノーツ画像素材
+		SetDrawScreen hdximg(igameplay_note_hold_long)
+			ClearDrawScreen
+			SetDrawBlendMode DX_BLENDMODE_PMA_ALPHA,256
+			repeat LaneHeight/128
+				DrawExtendGraph 0,cnt*128,LaneWidth,(cnt+1)*128,hdximg(igameplay_note_hold_0),TRUE
+			loop
+
+	//スキン情報読み込み
+		dim playtheme_noteheight
+		playtheme_noteheight=int(duio_idsGet("playtheme_0_single_height"))/TexLv
+
+	//スコア計算
+		dim score_AddObjScore
+		dim score_AddBonusScore
+		score_AddObjScore=double(10000000/objmax)	//オブジェクトが判定されるごとに追加されるスコア（計算しやすいようにdouble型に変換）
+		score_AddBonusScore=10000000\objmax		//完走した場合に加算されるボーナススコア
+
+	//グラフ設定
+
+		//自己ベストグラフ
+		sdim mybestgraph_dest
+		sdim mybestgraph_buf,4*objmax
+		mybestgraph_dest=mapdb_mybest_score4binhex(curselect_item,curselect_lv)
+		DecodeScoreGraphData mybestgraph_dest,objmax,mybestgraph_buf
+		
+		//目標スコアグラフ
+		sdim targetgraph_buf,4*objmax
+		dim n
+		repeat objmax
+			lpoke targetgraph_buf,4*cnt,n
+			if cnt==0 :n+score_AddBonusScore
+			n+score_AddObjScore
+		loop
+
+	//プレイする時間
+		if mapconfig_sndmode==0 {
+			//BGMの再生を終了したら
+			mapconfig_playlength=int(cfunc64d(BASS_ChannelBytes2Seconds,bgaudio_hchannel,cfunc64i64(BASS_ChannelGetLength,bgaudio_hchannel,BASS_POS_BYTE))*1000.0)+Pretime
+		}
+		if mapconfig_sndmode==1 {
+			//すべてのオブジェクトを判定し終わったら
+			mapconfig_playlength=objTiming(objmax-1)
+		}
+
+	//判定履歴
+		dim RecentJudgeGap,objmax
+		dim RecentJudgeCount
+
+	gosub*scene_Gameplay_UpdateLoadScreen
+
+	//タイマー設定
+		sysclock_std=GetNowCount()
+
+	return
+
+*scene_Gameplay
+
+	FrameTime=1000/duio_GetFPS()
+
+	//BGM
+		if sysclock_cur>bgmplayoffset+Pretime&bgmplayflag==FALSE {
+			cfunc64v BASS_ChannelPlay,bgaudio_hchannel
+			bgmplayflag=TRUE
+		}
+		if mapconfig_sndmode==0&mapconfig_finishflag==FALSE&sysclock_cur>mapconfig_playlength {
+			mapconfig_finishflag=TRUE
+		}
+
+	//プレイ時間
+		duio_ChangeTextBody duio_TextID2UIsetID("gameplay_playtime_value"),hm2str(sysclock_cur)
+		duio_ChangeTextBody duio_TextID2UIsetID("gameplay_playtime_value_left"),hm2str(mapconfig_playlength)
+
+	//メタデータ領域
+		duio_ChangeTextBody duio_TextID2UIsetID("gameplay_bpm_value"),strf("%.2f",curBPMvalue)
+		duio_ChangeTextBody duio_TextID2UIsetID("gameplay_speed_value"),strf("x%.2f",AddSpeed)
+
+	//判定詳細
+		if GameplayWindowLayout&UIlayout_Judge {
+			repeat 7
+				duio_ChangeTextBody duio_TextID2UIsetID("gameplay_judgedisp_"+str(cnt)),strf("%04d",str(curJudge(cnt)))
+			loop
+			duio_ChangeTextBody duio_TextID2UIsetID("gameplay_judgedisp_maxcombo"),strf("%04d",str(maxCombo))
+		}
+
+	//スコア
+		curAbilityScore=curPfScore+curBonusScore
+		setease curScore_dispease,curScore,ease_linear
+		duio_ChangeTextBody duio_TextID2UIsetID("gameplay_score"),strf("%08d",getease(curScore_dispcount,500))
+		duio_ChangeTextBody duio_TextID2UIsetID("gameplay_abscore"),strf("%.2f pts",curAbilityScore)
+		duio_ChangeTextBody duio_TextID2UIsetID("gameplay_abscore_performance"),strf("PERFORMANCE +%.2f pts",curPfScore)
+		duio_ChangeTextBody duio_TextID2UIsetID("gameplay_abscore_bonus"),strf("BONUS +%.2f pts",curBonusScore)
+
+	//コンボ
+		duio_ChangeTextBody duio_TextID2UIsetID("gameplay_combo_value"),strf("%04d",curCombo)
+
+	//ノーツ
+
+		//位置計算
+			ddim LaneScroll
+
+			//スクロール処理
+			repeat bpmevent_max-1
+				// BPM変更点x1 ... ＜現在位置＞ ... BPM変更点x2
+				if bpmevent_timing(cnt)<=sysclock_cur&bpmevent_timing(cnt+1)>=sysclock_cur {
+					LaneScroll+double((sysclock_cur-bpmevent_timing(cnt)))*(double(bpmevent_value(cnt))/double(objbpm(0)))
+					curBPMvalue=bpmevent_value(cnt)
+				}
+				// BPM変更点x1 ... BPM変更点x2 ... ＜現在位置＞
+				if bpmevent_timing(cnt)<=sysclock_cur&bpmevent_timing(cnt+1)<=sysclock_cur {
+					LaneScroll+double(bpmevent_timing(cnt+1)-bpmevent_timing(cnt))*(double(bpmevent_value(cnt))/double(objbpm(0)))
+				}
+				// 最後のBPM変更点 ... ＜現在位置＞
+				if bpmevent_timing(cnt+1)<=sysclock_cur&cnt==bpmevent_max-2 {
+					LaneScroll+double(sysclock_cur-bpmevent_timing(cnt+1))*(double(bpmevent_value(cnt+1))/double(objbpm(0)))
+				}
+			loop
+
+			//ノーツ位置再計算
+			ddim ObjPosition,objmax
+			ddim TmpNotepos,1
+			repeat ObjMax
+				if cnt==0 {
+					ObjPosition(cnt)=TmpNotepos-(double((ObjTiming(cnt)+JudgeOffset)-LaneScroll)*200.0*(objbpm(cnt)/objbpm(0))/200.0*AddSpeed/TexLv)
+				} else {
+					ObjPosition(cnt)=TmpNotepos-(double(ObjTiming(cnt)-ObjTiming(cnt-1))*200.0*(objbpm(cnt)/objbpm(0))/200.0*AddSpeed/TexLv)
+				}
+				TmpNotepos=ObjPosition(cnt)
+			loop
+
+		//描画
+		/*
+		SetDrawScreen hdximg(igameplay_lane)
+			ClearDrawScreen
+			SetDrawBlendMode DX_BLENDMODE_PMA_ALPHA,256
+			DrawGraph 0,0,hdximg(igameplay_bg_lane),TRUE
+		SetDrawScreen hdximg(igameplay_sidelane_l)
+			ClearDrawScreen
+			SetDrawBlendMode DX_BLENDMODE_PMA_ALPHA,256
+			DrawGraph 0,0,hdximg(igameplay_bg_sidelane),TRUE
+		SetDrawScreen hdximg(igameplay_sidelane_r)
+			ClearDrawScreen
+			SetDrawBlendMode DX_BLENDMODE_PMA_ALPHA,256
+			DrawGraph 0,0,hdximg(igameplay_bg_sidelane),TRUE*/
+
+		SetDrawScreen hdximg(igameplay_copybuf)
+			ClearDrawScreen
+			SetDrawBlendMode DX_BLENDMODE_PMA_ALPHA,256
+			DrawExtendGraph 0,0,LaneWidth,LaneHeight,hdximg(igameplay_bg_sidelane)
+			DrawExtendGraph LaneWidth,0,LaneWidth*5,LaneHeight,hdximg(igameplay_bg_lane)
+			DrawExtendGraph LaneWidth*5,0,LaneWidth*6,LaneHeight,hdximg(igameplay_bg_sidelane)
+
+			//レーンエフェクト
+			repeat 6
+				if LaneEffectCount(cnt)==0 :continue
+				if LaneEffectCount(cnt)<0 {	//継続
+					setease LaneWidth/2,LaneWidth,ease_cubic_out
+					EaseWidth=getease(LaneEffectCount(cnt)*-1,50)
+					setease LaneHeight/2,LaneHeight,ease_cubic_out
+					EaseHeight=getease(LaneEffectCount(cnt)*-1,50)
+					setease 200,256,ease_cubic_out
+					EaseAlpha=getease(LaneEffectCount(cnt)*-1,50)
+				}
+				if LaneEffectCount(cnt)>0 {	//離した
+					setease LaneWidth,0,ease_cubic_out
+					EaseWidth=getease(LaneEffectCount(cnt),200)
+					setease LaneHeight,LaneHeight/2,ease_cubic_out
+					EaseHeight=getease(LaneEffectCount(cnt),200)
+					setease 256,0,ease_cubic_out
+					EaseAlpha=getease(LaneEffectCount(cnt),200)
+				}
+
+				SetDrawBlendMode DX_BLENDMODE_PMA_ALPHA,EaseAlpha
+				DrawExtendGraph LaneWidth*cnt+LaneWidth/2-EaseWidth/2,LaneHeight-EaseHeight,LaneWidth*cnt+LaneWidth/2+EaseWidth/2,LaneHeight,hdximg(igameplay_laneeffect),TRUE
+			loop
+
+			SetDrawBlendMode DX_BLENDMODE_PMA_ALPHA,255
+
+			//オブジェクト描画
+			if mapconfig_sndmode==1 :mapconfig_finishflag=TRUE
+			repeat objmax
+				i=cnt
+
+				if objJudgeFlag(i)==TRUE :continue
+				if mapconfig_sndmode==1 :mapconfig_finishflag=FALSE
+
+				ObjPosition(i)-playtheme_noteheight
+
+				ProgLaneID=objChannel(i)
+
+				if ObjPosition(i)>LaneHeight&ObjPosition(i)<0 :continue
+
+				if objType(i)==ID_OBJTYPE_HOLDSTART {
+					obj_holdstartid=i
+				}
+
+				DrawExtendGraph LaneWidth*objChannel(i),LaneHeight+ObjPosition(i),LaneWidth*(objChannel(i)+1),LaneHeight+ObjPosition(i)+playtheme_noteheight,hdximg(igameplay_note_single_0),TRUE
+
+				if objType(i)==ID_OBJTYPE_HOLDEND {
+					obj_holddrawheight=ObjPosition(obj_holdstartid)-ObjPosition(i)
+
+					if obj_holddrawheight>LaneHeight {
+						dim obj_holddrawmatheight
+						repeat obj_holddrawheight/LaneHeight
+							DrawRectGraph LaneWidth*objChannel(i),LaneHeight+ObjPosition(i)+LaneHeight*cnt,0,0,LaneWidth,LaneHeight,hdximg(igameplay_note_hold_long),TRUE
+							obj_holddrawmatheight+LaneHeight
+						loop
+
+						DrawRectGraph LaneWidth*objChannel(i),LaneHeight+ObjPosition(i)+obj_holddrawmatheight,0,0,LaneWidth,obj_holddrawheight\LaneHeight,hdximg(igameplay_note_hold_long),TRUE
+					} else {
+						DrawRectGraph LaneWidth*objChannel(i),LaneHeight+ObjPosition(i),0,0,LaneWidth,obj_holddrawheight,hdximg(igameplay_note_hold_long),TRUE
+					}
+				}
+
+			loop
+
+		SetDrawBlendMode DX_BLENDMODE_PMA_ALPHA,256
+		SetDrawScreen hdximg(igameplay_sidelane_l)
+			ClearDrawScreen
+			DrawRectGraph 0,0,0,0,LaneWidth,LaneHeight,hdximg(igameplay_copybuf)
+		SetDrawScreen hdximg(igameplay_lane)
+			ClearDrawScreen
+			DrawRectGraph 0,0,LaneWidth,0,LaneWidth*4,LaneHeight,hdximg(igameplay_copybuf)
+		SetDrawScreen hdximg(igameplay_sidelane_r)
+			ClearDrawScreen
+			DrawRectGraph 0,0,LaneWidth*5,0,LaneWidth,LaneHeight,hdximg(igameplay_copybuf)
+		
+	//背景
+		SetDrawScreen hdximg(igameplay_bg_sidelr)
+			ClearDrawScreen
+			DrawGraph 0,-1024+(double(SceneCount)*double(FrameTime)*1.2)\1024,hdximg(igameplay_bgorg_side_0),TRUE
+			DrawGraph 0,-1024+(double(SceneCount)*double(FrameTime)*1.2)\1024+1024,hdximg(igameplay_bgorg_side_0),TRUE
+
+		SetDrawScreen hdximg(igameplay_bg_grid)
+			ClearDrawScreen
+			DrawGraph 0,-1024+(double(SceneCount)*double(FrameTime)*0.3)\1024,hdximg(igameplay_bgorg_grid_0),TRUE
+			DrawGraph 0,-1024+(double(SceneCount)*double(FrameTime)*0.3)\1024+1024,hdximg(igameplay_bgorg_grid_0),TRUE
+
+		SetDrawScreen hcommonLayer
+
+	duio_Draw"#Gameplay"
+
+	//プレイ時間
+		SetDrawBlendMode DX_BLENDMODE_PMA_ALPHA,256
+		DrawRectGraph 227,152,0,0,int(200.0*(double(sysclock_cur)/double(mapconfig_playlength))),6,hdximg(igameplay_playtime_pre),TRUE
+
+	//判定
+		if JudgeDispCount<500 {
+			SetDrawBlendMode DX_BLENDMODE_PMA_ALPHA,256
+		} else {
+			setease 256,0,ease_linear
+			SetDrawBlendMode DX_BLENDMODE_PMA_ALPHA,getease(JudgeDispCount-500,250)
+		}
+		setease 1.6,1,ease_cubic_out
+		EaseWidth=int(geteasef(JudgeDispCount,120)*200.0)
+		EaseHeight=int(geteasef(JudgeDispCount,120)*50.0)
+		EasePosX=860+200/2-EaseWidth/2
+		EasePosY=707+50/2-EaseHeight/2
+		DrawExtendGraph EasePosX,EasePosY,EasePosX+EaseWidth,EasePosY+EaseHeight,JudgeDisphImg,TRUE
+
+	//判定の履歴
+		dim RecentJudgeDrawGap
+		dim RecentJudgeDrawPos
+		dim RecentJudgeDrawColor
+		repeat 16
+			if cnt>=RecentJudgeCount :continue
+
+			RecentJudgeDrawGap=RecentJudgeGap(limit(RecentJudgeCount-cnt,0,length(RecentJudgeGap)-1))
+			RecentJudgeDrawPos=671+int(80.0*double(RecentJudgeDrawGap)/double(jWid_Miss))
+
+			//判定ごとに色分け
+			if abs(RecentJudgeDrawGap)<jWid_Miss :RecentJudgeDrawColor=$858585
+			if abs(RecentJudgeDrawGap)<jWid_Bad :RecentJudgeDrawColor=$A53EFF
+			if abs(RecentJudgeDrawGap)<jWid_Good :RecentJudgeDrawColor=$7BF52B
+			if abs(RecentJudgeDrawGap)<jWid_Great :RecentJudgeDrawColor=$FFAA00
+			if abs(RecentJudgeDrawGap)<jWid_Excellent :RecentJudgeDrawColor=$FF0099
+
+			SetDrawBlendMode DX_BLENDMODE_ALPHA,256-cnt*14
+			DrawBox 242-10+cnt/2,RecentJudgeDrawPos-2,242+10-cnt/2,RecentJudgeDrawPos+2,RecentJudgeDrawColor,TRUE
+		loop
+
+	//パーティクルエフェクト
+		repeat 6
+			setease 0.1,1,ease_cubic_out
+			EaseWidth=int(geteasef(LaneParticleCount(cnt),450)*640.0)
+			EaseHeight=int(geteasef(LaneParticleCount(cnt),450)*640.0)
+			setease 256,0,ease_cubic_out
+			SetDrawBlendMode DX_BLENDMODE_PMA_ALPHA,getease(LaneParticleCount(cnt)-50,400)
+
+			switch cnt
+				case 0
+					EasePosX=190
+					EasePosY=540
+				swbreak
+				case 5
+					EasePosX=1090
+					EasePosY=540
+				swbreak
+				default
+					EasePosX=350+150*(cnt-1)
+					EasePosY=590
+				swbreak
+			swend
+
+			EasePosX+640/2-EaseWidth/2
+			EasePosY+640/2-EaseHeight/2
+			DrawExtendGraph EasePosX,EasePosY,EasePosX+EaseWidth,EasePosY+EaseHeight,LaneParticlehImg(cnt),TRUE
+		loop
+
+	//スコアグラフ
+		repeat objmax
+			if objActiveFlag(cnt) :continue
+			if sysclock_cur>objTiming(cnt) {
+				objActiveFlag(cnt)=TRUE
+				graphcaptureID=cnt
+			}
+		loop
+		//描画
+			if GameplayWindowLayout&UIlayout_ScoreGraph {
+				SetDrawBlendMode DX_BLENDMODE_PMA_ALPHA,256
+				//現在のスコア
+				DrawExtendGraph 1570,269+400,1570+80,269+400-int(400.0*(double(curScore)/10000000.0)),hdximg(igameplay_graph_cur),TRUE
+				//自己ベスト
+				DrawExtendGraph 1666,269+400,1666+70,269+400-int(400.0*(double(lpeek(mybestgraph_buf,4*graphcaptureID))/10000000.0)),hdximg(igameplay_graph_mybest),TRUE
+				//目標スコア
+				DrawExtendGraph 1746,269+400,1746+70,269+400-int(400.0*(double(lpeek(targetgraph_buf,4*graphcaptureID))/10000000.0)),hdximg(igameplay_graph_target),TRUE
+			}
+
+	//見逃しミス判定
+		repeat objmax
+			if objJudgeFlag(cnt) :continue
+			if sysclock_cur-objTiming(cnt)>jWid_Miss&ProgLongNoteID(0)-1!cnt&ProgLongNoteID(1)-1!cnt&ProgLongNoteID(2)-1!cnt&ProgLongNoteID(3)-1!cnt&ProgLongNoteID(4)-1!cnt&ProgLongNoteID(5)-1!cnt {
+				NearNoteSign(objChannel(cnt))=-1	//符号の概念はない
+				ObjJudgeProg JUDGEID_MISS,objChannel(cnt)
+				ObjJudgeFlag(cnt)=TRUE
+				//終点判定
+				if objType(cnt)==ID_OBJTYPE_HOLDSTART {
+					ObjJudgeProg JUDGEID_MISS,objChannel(cnt+1)
+					ObjJudgeFlag(cnt+1)=TRUE
+				}
+				curCombo=0
+			}
+		loop
+
+	if JudgeDispCount!-1 :JudgeDispCount+FrameTime
+	curScore_dispcount+FrameTime
+	repeat 6
+		if LaneParticleCount(cnt)!-1 :LaneParticleCount(cnt)+FrameTime
+
+		if LaneEffectCount(cnt)<0 :LaneEffectCount(cnt)-FrameTime
+		if LaneEffectCount(cnt)>0 :LaneEffectCount(cnt)+FrameTime
+	loop
+
+	if SndEventThread==0 :gosub*scene_Gameplay_PlaySoundEvent
+
+	return
+
+*scene_Gameplay_subThread
+
+	//タイマー取得
+		sysclock_cur=GetNowCount()-sysclock_std
+
+	//サウンドイベント処理
+	if SndEventThread==1 :gosub*scene_Gameplay_PlaySoundEvent
+
+	//判定処理
+		KeybtJudge(1,0)=CheckHitKey(KEY_INPUT_S)
+		KeybtJudge(1,1)=CheckHitKey(KEY_INPUT_D)
+		KeybtJudge(1,2)=CheckHitKey(KEY_INPUT_F)
+		KeybtJudge(1,3)=CheckHitKey(KEY_INPUT_J)
+		KeybtJudge(1,4)=CheckHitKey(KEY_INPUT_K)
+		KeybtJudge(1,5)=CheckHitKey(KEY_INPUT_L)
+
+	//判定
+		repeat 6
+			NearNoteID(cnt)=-1
+			NearNoteGap(cnt)=-1
+			ProgLaneID=cnt
+			repeat ObjMax
+				if ObjJudgeFlag(cnt) :continue
+				if objChannel(cnt)!ProgLaneID :continue
+				if NearNoteGap(ProgLaneID)==-1 {
+					NearNoteGap(ProgLaneID)=abs(sysclock_cur-(ObjTiming(cnt)+JudgeOffset))
+					NearNoteID(ProgLaneID)=cnt
+					//符号
+					if sysclock_cur>(objTiming(cnt)+JudgeOffset) :NearNoteSign(ProgLaneID)=1:else:NearNoteSign(ProgLaneID)=0
+				} else {
+					if NearNoteGap(ProgLaneID)>abs(sysclock_cur-JudgeOffset-ObjTiming(cnt)) {
+						NearNoteGap(ProgLaneID)=abs(sysclock_cur-JudgeOffset-ObjTiming(cnt))
+						NearNoteID(ProgLaneID)=cnt
+						//符号
+						if sysclock_cur>(objTiming(cnt)+JudgeOffset) :NearNoteSign(ProgLaneID)=1:else:NearNoteSign(ProgLaneID)=0
+					}
+				}
+			loop
+			//キーサウンドを割り当て
+			KeyAssignID(ProgLaneID)=NearNoteID(ProgLaneID)
+			//判定から除外
+			if NearNoteGap(ProgLaneID)>jWid_Miss {
+				NearNoteID(ProgLaneID)=-1
+			}
+		loop
+
+		repeat 6
+			ProgLaneID=cnt
+			;if FinishFlag==TRUE :break	//終了済みなら判定をスキップ
+			if KeybtJudge(0,ProgLaneID)==0&KeybtJudge(1,ProgLaneID)==1 {
+
+				//レーンエフェクト初期化
+				LaneEffectCount(ProgLaneID)=-1
+
+				if KeyAssignID(ProgLaneID)!-1 {
+					if objhSndDB(KeyAssignID(ProgLaneID))!-1&objhSndDB(KeyAssignID(ProgLaneID))<length(sndDB_hchannel) {
+						cfunc64v BASS_ChannelSetAttribute,sndDB_hchannel(objhSndDB(KeyAssignID(ProgLaneID))),BASS_ATTRIB_VOL,d2f((double(volume_PLAY)/100.0)*objVolume(KeyAssignID(ProgLaneID)))
+						cfunc64v BASS_ChannelSetPosition,sndDB_hchannel(objhSndDB(KeyAssignID(ProgLaneID))),0,0,0
+						cfunc64v BASS_ChannelPlay,sndDB_hchannel(objhSndDB(KeyAssignID(ProgLaneID)))
+					}
+				}
+				if NearNoteID(ProgLaneID)!-1 {
+					if ObjType(NearNoteID(ProgLaneID))==ID_OBJTYPE_SINGLE|ObjType(NearNoteID(ProgLaneID))==ID_OBJTYPE_HOLDSTART {
+						JudgeNoteGap(ProgLaneID)=NearNoteGap(ProgLaneID)
+						gosub*scene_Gameplay_JudgeObject
+						if ObjType(NearNoteID(ProgLaneID))==ID_OBJTYPE_HOLDSTART {
+							ProgLongNoteID(ProgLaneID)=NearNoteID(ProgLaneID)+1
+						} else {
+							objJudgeFlag(NearNoteID(ProgLaneID))=TRUE
+						}
+					}
+				}
+			}
+			if KeybtJudge(0,ProgLaneID)==1&KeybtJudge(1,ProgLaneID)==0 {
+
+				//レーンエフェクト初期化
+				LaneEffectCount(ProgLaneID)=1
+
+				if ProgLongNoteID(ProgLaneID)!-1 {
+					NearNoteID(ProgLaneID)=ProgLongNoteID(ProgLaneID)
+					NearNoteGap(ProgLaneID)=abs(sysclock_cur-JudgeOffset-ObjTiming(NearNoteID(ProgLaneID)))
+
+					objJudgeFlag(NearNoteID(ProgLaneID))=TRUE		//終点
+					objJudgeFlag(NearNoteID(ProgLaneID)-1)=TRUE		//始点
+
+					gosub*scene_Gameplay_JudgeObject
+					ProgLongNoteID(ProgLaneID)=-1		//判定中のノーツIDを削除
+				}
+			}
+		loop
+
+	KeybtJudge(0,0)=KeybtJudge(1,0)
+	KeybtJudge(0,1)=KeybtJudge(1,1)
+	KeybtJudge(0,2)=KeybtJudge(1,2)
+	KeybtJudge(0,3)=KeybtJudge(1,3)
+	KeybtJudge(0,4)=KeybtJudge(1,4)
+	KeybtJudge(0,5)=KeybtJudge(1,5)
+
+	return
+
+*scene_Gameplay_PlaySoundEvent
+	repeat sndPlayEvent_max
+		i=cnt
+		if sndPlayEvent_playflag(i) :continue
+
+		if sysclock_cur>sndPlayEvent_timing(i) {
+			cfunc64v BASS_ChannelSetAttribute,sndPlayEvent_hchannel(i),BASS_ATTRIB_VOL,d2f((double(volume_BGM)/100.0)*sndPlayEvent_volume(i))
+			cfunc64v BASS_ChannelSetPosition,sndPlayEvent_hchannel(i),0,0
+			cfunc64v BASS_ChannelPlay,sndPlayEvent_hchannel(i)
+			sndPlayEvent_playflag(i)=TRUE
+		}
+	loop
+	return
+
+*scene_Gameplay_JudgeObject
+
+	//最も近いオブジェクトとの時間差で判定を確定
+	JudgeDispType=JUDGEID_MISS
+	if jWid_Miss>NearNoteGap(ProgLaneID) :JudgeDispType=JUDGEID_MISS
+	if jWid_Bad>NearNoteGap(ProgLaneID) :JudgeDispType=JUDGEID_BAD
+	if jWid_Good>NearNoteGap(ProgLaneID) :JudgeDispType=JUDGEID_GOOD
+	if jWid_Great>NearNoteGap(ProgLaneID) :JudgeDispType=JUDGEID_GREAT
+	if jWid_Excellent>NearNoteGap(ProgLaneID) :JudgeDispType=JUDGEID_EXCELLENT
+
+	//判定情報を処理
+	ObjJudgeProg JudgeDispType,ProgLaneID
+
+	return
+
+*scene_Gameplay_UpdateLoadScreen
+
+	if ProcessMessage()==-1 :goto*Exit
+
+	SetDrawScreen hcommonLayer
+	ClearDrawScreen
+
+	DrawCommonBackground SceneCount
+	SetDrawBlendMode DX_BLENDMODE_PMA_ALPHA,256
+	DrawGraph 0,0,hdximg(icommon_bglayer),TRUE
+
+	duio_Draw"#MusicSelect-Decide"
+
+	SetDrawScreen DX_SCREEN_BACK
+	ClearDrawScreen
+
+	SetDrawBlendMode DX_BLENDMODE_PMA_ALPHA,256
+	DrawExtendGraph 0,0,DispWidth,DispHeight,hcommonLayer,TRUE
+
+	SceneCount++
+
+	ScreenFlip
+	return
+
+#deffunc ObjJudgeProg int _judge,int _ch
+
+	curScore_dispease=curScore
+	curScore_dispcount=0
+
+	switch _judge
+
+		case JUDGEID_EXCELLENT	//EXCELLENT判定
+			curScore+int(score_AddObjScore*1.0)
+			curCombo++
+			curJudge(JUDGEID_EXCELLENT)++
+			JudgeDisphImg=hdximg(igameplay_judge_excellent)
+		swbreak
+
+		case JUDGEID_GREAT		//GREAT判定
+			curScore+int(score_AddObjScore*0.5)
+			curCombo++
+			curJudge(JUDGEID_GREAT)++
+			JudgeDisphImg=hdximg(igameplay_judge_great)
+		swbreak
+
+		case JUDGEID_GOOD		//GOOD判定
+			curScore+int(score_AddObjScore*0.25)
+			curCombo++
+			curJudge(JUDGEID_GOOD)++
+			JudgeDisphImg=hdximg(igameplay_judge_good)
+		swbreak
+
+		case JUDGEID_BAD		//BAD判定
+			curScore+int(score_AddObjScore*0.1)
+			curCombo=0
+			curJudge(JUDGEID_BAD)++
+			JudgeDisphImg=hdximg(igameplay_judge_bad)
+		swbreak
+
+		case JUDGEID_MISS		//MISS判定
+			//curScore+0
+			curCombo=0
+			curJudge(JUDGEID_MISS)++
+			JudgeDisphImg=hdximg(igameplay_judge_miss)
+		swbreak
+
+	swend
+
+	//early / late
+	if _judge!JUDGEID_EXCELLENT {
+		if NearNoteSign(_ch)==0 {
+			RecentJudgeGap(RecentJudgeCount)=NearNoteGap(_ch)*-1
+			curJudge(JUDGEID_EARLY)++
+			RecentJudgeCount++
+		}
+		if NearNoteSign(_ch)==1 {
+			RecentJudgeGap(RecentJudgeCount)=NearNoteGap(_ch)
+			curJudge(JUDGEID_LATE)++
+			RecentJudgeCount++
+		}
+	}
+
+	//最大コンボを更新
+	if maxCombo<curCombo :maxCombo=curCombo
+
+	//コンボボーナス
+	if curCombo\100==0&curCombo!0 :curBonusScore+1.0
+
+	//能力値を計算
+	curPfScore=GetPfPoint(mapdb_level(curselect_item,curselect_lv),curScore,maxCombo,mapdb_difficulty(curselect_item,curselect_lv))
+
+	//パーティクルエフェクトを初期化
+	if _judge==JUDGEID_EXCELLENT|_judge==JUDGEID_GREAT|_judge==JUDGEID_GOOD {
+		LaneParticleCount(_ch)=0
+		LaneParticlehImg(_ch)=hdximgarr_gameplay_particle(rnd(8))
+	}
+
+	JudgeDispCount=0
+
+	return

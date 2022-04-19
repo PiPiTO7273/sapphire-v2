@@ -1,0 +1,264 @@
+
+#module _wininetwrap64_
+#uselib "wininet.dll"
+#cfunc InternetOpen "InternetOpenA" int,int,int,int,int
+#cfunc InternetConnect "InternetConnectA" int,int,int,int,int,int,int,int
+#cfunc HttpOpenRequest "HttpOpenRequestA" int,int,int,int,int,int,int,int
+#cfunc HttpSendRequest "HttpSendRequestA" int,int,int,int,int
+#cfunc InternetReadFile "InternetReadFile" int,int,int,int
+#cfunc HttpQueryInfo "HttpQueryInfoA" int,int,int,int,int
+#func InternetCloseHandle "InternetCloseHandle" int
+#func DeleteUrlCacheEntry "DeleteUrlCacheEntry" sptr
+
+#define DOWNLOAD_BUFFER		200000
+
+#deffunc setProxy str s1, str s2
+	sdim proxy,256
+	sdim bypass,256
+	proxy=s1
+	bypass=s2
+return
+
+#deffunc WebAPI_Init str _url,str _proxy
+	sdim httpproxy:httpproxy=_proxy
+	return openHttp("puoro.sapphire/v2*",geturl_server(_url),80)
+
+#deffunc setHeader var v1, str s2
+	phead=varptr64(v1)
+	sdim referrer,256
+	referrer=s2
+	pref=varptr64(referrer)
+return
+
+#define INTERNET_OPEN_TYPE_PRECONFIG 0
+#define INTERNET_OPEN_TYPE_PROXY 3
+#define INTERNET_SERVICE_HTTP 3
+#defcfunc openHttp str s1,str s2,int p3
+	sdim agent,256
+	agent=s1
+	sdim server,256
+	server=s2
+	port=p3
+	if proxy=="" {
+		accessType=INTERNET_OPEN_TYPE_PRECONFIG
+		pproxy=0
+		pbypass=0
+	} else {
+		accessType=INTERNET_OPEN_TYPE_PROXY
+		pproxy=varptr64(proxy)
+		if bypass=="" { pbypass=0 }
+		else { pbypass=varptr64(bypass) }
+	}
+	dim64 hInternet
+	hInternet=cfunc64(RET_INT64,InternetOpen,varptr64(agent),accessType,pproxy,pbypass,0)
+	if hInternet==0 {
+		return 1
+	}
+	dim64 hConnect
+	hConnect=cfunc64(RET_INT64,InternetConnect,hInternet,varptr64(server),port,0,0,INTERNET_SERVICE_HTTP,0,0)
+	if hConnect==0 {
+		return 1
+	}
+return 0
+;http Requestの送信
+#define INTERNET_FLAG_NO_COOKIES 0x80000
+#define INTERNET_FLAG_NO_UI 512
+#define INTERNET_FLAG_PRAGMA_NOCACHE 256
+#define INTERNET_FLAG_SECURE 0x800000
+//p3 : 0=GET request,1=POST request
+#defcfunc httpRequest str s1,var v2,int p3,int p4
+	sdim path,256
+	path=s1
+	ppath=varptr64(path)
+	sdim sendtmp:sendtmp=str(v2)
+	pdpost=0: if sendtmp!="": pdpost=varptr64(sendtmp)
+	lpost=strlen(sendtmp)
+	sdim averb,10,2
+	averb="GET","POST"
+	pverb=varptr64(averb.p3)
+	fSsl=0: if p4: fSsl=INTERNET_FLAG_SECURE
+	flg=INTERNET_FLAG_NO_COOKIES | INTERNET_FLAG_NO_UI | 0x80000000
+	flg=flg | fSsl
+	dim64 hRequest
+	hRequest=cfunc64(RET_INT64,HttpOpenRequest,hConnect,pverb,ppath,0,pref,0,flg,0)
+	if hRequest==0 {
+		return 1
+	}
+	if cfunc64(RET_INT64,HttpSendRequest,hRequest,phead,-1,pdpost,lpost)==0 {
+		return 1
+	}
+return 0
+;データの受信
+#define HTTP_QUERY_RAW_HEADERS_CRLF 22 
+#defcfunc httpGet var v1,var v2, int p3, int p4
+	phead=varptr64(v1)
+	headsize=p3
+	dup buf,v2
+	bufsize=p4
+	sdim tmp,1024
+	size=0
+	len=0
+	repeat
+		rt=cfunc64(RET_INT64,InternetReadFile,hRequest,varptr64(tmp),1023,varptr64(size))
+		if rt==0: break
+		if size<1: break
+		poke tmp,size,0
+		len+=size: if len>=bufsize:break
+		buf+=tmp
+	loop
+	if rt==0 {
+		return 1
+	}
+	if len>=bufsize {
+		return 1
+	}
+	;ヘッダの取得
+	flg=HTTP_QUERY_RAW_HEADERS_CRLF
+	rt=cfunc64(RET_INT64,HttpQueryInfo,hRequest,flg,phead,varptr64(headsize),varptr64(index))
+	if rt==0 {
+		return 1
+	}
+	if index {
+	}
+return 0
+
+#deffunc httpGet_async_A var v1,var v2, int p3, int p4,int p5
+	phead=varptr64(v1)
+	headsize=p3
+	bufsize=p4
+	sdim tmp,p5
+	size=0
+	len=0
+	return
+#deffunc httpGet_async_LOOP var v1,var v2, int p3,int p4, int p5
+		test=1
+		rt=cfunc64(RET_INT64,InternetReadFile,hRequest,varptr64(tmp),DOWNLOAD_BUFFER,varptr64(size))
+		if varsize(v2)<len+size :memexpand v2,len+size+p5*16	//余裕を持って確保
+		memcpy v2,tmp,size,len,0
+		len+size
+	return size
+#deffunc httpGet_async_B var v1,var v2, int p3, int p
+	;ヘッダの取得
+	flg=HTTP_QUERY_RAW_HEADERS_CRLF
+	rt=cfunc64(RET_INT64,HttpQueryInfo,hRequest,flg,phead,varptr64(headsize),varptr64(index))
+	if rt==0 {
+		return 1
+	}
+	if index {
+	}
+return 0
+#deffunc closeHttp
+    if hRequest!0 :cfunc64v InternetCloseHandle,hRequest
+    if hConnect!0 :cfunc64v InternetCloseHandle,hConnect
+    if hInternet!0 :cfunc64v InternetCloseHandle,hInternet
+return
+#defcfunc WebAPI_Get str _url
+	logmes GetTimeStamp()+" HTTP GET \""+_url+"\""
+	sdim httpres:httpres=WebAPI_Get_bypass(_url)
+	sdim code_lf:poke code_lf,0,10
+	sdim code_cr:poke code_cr,0,13
+	strrep httpres,code_lf,""
+	strrep httpres,code_cr,""
+	strrep httpres,"</br>","\n"
+return httpres
+#defcfunc WebAPI_Get_bypass str _url
+	dpost=""
+	sdim header,1024
+	header="Accept: text/html;q=0.9,text/plain;q=0.8\n"
+	header+="Connection: close\n"
+	header+="Content-type: application/x-www-form-urlencoded\n\n"
+	sdim rhead,1024
+	sdim httpres, 1024*1024
+	setProxy httpproxy@,""		//プロキシのアドレス:ポート , bypass
+	setHeader header,""
+	if openHttp("puoro.sapphire/*",geturl_server(_url),80)==0 {
+		if httpRequest(geturl_withoutserver(_url),dpost,0)==0 {
+			if httpGet(rhead, httpres, varsize(rhead), varsize(httpres))==0 {
+			}
+		}
+	}
+	closeHttp
+return httpres
+#deffunc WebAPI_Get_bin_async_A str _url,int _maxbuf
+	dpost=""
+	sdim header,1024
+	header+="Connection: close\n"
+	sdim rhead,1024
+	sdim httpres,1024*1024
+	setProxy httpproxy@,""		//プロキシのアドレス:ポート , bypass
+	setHeader header,""
+	if openHttp("puoro.sapphire/*",geturl_server(_url),80)==0 {
+		if httpRequest(geturl_withoutserver(_url),dpost,0)==0 {
+			httpGet_async_A rhead, httpres, varsize(rhead), varsize(httpres),_maxbuf
+		}
+	}
+return
+#deffunc WebAPI_Get_bin_async_LOOP var _dest,int _buf
+	httpGet_async_LOOP rhead, httpres, varsize(rhead), varsize(httpres),_buf
+	if size<1 {
+		httpGet_async_B rhead, httpres, varsize(rhead), varsize(httpres)
+		closeHttp
+		sdim _dest,len
+		memcpy _dest,httpres,len
+		return -1
+	}
+return len
+#defcfunc WebAPI_Post str _url,str _prm
+	dpost=_prm
+	sdim header,1024
+	header="Accept: text/html;q=0.9,text/plain;q=0.8\n"
+	header+="Connection: close\n"
+	header+="Content-type: application/x-www-form-urlencoded\n\n"
+	sdim rhead,1024
+	sdim httpres, 1024*1024
+	setProxy httpproxy@,""		//プロキシのアドレス:ポート , bypass
+	setHeader header,""
+	if openHttp("puoro.sapphire/*",geturl_server(_url),80)==0 {
+		if httpRequest(geturl_withoutserver(_url),dpost,1)==0 {
+			if httpGet(rhead, httpres, varsize(rhead), varsize(httpres))==0 {
+			}
+		}
+	}
+	closeHttp
+	sdim code_lf:poke code_lf,0,10
+	sdim code_cr:poke code_cr,0,13
+	strrep httpres,code_lf,""
+	strrep httpres,code_cr,""
+	strrep httpres,"</br>","\n"
+return httpres
+#defcfunc geturl_server str _org
+	sdim tmpstr1
+	tmpstr1=_org
+	strrep tmpstr1,"http://",""
+	strrep tmpstr1,"https://",""
+	split tmpstr1,"/",tmpstr1
+	return tmpstr1(0)
+#defcfunc geturl_withoutserver str _org
+	sdim tmpstr2
+	tmpstr2=_org
+	strrep tmpstr2,"http://",""
+	strrep tmpstr2,"https://",""
+	strrep tmpstr2,geturl_server(tmpstr2),""
+	return tmpstr2
+#global
+
+/*
+//サンプル（俺のゲームで接続確認する用のページ）
+httpproxy@=""
+title"ちょっとまて"
+dialog webapi_get("http://puoro.ml/apiv2/connection.php")
+title"文字OK"
+
+//バイナリ（マヨネーズを表示）
+webapi_get_bin_async_a "https://i.imgur.com/pfXMfvb.jpg",1024*1024	//第2パラは最大のバッファ容量
+repeat
+webapi_get_bin_async_loop tmppic,1024*1024	//第2パラはバッファ容量、async_aの最大以下だったら自由に設定できる（途中で変更も可）
+size=stat
+if size==-1 :break
+title str(size)+"byte 取得した"
+wait
+loop
+title"ok"
+memfile tmppic
+picload"MEM:test.jpg",0
+*/

@@ -1,0 +1,87 @@
+
+*LoadStringTable
+
+	//オブジェクトの配置 , ボタンのID
+	sdim playoption_objplace_buttonid
+	playoption_objplace_buttonid(0)="playoption_button_objplace_normal"
+	playoption_objplace_buttonid(1)="playoption_button_objplace_random"
+	playoption_objplace_buttonid(2)="playoption_button_objplace_mirror"
+	playoption_objplace_buttonid(3)="playoption_button_objplace_half"
+	playoption_objplace_buttonid(4)="playoption_button_objplace_smirror"
+	playoption_objplace_buttonid(5)="playoption_button_objplace_single"
+
+	//ゲージの難易度 , ボタンのID
+	sdim playoption_gauge_buttonid
+	playoption_gauge_buttonid(0)="playoption_button_gauge_normal"
+	playoption_gauge_buttonid(1)="playoption_button_gauge_madness"
+	playoption_gauge_buttonid(2)="playoption_button_gauge_assist"
+	playoption_gauge_buttonid(3)="playoption_button_gauge_fc"
+	playoption_gauge_buttonid(4)="playoption_button_gauge_expert"
+	playoption_gauge_buttonid(5)="playoption_button_gauge_allex"
+
+	//ウィンドウレイアウト
+	sdim playoption_window_buttonid
+	playoption_window_buttonid(0)="playoption_button_window_profile"
+	playoption_window_buttonid(1)="playoption_button_window_scoregraph"
+	playoption_window_buttonid(2)="playoption_button_window_judge"
+
+	//目標スコア
+	sdim playoption_target_buttonid
+	playoption_target_buttonid(0)="playoption_button_target_ex"
+	playoption_target_buttonid(1)="playoption_button_target_s"
+	playoption_target_buttonid(2)="playoption_button_target_aaa"
+	playoption_target_buttonid(3)="playoption_button_target_aa"
+	playoption_target_buttonid(4)="playoption_button_target_a"
+	playoption_target_buttonid(5)="playoption_button_target_100"
+	playoption_target_buttonid(6)="playoption_button_target_mybest"
+	playoption_target_buttonid(7)="playoption_button_target_wr"
+
+	sdim folder_dropdown_id:sdim folder_dropdown_event
+	folder_dropdown_id(0)="musicselect_button_folder_all_dl"
+	folder_dropdown_id(1)="musicselect_button_folder_alllv_dl"
+	folder_dropdown_id(2)="musicselect_button_folder_lv1-4_dl"
+	folder_dropdown_id(3)="musicselect_button_folder_lv5-8_dl"
+	folder_dropdown_id(4)="musicselect_button_folder_lv9-11_dl"
+	folder_dropdown_id(5)="musicselect_button_folder_lv12_dl"
+	folder_dropdown_id(6)="musicselect_button_folder_assist_dl"
+	folder_dropdown_id(7)="musicselect_button_folder_clear_dl"
+	folder_dropdown_id(8)="musicselect_button_folder_expert_dl"
+	folder_dropdown_id(9)="musicselect_button_folder_madness_dl"
+	folder_dropdown_id(10)="musicselect_button_folder_fc_dl"
+	folder_dropdown_id(11)="musicselect_button_folder_allex_dl"
+	folder_dropdown_id(12)="musicselect_button_folder_normal_dl"
+	folder_dropdown_id(13)="musicselect_button_folder_hard_dl"
+	folder_dropdown_id(14)="musicselect_button_folder_chaos_dl"
+	folder_dropdown_id(15)="musicselect_button_folder_s1_dl"
+	folder_dropdown_event(0)="folder_dropdown_all"
+	folder_dropdown_event(1)="folder_dropdown_alllv"
+	folder_dropdown_event(2)="folder_dropdown_lv1_4"
+	folder_dropdown_event(3)="folder_dropdown_lv5_8"
+	folder_dropdown_event(4)="folder_dropdown_lv9_11"
+	folder_dropdown_event(5)="folder_dropdown_lv12"
+	folder_dropdown_event(6)="folder_dropdown_assist"
+	folder_dropdown_event(7)="folder_dropdown_clear"
+	folder_dropdown_event(8)="folder_dropdown_expert"
+	folder_dropdown_event(9)="folder_dropdown_madness"
+	folder_dropdown_event(10)="folder_dropdown_fc"
+	folder_dropdown_event(11)="folder_dropdown_allex"
+	folder_dropdown_event(12)="folder_dropdown_normal"
+	folder_dropdown_event(13)="folder_dropdown_hard"
+	folder_dropdown_event(14)="folder_dropdown_chaos"
+	folder_dropdown_event(15)="folder_dropdown_s1"
+
+	sdim sort_dropdown_id:sdim sort_dropdown_event
+	sort_dropdown_id(0)="musicselect_button_sort_default_dl"
+	sort_dropdown_id(1)="musicselect_button_sort_name_dl"
+	sort_dropdown_id(2)="musicselect_button_sort_level_dl"
+	sort_dropdown_id(3)="musicselect_button_sort_score_dl"
+	sort_dropdown_id(4)="musicselect_button_sort_bpm_dl"
+	sort_dropdown_id(5)="musicselect_button_sort_cleartype_dl"
+	sort_dropdown_event(0)="sort_dropdown_default"
+	sort_dropdown_event(1)="sort_dropdown_name"
+	sort_dropdown_event(2)="sort_dropdown_level"
+	sort_dropdown_event(3)="sort_dropdown_score"
+	sort_dropdown_event(4)="sort_dropdown_bpm"
+	sort_dropdown_event(5)="sort_dropdown_cleartype"
+
+	return

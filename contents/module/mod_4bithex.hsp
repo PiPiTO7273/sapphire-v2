@@ -1,0 +1,33 @@
+#module _4bithex_
+#define hextable "729561ab3cABCdef"
+#deffunc ConvHEXenc var _dest,var _bin,int _length
+sdim tmphextable
+tmphextable=hextable
+sdim hex
+repeat _length
+	value=peek(_bin,cnt)
+	hex+strmid(tmphextable,value>>4,1)
+	hex+strmid(tmphextable,value-(value>>4<<4),1)
+loop
+;sdim tmptxtcode
+;repeat 15
+;	poke tmptxtcode,0,'g'+cnt
+;	strrep hex,strmid(tmphextable,cnt,1)+strmid(tmphextable,cnt,1),tmptxtcode
+;loop
+_dest=hex
+return
+#deffunc ConvHEXdec var _dest,var _hex
+sdim tmphextable
+tmphextable=hextable
+;sdim tmptxtcode
+;repeat 15
+;	poke tmptxtcode,0,'g'+cnt
+;	strrep _hex,tmptxtcode,strmid(tmphextable,cnt,1)+strmid(tmphextable,cnt,1)
+;loop
+;sdim _dest,strlen(_hex)/2
+memexpand _dest,strlen(_hex)/2
+repeat strlen(_hex)/2
+poke _dest,cnt,instr(tmphextable,0,strmid(_hex,cnt*2,1))<<4|instr(tmphextable,0,strmid(_hex,cnt*2+1,1))
+loop
+return strlen(_hex)
+#global

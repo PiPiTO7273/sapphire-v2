@@ -1,0 +1,30 @@
+//object type
+rp:@button>>0-000-**
+rp:@text>>0-001-**
+rp:@image>>0-002-**
+rp:@3dsquare>>0-003-**
+rp:@3dcamera>>0-004-**
+
+//extra options
+rp:&alpha>>0x0000
+rp:&disabled>>0x0001
+rp:&hide>>0x0002
+rp:&event>>0x0003
+rp:&animation-in>>0x0004
+rp:&align-right-size>>0x0005
+rp:&align-center-size>>0x0006
+rp:&align-centerxy-size>>0x0007
+rp:&color>>0x0008
+rp:&layerlv>>0x0009
+rp:&disable-imgalpha>>0x000E
+rp:&extratext>>0x0010
+rp:&imgwidth>>0x0011
+rp:&imgheight>>0x0012
+rp:&pushsound>>0x0013
+
+//&animation-in Options
+rp:zoom>>0x000A
+rp:fade>>0x000B
+rp:move>>0x000C
+rp:random.text>>0x000D
+rp:increase.text>>0x000F

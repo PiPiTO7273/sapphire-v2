@@ -1,0 +1,16 @@
+
+#module
+
+#defcfunc PortalWebSvc_DownloadIRraw
+	logmes GetTimeStamp()+" [portal-websvc] Downloading IRraw..."
+	return webapi_get("http://"+duio_idsGet("Server")+"/apiv2/API-GetGlobalRanking.php?key="+duio_idsGet("_keymac_APIkey_GetGlobalRanking"))
+
+#defcfunc PortalWebSvc_DownloadProfile str _id,str _password
+	logmes GetTimeStamp()+" [portal-websvc] Downloading Profile..."
+	return webapi_get("http://"+duio_idsGet("Server")+"/apiv2/API-GetProfile.php?key="+duio_idsGet("_keymac_APIkey_GetProfile")+"&id="+_id+"&password="+_password+"&decode="+duio_idsGet("_keymac_SSL_Decode_0")+duio_idsGet("_keymac_SSL_Decode_1")+duio_idsGet("_keymac_SSL_Decode_2")+duio_idsGet("_keymac_SSL_Decode_3"))
+
+#defcfunc PortalWebSvc_DownloadRecord str _id
+	logmes GetTimeStamp()+" [portal-websvc] Downloading Records..."
+	return webapi_get("http://"+duio_idsGet("Server")+"/apiv2/API-GetRecord.php?key="+duio_idsGet("_keymac_APIkey_GetRecord")+"&name="+_id)
+
+#global

@@ -1,0 +1,160 @@
+
+	#module
+
+	//バイナリパッケージの読み込み
+	//binpkg_Load p1
+	//p1		:	パッケージのファイルパス
+	#deffunc binpkg_Load str _pkgpath
+
+		dim pkgsize
+		exist _pkgpath
+		pkgsize=strsize
+		sdim pkgBuf,pkgsize
+		bload _pkgpath,pkgBuf
+
+		//ヘッダーの確認
+		if peek(pkgBuf,0)!'b' :return -2
+		if peek(pkgBuf,1)!'p' :return -2
+		if peek(pkgBuf,2)!'g' :return -2
+		if peek(pkgBuf,3)!'0' :return -2
+
+		//ファイル数の確認
+		dim pkgIndexMax
+		pkgIndexMax=lpeek(pkgBuf,4)
+
+		dim pkgReadIndex
+		pkgReadIndex=64
+
+		//格納
+		dim tmppkgFileNameLength
+		sdim tmppkgFileNameBuf
+		sdim pkgFileName,pkgIndexMax
+		dim pkgIndexPosition,pkgIndexMax
+		dim pkgIndexLength,pkgIndexMax
+		dim pkgDisableFlag,pkgIndexMax
+
+		repeat pkgIndexMax
+			tmppkgFileNameLength=lpeek(pkgBuf,pkgReadIndex)
+			sdim tmppkgFileNameBuf,tmppkgFileNameLength
+			memcpy tmppkgFileNameBuf,pkgBuf,tmppkgFileNameLength,0,pkgReadIndex+4
+			pkgFileName(cnt)=tmppkgFileNameBuf
+			pkgReadIndex+4+tmppkgFileNameLength
+			pkgIndexLength(cnt)=lpeek(pkgBuf,pkgReadIndex)
+			pkgIndexPosition(cnt)=pkgReadIndex+4
+			pkgReadIndex+4+pkgIndexLength(cnt)
+
+			;logmes"ID:"+cnt+" \""+pkgFileName(cnt)+"\" Position:"+pkgIndexPosition(cnt)+",Length:"+pkgIndexLength(cnt)
+		loop
+
+		return
+
+	//バイナリパッケージのインデックスを取得
+	//binpkg_GetIndex(p1)
+	//p1		:	パッケージ内で検索するファイル名
+	//ファイルが存在しなかった場合、-1が返ります
+	#defcfunc binpkg_GetIndex str _pkgfilename
+
+		dim ResIndexID:ResIndexID=-1
+		repeat pkgIndexMax
+			if pkgFileName(cnt)==_pkgfilename {
+				ResIndexID=cnt
+				break
+			}
+		loop
+
+		return ResIndexID
+
+	//バイナリパッケージのファイルを展開
+	//binpkg_ExtractFile p1,p2
+	//p1		:	パッケージ内を検索するファイル名
+	//p2		:	展開先のファイル名
+	#deffunc binpkg_extract str _pkgfilename,str _extractfilename
+
+		repeat pkgIndexMax
+			if pkgFileName(cnt)==_pkgfilename {
+				sdim pkgtmpBuf,pkgIndexLength(cnt)
+				memcpy pkgtmpBuf,pkgBuf,pkgIndexLength(cnt),0,pkgIndexPosition(cnt)
+				bsave _extractfilename,pkgtmpBuf
+			}
+		loop
+
+		return
+
+	//バイナリパッケージをすべて展開
+	#deffunc binpkg_extractall
+		repeat pkgIndexMax
+			binpkg_extract pkgFileName(cnt),pkgFileName(cnt)
+		loop
+		return
+
+	//バイナリパッケージ内のファイル個数を取得
+	#defcfunc binpkg_GetFileNum
+		return pkgIndexMax
+
+	//バイナリパッケージ内のファイル名を取得
+	#defcfunc binpkg_GetName int _pkgIndexID
+		if _pkgIndexID<0 :return"#ERROR"
+		if pkgIndexMax<=_pkgIndexID :return"#OVER"
+		return pkgFileName(_pkgIndexID)
+
+	//バイナリパッケージ内のファイルのサイズを取得
+	//binpkg_GetFileLength p1
+	//p1		:	インデックス番号
+	#defcfunc binpkg_GetFileLength int _pkgIndexID
+		if _pkgIndexID<0 :return -1
+		if pkgIndexMax<=_pkgIndexID :return -2
+		return pkgIndexLength(_pkgIndexID)
+
+	//バイナリパッケージ内のファイルのバイナリ位置を取得
+	//binpkg_GetFilePosition p1
+	//p1		:	インデックス番号
+	#defcfunc binpkg_GetFilePosition int _pkgIndexID
+		if _pkgIndexID<0 :return -1
+		if pkgIndexMax<=_pkgIndexID :return -2
+		return pkgIndexPosition(_pkgIndexID)
+
+	//バイナリパッケージ内のファイルを変数にコピー
+	//binpkg_CopytoBuffer p1,p2
+	//p1		:	コピー先の変数
+	//p2		:	インデックス番号
+	#deffunc binpkg_CopytoBuffer var _pkgCopy,int _pkgIndexID
+		if _pkgIndexID<0 :return -1
+		if pkgIndexMax<=_pkgIndexID :return -2
+		sdim _pkgCopy,pkgIndexLength(_pkgIndexID)
+		memcpy _pkgCopy,pkgBuf,pkgIndexLength(_pkgIndexID),0,pkgIndexPosition(_pkgIndexID)
+		return 0
+
+	//バイナリパッケージ用のバッファを作成
+	#deffunc binpkg_Create var _pkgbuf
+		sdim _pkgbuf,4+4
+		poke _pkgbuf,0,'b'
+		poke _pkgbuf,1,'p'
+		poke _pkgbuf,2,'g'
+		poke _pkgbuf,3,'0'
+		lpoke _pkgbuf,4,0
+		return
+
+	//バイナリパッケージにファイルを追加
+	#deffunc binpkg_AddFile var _pkgbuf,str _addfilename
+		sdim filename
+		filename=getpath(_addfilename,8)
+		sdim tmpbefbuf,varsize(_pkgbuf)
+		memcpy tmpbefbuf,_pkgbuf,varsize(_pkgbuf),0,0
+		exist _addfilename
+		sdim _pkgbuf,varsize(_pkgbuf)+strsize+4+varsize(filename)+4
+		memcpy _pkgbuf,tmpbefbuf,varsize(tmpbefbuf),0,0
+		sdim filebuf,strsize
+		bload _addfilename,filebuf
+		memcpy _pkgbuf,filebuf,strsize,varsize(tmpbefbuf)+varsize(filename)+4+4,0
+		lpoke _pkgbuf,varsize(tmpbefbuf)+varsize(filename)+4,strsize
+		lpoke _pkgbuf,varsize(tmpbefbuf),varsize(filename)
+		memcpy _pkgbuf,filename,varsize(filename),varsize(tmpbefbuf)+4,0
+		lpoke _pkgbuf,4,lpeek(_pkgbuf,4)+1
+
+		return
+
+	#deffunc binpkg_Free
+		sdim pkgBuf,64
+		return
+
+#global

@@ -28,8 +28,10 @@ goto*Startup
 #include"contents/module/func_InternetRanking.hsp"	//IR同期関連
 
 #include"contents/module/duioparse.hsp"				//Dynamic UI Language (Input-Output Module)
+#include"contents/module/scene_CommonLayer.hsp"		//共通レイヤー
 #include"contents/module/scene_MusicSelect.hsp"		//楽曲選択画面
 #include"contents/module/scene_Gameplay.hsp"			//ゲームプレイ
+#include"contents/module/scene_Result.hsp"			//リザルト
 #include"contents/module/scene_ErrorDialog.hsp"		//エラーダイアログ
 
 #epack"start.ax"
@@ -204,9 +206,6 @@ goto*Startup
 
 		hdximg(imusicselect_itemscroll_circle)=LoadGraph("contents/graphic/musicselect_itemscroll_circle.png")
 
-		duio_ChangeButtonImage duio_ButtonID2UIsetID("musicselect_button_folder"),hdximg(imusicselect_folder_all)
-		duio_ChangeButtonImage duio_ButtonID2UIsetID("musicselect_button_sort"),hdximg(imusicselect_sort_default)
-
 		hdximg(imusicselect_ir)=MakeScreen(290,116,TRUE)
 
 		hdximg(imusicselect_ir_icon_1)=LoadGraph("contents/graphic/musicselect_ir_icon_1.png")
@@ -226,6 +225,7 @@ goto*Startup
 
 		//オブジェクトの配置
 			repeat 6
+				if duio_ButtonID2UIsetID(playoption_objplace_buttonid(cnt))==-1 :continue
 				hdximg(iplayoption_objplace_normal_enabled+cnt)=MakeScreen(120,35,TRUE)
 				SetDrawScreen hdximg(iplayoption_objplace_normal_enabled+cnt)
 				DrawGraph 0,0,duio_GetButtonhImg(duio_ButtonID2UIsetID(playoption_objplace_buttonid(cnt))),TRUE
@@ -234,6 +234,7 @@ goto*Startup
 
 		//ゲージの難易度
 			repeat 6
+				if duio_ButtonID2UIsetID(playoption_gauge_buttonid(cnt))==-1 :continue
 				hdximg(iplayoption_gauge_normal_enabled+cnt)=MakeScreen(120,35,TRUE)
 				SetDrawScreen hdximg(iplayoption_gauge_normal_enabled+cnt)
 				DrawGraph 0,0,duio_GetButtonhImg(duio_ButtonID2UIsetID(playoption_gauge_buttonid(cnt))),TRUE
@@ -242,6 +243,7 @@ goto*Startup
 
 		//ウィンドウレイアウト
 			repeat 3
+				if duio_ButtonID2UIsetID(playoption_window_buttonid(cnt))==-1 :continue
 				hdximg(iplayoption_window_profile_enabled+cnt)=MakeScreen(180,35,TRUE)
 				SetDrawScreen hdximg(iplayoption_window_profile_enabled+cnt)
 				DrawGraph 0,0,duio_GetButtonhImg(duio_ButtonID2UIsetID(playoption_window_buttonid(cnt))),TRUE
@@ -250,12 +252,14 @@ goto*Startup
 
 		//目標スコア
 			repeat 6
+				if duio_ButtonID2UIsetID(playoption_target_buttonid(cnt))==-1 :continue
 				hdximg(iplayoption_target_ex_enabled+cnt)=MakeScreen(120,35,TRUE)
 				SetDrawScreen hdximg(iplayoption_target_ex_enabled+cnt)
 				DrawGraph 0,0,duio_GetButtonhImg(duio_ButtonID2UIsetID(playoption_target_buttonid(cnt))),TRUE
 				DrawGraph 0,0,hdximg(iplayoption_enabled_120),TRUE
 			loop
 			repeat 2
+				if duio_ButtonID2UIsetID(playoption_target_buttonid(cnt+6))==-1 :continue
 				hdximg(iplayoption_target_mybest_enabled+cnt)=MakeScreen(180,35,TRUE)
 				SetDrawScreen hdximg(iplayoption_target_mybest_enabled+cnt)
 				DrawGraph 0,0,duio_GetButtonhImg(duio_ButtonID2UIsetID(playoption_target_buttonid(cnt+6))),TRUE
@@ -293,6 +297,15 @@ goto*Startup
 
 		hdximg(igameplay_playtime_pre)=LoadGraph("contents/graphic/gameplay_playtime_pre.png")
 
+		hdximg(igameplay_gauge_bg_inc)=LoadGraph("contents/graphic/gameplay_gauge_inc_bg.png")
+		hdximg(igameplay_gauge_bg_dec)=LoadGraph("contents/graphic/gameplay_gauge_dec_bg.png")
+		hdximg(igameplay_gauge_inc_0)=LoadGraph("contents/graphic/gameplay_gauge_inc_0.png")
+		hdximg(igameplay_gauge_inc_1)=LoadGraph("contents/graphic/gameplay_gauge_inc_1.png")
+		hdximg(igameplay_gauge_expert)=LoadGraph("contents/graphic/gameplay_gauge_expert.png")
+		hdximg(igameplay_gauge_madness)=LoadGraph("contents/graphic/gameplay_gauge_madness.png")
+
+		hdximg(igameplay_gauge_bgvalue)=LoadGraph("contents/graphic/gameplay_gauge_bg_value.png")
+
 		PlayMovieToGraph hdximg(ibg_common),DX_PLAYTYPE_LOOP
 
 		dim hdximgarr_gameplay_particle,8
@@ -326,7 +339,7 @@ goto*Startup
 		dim FPSkeepCount
 		dim SubThreadCount
 		dim DrawThreadTime
-		curSceneTag="#MusicSelect"
+		curSceneTag="#Result"
 		color 0,0,0:boxf 320/2-80,25,320/2-80+120,30
 
 	//ライブラリ読み込み
@@ -711,14 +724,9 @@ goto*Startup
 
 	gsel 0,-1
 
-	gosub*scene_MusicSelect_Init
+	gosub*scene_Result_Init
+	;gosub*scene_MusicSelect_Init
 	;gosub*scene_Gameplay_Init
-
-	duio_Change3DSquareImage duio_3DSquareID2UIsetID("gameplay_bg_effect_l0"),hdximg(igameplay_bg_sidelr)
-	duio_Change3DSquareImage duio_3DSquareID2UIsetID("gameplay_bg_effect_r0"),hdximg(igameplay_bg_sidelr)
-	duio_Change3DSquareImage duio_3DSquareID2UIsetID("gameplay_bg_grid"),hdximg(igameplay_bg_grid)
-
-	duio_ExportAllImage
 
 *MainLoop
 
@@ -758,6 +766,9 @@ goto*Startup
 		swbreak
 		case"#Gameplay"
 			gosub*scene_Gameplay
+		swbreak
+		case"#Result"
+			gosub*scene_Result
 		swbreak
 	swend
 

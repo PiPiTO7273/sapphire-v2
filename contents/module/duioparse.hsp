@@ -1217,8 +1217,17 @@
 	UIset_Button_Y(_uisetid)=_value
 	return
 
+#defcfunc duio_GetButtonPositionX int _uisetid
+	return UIset_Button_X(_uisetid)
+
 #defcfunc duio_GetButtonPositionY int _uisetid
 	return UIset_Button_Y(_uisetid)
+
+#defcfunc duio_GetImagePositionX int _uisetid
+	return UIset_Image_X(_uisetid)
+
+#defcfunc duio_GetImagePositionY int _uisetid
+	return UIset_Image_Y(_uisetid)
 
 #deffunc duio_AddInButtonAnimation_Zoom int _uisetid,int _delay,int _length,double _prmn,int _func
 	UIset_Button_In_Mode(_uisetid)=UIset_Button_In_Mode(_uisetid)|UI_EASEIN_ZOOM

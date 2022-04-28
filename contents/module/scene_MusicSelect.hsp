@@ -36,12 +36,10 @@
 
 	dim SearchItem_hInput
 
-	duio_ChangeTextBody duio_TextID2UIsetID("musicselect_profile_name"),PlayerID
-	duio_ChangeTextBody duio_TextID2UIsetID("musicselect_profile_badge"),pfreg_Badge
-	duio_ChangeTextBody duio_TextID2UIsetID("musicselect_profile_pfpoint"),strf("%.2f pts",pfreg_PFpoint)
-	duio_ChangeTextBody duio_TextID2UIsetID("musicselect_profile_numtickets"),"x"+str(pfreg_NumTickets)
-	duio_ChangeTextBody duio_TextID2UIsetID("musicselect_profile_numfragments"),"x"+str(pfreg_NumFragments)
-	duio_ChangeTextBody duio_TextID2UIsetID("musicselect_profile_numlepus"),str(pfreg_NumLepus)+" Lepus"
+	UpdateProfileDisp
+
+	duio_ChangeButtonImage duio_ButtonID2UIsetID("musicselect_button_folder"),hdximg(imusicselect_folder_all)
+	duio_ChangeButtonImage duio_ButtonID2UIsetID("musicselect_button_sort"),hdximg(imusicselect_sort_default)
 
 	//オブジェクトの配置
 		//ボタンの画像ハンドル
@@ -155,7 +153,8 @@
 		DrawGraph shapemovepos\1920,20,hdximg(icommon_ironline),TRUE
 		DrawGraph shapemovepos\1920+1920,20,hdximg(icommon_ironline),TRUE
 
-		duio_Draw curSceneTag
+		duio_Draw"#MusicSelect"
+		duio_Draw"#Common_Profile"
 		duio_Draw"#Dialog-KeywordSearch-Nomatch"
 	}
 
@@ -874,6 +873,11 @@
 				duio_ChangeButtonImage duio_ButtonID2UIsetID(playoption_target_buttonid(cnt)),playoption_target_hbuttonimg(cnt,0)
 			}
 		loop
+
+	pfreg_Placement=playoption_objplace_select+100
+	pfreg_GaugeType=playoption_gauge_select+100
+	pfreg_WindowLayout=playoption_window_select
+	pfreg_Target=playoption_target_select+100
 
 	return
 

@@ -1,4 +1,14 @@
 
+//----- Profile -----//
+	#Common_Profile @image musicselect_profile graphic/musicselect_profile.png 759 0 &animation-in=fade,20,350,CUBIC_OUT &animation-in=move,20,350,128,0,CUBIC_OUT &layerlv=2
+	rp:profile_text_animation>>&animation-in=fade,150,250,CUBIC_OUT &animation-in=move,150,250,-64,0,CUBIC_OUT &animation-in=random.text,150,250 &color=10,10,10 &layerlv=3
+	#Common_Profile @text common_profile_name * 820 29 ps24 profile_text_animation
+	#Common_Profile @text common_profile_badge * 820 10 rom1cm12 profile_text_animation
+	#Common_Profile @text common_profile_pfpoint * 1053 31 ps24 profile_text_animation &align-center-size=54
+	#Common_Profile @text common_profile_numtickets * 1340 12 ps16 profile_text_animation
+	#Common_Profile @text common_profile_numfragments * 1340 40 ps16 profile_text_animation
+	#Common_Profile @text common_profile_numlepus * 1522 12 ps16 profile_text_animation
+
 //----- Music Select -----//
 
 	////// base //////
@@ -8,7 +18,6 @@
 		#MusicSelect @image musicselect_bg_base graphic/musicselect_bg_base.png 0 0 &animation-in=fade,0,500,CUBIC_OUT &animation-in=zoom,0,500,1.5,CUBIC_OUT &layerlv=0
 
 		#MusicSelect @image musicselect_title graphic/musicselect_title.png 0 0 &animation-in=fade,0,350,CUBIC_OUT &animation-in=move,0,350,-128,0,CUBIC_OUT &layerlv=2
-		#MusicSelect @image musicselect_profile graphic/musicselect_profile.png 759 0 &animation-in=fade,20,350,CUBIC_OUT &animation-in=move,20,350,128,0,CUBIC_OUT &layerlv=2
 
 		#MusicSelect @text musicselect_text_guide 遊びたい楽曲を選択してくだサイ！ 112 152 rom1cm16 &animation-in=fade,50,350,CUBIC_OUT &animation-in=move,50,350,-128,0,CUBIC_OUT &animation-in=random.text,50,1000 &color=255,255,255 &layerlv=2
 
@@ -45,14 +54,6 @@
 		#MusicSelect @text musicselect_activeitem_totalnotes * 200 400 ps16 &animation-in=fade,100,300,CUBIC_OUT &color=50,50,50 &layerlv=1
 		#MusicSelect @text musicselect_activeitem_bpm * 200 421 ps16 &animation-in=fade,130,300,CUBIC_OUT &color=50,50,50 &layerlv=1
 		#MusicSelect @text musicselect_activeitem_mapdesigner * 200 441 ps16 &animation-in=fade,160,300,CUBIC_OUT &color=50,50,50 &layerlv=1
-
-		rp:profile_text_animation>>&animation-in=fade,150,250,CUBIC_OUT &animation-in=move,150,250,-64,0,CUBIC_OUT &animation-in=random.text,150,250 &color=10,10,10 &layerlv=3
-		#MusicSelect @text musicselect_profile_name * 820 29 ps24 profile_text_animation
-		#MusicSelect @text musicselect_profile_badge * 820 10 rom1cm12 profile_text_animation
-		#MusicSelect @text musicselect_profile_pfpoint * 1053 31 ps24 profile_text_animation &align-center-size=54
-		#MusicSelect @text musicselect_profile_numtickets * 1340 12 ps16 profile_text_animation
-		#MusicSelect @text musicselect_profile_numfragments * 1340 40 ps16 profile_text_animation
-		#MusicSelect @text musicselect_profile_numlepus * 1522 12 ps16 profile_text_animation
 
 		rp:record_detail_animation>>&animation-in=fade,150,250,CUBIC_OUT &animation-in=move,150,250,-32,0,CUBIC_OUT &color=230,230,230 &layerlv=3
 		#MusicSelect @text musicselect_mybest_score * 90 566 ps32 record_detail_animation &animation-in=increase.text,150,700,8
@@ -243,7 +244,7 @@
 		#Gameplay @3dsquare gameplay_bg_effect_r0 (-1200,-300,500) (-850,7000,200) (-850,-300,200) (-1200,7000,500) * &layerlv=0
 
 	////// Control Panel //////
-		#Gameplay @image gameplay_controlpanel graphic/gameplay_controlpanel.png 192 564 &layerlv=1
+		#Gameplay @image gameplay_controlpanel graphic/gameplay_controlpanel.png 360 780 &layerlv=1
 
 	////// base //////
 		#Gameplay @image gameplay_title graphic/gameplay_title.png 310 0 &animation-in=move,0,300,0,-64,CUBIC_OUT &animation-in=fade,0,300,CUBIC_OUT &layerlv=1
@@ -303,6 +304,29 @@
 		#Gameplay @image gameplay_combo graphic/gameplay_combo.png 934 580 &animation-in=fade,200,300,LINEAR &layerlv=4
 		#Gameplay @text gameplay_combo_value * 913 600 ps40 &align-center-size=95 &layerlv=4
 
+	////// Gauge //////
+		#Gameplay @image gameplay_gauge_bg * 348 330 &layerlv=2 &imgwidth=50 &imgheight=320
+		#Gameplay @image gameplay_gauge * 358 330 &layerlv=3 &imgwidth=50 &imgheight=320
+
 	////// Skin //////
 		ids<>:playtheme_0_name>>デフォルト
 		ids<>:playtheme_0_single_height>>32
+
+//----- Result -----//
+	////// base //////
+		#Result @image result_title graphic/result_title.png 0 0 &animation-in=fade,0,350,CUBIC_OUT &animation-in=move,0,350,-128,0,CUBIC_OUT &layerlv=2
+
+		#Result @image result_bglayer_0 graphic/result_bg_layer0.png 0 130 &animation-in=fade,250,200,CUBIC_OUT &animation-in=move,250,500,0,128,CUBIC_OUT
+		#Result @image result_bglayer_1 graphic/result_bg_layer1.png 0 130 &animation-in=fade,150,200,CUBIC_OUT &animation-in=move,150,500,0,128,CUBIC_OUT
+		#Result @image result_bglayer_2 graphic/result_bg_layer2.png 0 130 &animation-in=fade,100,200,CUBIC_OUT &animation-in=move,100,500,0,128,CUBIC_OUT
+		#Result @image result_bglayer_3 graphic/result_bg_layer3.png 210 570 &animation-in=fade,500,150,CUBIC_OUT &animation-in=zoom,500,250,0.8,CUBIC_OUT
+		#Result @image result_bglayer_4 graphic/result_bg_layer4.png 0 0 &animation-in=fade,300,250,CUBIC_OUT &animation-in=zoom,300,250,1.2,CUBIC_OUT
+
+	////// metadata,gauge graph //////
+		#Result @image result_bg_artwork graphic/result_bg_artwork.png 210 154 &animation-in=move,600,250,-4,4,CUBIC_OUT &animation-in=fade,600,100,CUBIC_OUT
+		#Result @image result_artwork * 214 150 &imgwidth=200 &imgheight=200 &animation-in=fade,200,250,CUBIC_OUT &animation-in=move,200,250,-64,0,CUBIC_OUT &animation-in=zoom,200,250,1.3,CUBIC_OUT
+
+		#Result @image result_bg_gaugegraph graphic/result_bg_gaugegraph.png 1010 170 &animation-in=fade,250,250,CUBIC_OUT &animation-in=move,250,250,-64,0,CUBIC_OUT
+
+	////// score //////
+		#Result @image result_score_layer graphic/result_score_layer.png 388 400

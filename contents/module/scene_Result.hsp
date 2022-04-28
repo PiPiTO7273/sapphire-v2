@@ -1,0 +1,28 @@
+
+*scene_Result_Init
+
+	UpdateProfileDisp
+
+	dim item:dim lv
+	item=curselect_item
+	lv=curselect_lv
+
+	duio_ChangeImage duio_ImageID2UIsetID("result_artwork"),mapdb_hartwork(item,lv)
+
+	return
+
+*scene_Result
+
+	DrawCommonBackground SceneCount
+
+	SetDrawScreen hcommonLayer
+
+	dim shapemovepos:shapemovepos=-(1000.0/duio_GetFPS()*SceneCount)/15
+	SetDrawBlendMode DX_BLENDMODE_PMA_ALPHA,256
+	DrawGraph shapemovepos\1920,20,hdximg(icommon_ironline),TRUE
+	DrawGraph shapemovepos\1920+1920,20,hdximg(icommon_ironline),TRUE
+
+	duio_Draw"#Result"
+	duio_Draw"#Common_Profile"
+
+	return

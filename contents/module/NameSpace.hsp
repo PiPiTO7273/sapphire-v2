@@ -128,6 +128,15 @@
 
 #enum igameplay_playtime_pre
 
+#enum igameplay_gauge_bg_inc
+#enum igameplay_gauge_bg_dec
+#enum igameplay_gauge_inc_0
+#enum igameplay_gauge_inc_1
+#enum igameplay_gauge_expert
+#enum igameplay_gauge_madness
+
+#enum igameplay_gauge_bgvalue
+
 #enum ogameplay_controlpanel		=	0
 
 #const MAPITEM_TYPE_GROUP		0

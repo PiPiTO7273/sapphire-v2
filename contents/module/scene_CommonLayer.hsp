@@ -1,0 +1,12 @@
+
+//プロフィール情報の表示を更新
+#deffunc UpdateProfileDisp
+
+	duio_ChangeTextBody duio_TextID2UIsetID("common_profile_name"),PlayerID
+	duio_ChangeTextBody duio_TextID2UIsetID("common_profile_badge"),pfreg_Badge
+	duio_ChangeTextBody duio_TextID2UIsetID("common_profile_pfpoint"),strf("%.2f pts",pfreg_PFpoint)
+	duio_ChangeTextBody duio_TextID2UIsetID("common_profile_numtickets"),"x"+str(pfreg_NumTickets)
+	duio_ChangeTextBody duio_TextID2UIsetID("common_profile_numfragments"),"x"+str(pfreg_NumFragments)
+	duio_ChangeTextBody duio_TextID2UIsetID("common_profile_numlepus"),str(pfreg_NumLepus)+" Lepus"
+
+	return

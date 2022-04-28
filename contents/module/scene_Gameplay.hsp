@@ -5,6 +5,10 @@
 
 	cfunc64v BASS_GetInfo,varptr64(struct_BASS_INFO)
 
+	duio_Change3DSquareImage duio_3DSquareID2UIsetID("gameplay_bg_effect_l0"),hdximg(igameplay_bg_sidelr)
+	duio_Change3DSquareImage duio_3DSquareID2UIsetID("gameplay_bg_effect_r0"),hdximg(igameplay_bg_sidelr)
+	duio_Change3DSquareImage duio_3DSquareID2UIsetID("gameplay_bg_grid"),hdximg(igameplay_bg_grid)
+
 	duio_SetActiveScene"#Gameplay"
 
 	dim curScore			//スコア（10000000満点）
@@ -376,7 +380,7 @@
 		loop
 		repeat bpmevent_max
 			if cnt==0 :continue
-			bpmevent_timing(cnt)+Pretime
+			bpmevent_timing(cnt)+Pretime+TotalOffset
 		loop
 
 	//BPM値をノーツに割り当て
@@ -442,6 +446,16 @@
 			n+score_AddObjScore
 		loop
 
+		//スコア・ゲージ記録
+		dim scorecapture_buf,objmax
+		repeat objmax
+			scorecapture_buf(cnt)=JUDGEID_MISS
+		loop
+		dim gaugecapture_buf,350
+		repeat 350
+			gaugecapture_buf(cnt)=-1
+		loop
+
 	//プレイする時間
 		if mapconfig_sndmode==0 {
 			//BGMの再生を終了したら
@@ -455,6 +469,44 @@
 	//判定履歴
 		dim RecentJudgeGap,objmax
 		dim RecentJudgeCount
+
+	//ゲージ関連
+		ddim curGauge,1	//ゲージの値
+		ddim curDrawGaugeA,1	//描画するゲージの値
+		ddim curDrawGaugeB,1	//描画するゲージの値
+		dim curDrawGauge_EaseCount
+		if pfreg_GaugeType==PLAYOPT_ID_GAUGE_EXPERT|pfreg_GaugeType==PLAYOPT_ID_GAUGE_MADNESS {
+			curGauge=100.0
+		}
+		curDrawGaugeA=curGauge:curDrawGaugeB=curGauge
+
+		dim UIpos_Gauge
+		UIpos_Gauge=duio_GetImagePositionX(duio_ImageID2UIsetID("gameplay_gauge")),duio_GetImagePositionY(duio_ImageID2UIsetID("gameplay_gauge"))
+		if pfreg_GaugeType==PLAYOPT_ID_GAUGE_NORMAL|pfreg_GaugeType==PLAYOPT_ID_GAUGE_ASSIST {
+			//増加式
+			duio_ChangeImage duio_ImageID2UIsetID("gameplay_gauge_bg"),hdximg(igameplay_gauge_bg_inc)
+		}
+		if pfreg_GaugeType==PLAYOPT_ID_GAUGE_EXPERT|pfreg_GaugeType==PLAYOPT_ID_GAUGE_MADNESS {
+			//減少式
+			duio_ChangeImage duio_ImageID2UIsetID("gameplay_gauge_bg"),hdximg(igameplay_gauge_bg_dec)
+		}
+		if pfreg_GaugeType==PLAYOPT_ID_GAUGE_AR_FC|pfreg_GaugeType==PLAYOPT_ID_GAUGE_AR_ALLEX {
+			//自動リトライ
+			duio_ChangeImage duio_ImageID2UIsetID("gameplay_gauge_bg"),-1
+		}
+	
+		//ゲージの増加量を計算
+			ddim TotalGauge,1:ddim ObjHitGauge,1
+			if ObjMax<400 {
+				TotalGauge=double(ObjMax)*0.55+100.0
+			}
+			if ObjMax<=400&ObjMax<550 {
+				TotalGauge=double(ObjMax)*0.4+70.0
+			}
+			if ObjMax>=550 {
+				TotalGauge=double(ObjMax)*0.25+80.0
+			}
+			ObjHitGauge=TotalGauge/double(ObjMax)
 
 	gosub*scene_Gameplay_UpdateLoadScreen
 
@@ -735,19 +787,60 @@
 				DrawExtendGraph 1746,269+400,1746+70,269+400-int(400.0*(double(lpeek(targetgraph_buf,4*graphcaptureID))/10000000.0)),hdximg(igameplay_graph_target),TRUE
 			}
 
+	//ゲージ
+		setease curDrawGaugeA,curGauge,ease_cubic_out
+		curDrawGaugeB=geteasef(curDrawGauge_EaseCount,150)
+
+		SetDrawBlendMode DX_BLENDMODE_PMA_ALPHA,256
+		switch pfreg_GaugeType
+			case PLAYOPT_ID_GAUGE_ASSIST
+				if curDrawGaugeB>=70.0 {
+					DrawRectExtendGraph UIpos_Gauge(0),UIpos_Gauge(1)+320-int(curDrawGaugeB*3.2),UIpos_Gauge(0)+40,UIpos_Gauge(1)+320,0,320-int(curDrawGaugeB*3.2),40,int(curDrawGaugeB*3.2),hdximg(igameplay_gauge_inc_1),TRUE
+				} else {
+					DrawRectExtendGraph UIpos_Gauge(0),UIpos_Gauge(1)+320-int(curDrawGaugeB*3.2),UIpos_Gauge(0)+40,UIpos_Gauge(1)+320,0,320-int(curDrawGaugeB*3.2),40,int(curDrawGaugeB*3.2),hdximg(igameplay_gauge_inc_0),TRUE
+				}
+			swbreak
+			case PLAYOPT_ID_GAUGE_NORMAL
+				if curDrawGaugeB>=70.0 {
+					DrawRectExtendGraph UIpos_Gauge(0),UIpos_Gauge(1)+320-int(curDrawGaugeB*3.2),UIpos_Gauge(0)+40,UIpos_Gauge(1)+320,0,320-int(curDrawGaugeB*3.2),40,int(curDrawGaugeB*3.2),hdximg(igameplay_gauge_inc_1),TRUE
+				} else {
+					DrawRectExtendGraph UIpos_Gauge(0),UIpos_Gauge(1)+320-int(curDrawGaugeB*3.2),UIpos_Gauge(0)+40,UIpos_Gauge(1)+320,0,320-int(curDrawGaugeB*3.2),40,int(curDrawGaugeB*3.2),hdximg(igameplay_gauge_inc_0),TRUE
+				}
+			swbreak
+			case PLAYOPT_ID_GAUGE_EXPERT
+				DrawRectExtendGraph UIpos_Gauge(0),UIpos_Gauge(1)+320-int(curDrawGaugeB*3.2),UIpos_Gauge(0)+40,UIpos_Gauge(1)+320,0,320-int(curDrawGaugeB*3.2),40,int(curDrawGaugeB*3.2),hdximg(igameplay_gauge_expert),TRUE
+			swbreak
+			case PLAYOPT_ID_GAUGE_MADNESS
+				DrawRectExtendGraph UIpos_Gauge(0),UIpos_Gauge(1)+320-int(curDrawGaugeB*3.2),UIpos_Gauge(0)+40,UIpos_Gauge(1)+320,0,320-int(curDrawGaugeB*3.2),40,int(curDrawGaugeB*3.2),hdximg(igameplay_gauge_madness),TRUE
+			swbreak
+		swend
+		//値
+			DrawGraph 400,290+320-int(curDrawGaugeB*3.2),hdximg(igameplay_gauge_bgvalue),TRUE
+			SetDrawBlendMode DX_BLENDMODE_ALPHA,256
+			DrawStringToHandle 415,295+320-int(curDrawGaugeB*3.2),strf("%.2f%%",curDrawGaugeB),$EEEEEE,duio_GetFontHandle("ps16")
+
 	//見逃しミス判定
 		repeat objmax
 			if objJudgeFlag(cnt) :continue
 			if sysclock_cur-objTiming(cnt)>jWid_Miss&ProgLongNoteID(0)-1!cnt&ProgLongNoteID(1)-1!cnt&ProgLongNoteID(2)-1!cnt&ProgLongNoteID(3)-1!cnt&ProgLongNoteID(4)-1!cnt&ProgLongNoteID(5)-1!cnt {
 				NearNoteSign(objChannel(cnt))=-1	//符号の概念はない
+				NearNoteID(objChannel(cnt))=cnt
 				ObjJudgeProg JUDGEID_MISS,objChannel(cnt)
 				ObjJudgeFlag(cnt)=TRUE
 				//終点判定
 				if objType(cnt)==ID_OBJTYPE_HOLDSTART {
+					NearNoteID(objChannel(cnt+1))=cnt+1
 					ObjJudgeProg JUDGEID_MISS,objChannel(cnt+1)
 					ObjJudgeFlag(cnt+1)=TRUE
 				}
 				curCombo=0
+			}
+		loop
+
+	//ゲージの値を記録
+		repeat 350
+			if sysclock_cur>objTiming(objmax-1)/350*cnt&gaugecapture_buf(cnt)==-1 {
+				gaugecapture_buf(cnt)=int(curGauge)
 			}
 		loop
 
@@ -759,6 +852,7 @@
 		if LaneEffectCount(cnt)<0 :LaneEffectCount(cnt)-FrameTime
 		if LaneEffectCount(cnt)>0 :LaneEffectCount(cnt)+FrameTime
 	loop
+	curDrawGauge_EaseCount+FrameTime
 
 	if SndEventThread==0 :gosub*scene_Gameplay_PlaySoundEvent
 
@@ -922,10 +1016,13 @@
 	curScore_dispease=curScore
 	curScore_dispcount=0
 
+	curDrawGaugeA=curGauge
+
 	switch _judge
 
 		case JUDGEID_EXCELLENT	//EXCELLENT判定
 			curScore+int(score_AddObjScore*1.0)
+			curGauge+ObjHitGauge
 			curCombo++
 			curJudge(JUDGEID_EXCELLENT)++
 			JudgeDisphImg=hdximg(igameplay_judge_excellent)
@@ -933,6 +1030,7 @@
 
 		case JUDGEID_GREAT		//GREAT判定
 			curScore+int(score_AddObjScore*0.5)
+			curGauge+ObjHitGauge*0.5
 			curCombo++
 			curJudge(JUDGEID_GREAT)++
 			JudgeDisphImg=hdximg(igameplay_judge_great)
@@ -946,20 +1044,33 @@
 		swbreak
 
 		case JUDGEID_BAD		//BAD判定
-			curScore+int(score_AddObjScore*0.1)
+			switch pfreg_GaugeType
+				case PLAYOPT_ID_GAUGE_ASSIST:curGauge-1.0:swbreak
+				case PLAYOPT_ID_GAUGE_NORMAL:curGauge-2.0:swbreak
+				case PLAYOPT_ID_GAUGE_EXPERT:curGauge-4.0:swbreak
+				case PLAYOPT_ID_GAUGE_MADNESS:curGauge-8.0:swbreak
+			swend
 			curCombo=0
 			curJudge(JUDGEID_BAD)++
 			JudgeDisphImg=hdximg(igameplay_judge_bad)
 		swbreak
 
 		case JUDGEID_MISS		//MISS判定
-			//curScore+0
+			switch pfreg_GaugeType
+				case PLAYOPT_ID_GAUGE_ASSIST:curGauge-2.0:swbreak
+				case PLAYOPT_ID_GAUGE_NORMAL:curGauge-4.0:swbreak
+				case PLAYOPT_ID_GAUGE_EXPERT:curGauge-8.0:swbreak
+				case PLAYOPT_ID_GAUGE_MADNESS:curGauge-16.0:swbreak
+			swend
 			curCombo=0
 			curJudge(JUDGEID_MISS)++
 			JudgeDisphImg=hdximg(igameplay_judge_miss)
 		swbreak
 
 	swend
+
+	curDrawGauge_EaseCount=0
+	curGauge=limitf(curGauge,0.0,100.0)
 
 	//early / late
 	if _judge!JUDGEID_EXCELLENT {
@@ -989,6 +1100,9 @@
 		LaneParticleCount(_ch)=0
 		LaneParticlehImg(_ch)=hdximgarr_gameplay_particle(rnd(8))
 	}
+
+	//判定を記録
+	scorecapture_buf(NearNoteID(_ch))=_judge
 
 	JudgeDispCount=0
 

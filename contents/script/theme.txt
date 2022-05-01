@@ -1,13 +1,21 @@
 
+//****************************************//
+//                                        //
+//    --  Sapphire v2.xx UI Theme --      //
+//      (c) 2020-2022 puoro Games.        //
+//                                        //
+//****************************************//
+
 //----- Profile -----//
-	#Common_Profile @image musicselect_profile graphic/musicselect_profile.png 759 0 &animation-in=fade,20,350,CUBIC_OUT &animation-in=move,20,350,128,0,CUBIC_OUT &layerlv=2
-	rp:profile_text_animation>>&animation-in=fade,150,250,CUBIC_OUT &animation-in=move,150,250,-64,0,CUBIC_OUT &animation-in=random.text,150,250 &color=10,10,10 &layerlv=3
-	#Common_Profile @text common_profile_name * 820 29 ps24 profile_text_animation
-	#Common_Profile @text common_profile_badge * 820 10 rom1cm12 profile_text_animation
-	#Common_Profile @text common_profile_pfpoint * 1053 31 ps24 profile_text_animation &align-center-size=54
-	#Common_Profile @text common_profile_numtickets * 1340 12 ps16 profile_text_animation
-	#Common_Profile @text common_profile_numfragments * 1340 40 ps16 profile_text_animation
-	#Common_Profile @text common_profile_numlepus * 1522 12 ps16 profile_text_animation
+		#Common_Profile @image musicselect_profile graphic/musicselect_profile.png 759 0 &animation-in=fade,20,350,CUBIC_OUT &animation-in=move,20,350,128,0,CUBIC_OUT &layerlv=2
+		
+		rp:profile_text_animation>>&animation-in=fade,150,250,CUBIC_OUT &animation-in=move,150,250,-64,0,CUBIC_OUT &animation-in=random.text,150,250 &color=10,10,10 &layerlv=3
+		#Common_Profile @text common_profile_name * 820 29 ps24 profile_text_animation
+		#Common_Profile @text common_profile_badge * 820 10 rom1cm12 profile_text_animation
+		#Common_Profile @text common_profile_pfpoint * 1053 31 ps24 profile_text_animation &align-center-size=54
+		#Common_Profile @text common_profile_numtickets * 1340 12 ps16 profile_text_animation
+		#Common_Profile @text common_profile_numfragments * 1340 40 ps16 profile_text_animation
+		#Common_Profile @text common_profile_numlepus * 1522 12 ps16 profile_text_animation
 
 //----- Music Select -----//
 
@@ -315,6 +323,7 @@
 //----- Result -----//
 	////// base //////
 		#Result @image result_title graphic/result_title.png 0 0 &animation-in=fade,0,350,CUBIC_OUT &animation-in=move,0,350,-128,0,CUBIC_OUT &layerlv=2
+		rp:result_text_style>>&layerlv=2 &color=0,0,0
 
 		#Result @image result_bglayer_0 graphic/result_bg_layer0.png 0 130 &animation-in=fade,250,200,CUBIC_OUT &animation-in=move,250,500,0,128,CUBIC_OUT
 		#Result @image result_bglayer_1 graphic/result_bg_layer1.png 0 130 &animation-in=fade,150,200,CUBIC_OUT &animation-in=move,150,500,0,128,CUBIC_OUT
@@ -323,10 +332,66 @@
 		#Result @image result_bglayer_4 graphic/result_bg_layer4.png 0 0 &animation-in=fade,300,250,CUBIC_OUT &animation-in=zoom,300,250,1.2,CUBIC_OUT
 
 	////// metadata,gauge graph //////
-		#Result @image result_bg_artwork graphic/result_bg_artwork.png 210 154 &animation-in=move,600,250,-4,4,CUBIC_OUT &animation-in=fade,600,100,CUBIC_OUT
+		#Result @image result_bg_artwork graphic/result_bg_artwork.png 210 154 &animation-in=move,600,250,4,-4,CUBIC_OUT &animation-in=fade,600,100,CUBIC_OUT
 		#Result @image result_artwork * 214 150 &imgwidth=200 &imgheight=200 &animation-in=fade,200,250,CUBIC_OUT &animation-in=move,200,250,-64,0,CUBIC_OUT &animation-in=zoom,200,250,1.3,CUBIC_OUT
+
+		#Result @text result_meta_title * 446 185 rom1cm28 &animation-in=random.text,350,500 &animation-in=fade,350,200,CUBIC_OUT &animation-in=move,350,200,-64,0,CUBIC_OUT &layerlv=2 &color=0,0,0
+		#Result @text result_meta_artist * 446 228 rom1cm16 &animation-in=random.text,400,400 &animation-in=fade,400,200,CUBIC_OUT &animation-in=move,400,200,-64,0,CUBIC_OUT &layerlv=2 &color=0,0,0
+		#Result @image result_meta_lvimg * 446 260 &imgwidth=64 &imgheight=33 &animation-in=fade,450,200,CUBIC_OUT &animation-in=move,450,250,-32,0,CUBIC_OUT
+		#Result @text result_meta_lv * 524 273 ps16 &animation-in=fade,475,200,CUBIC_OUT &animation-in=move,475,200,-64,0,CUBIC_OUT &layerlv=2 &color=0,0,0
 
 		#Result @image result_bg_gaugegraph graphic/result_bg_gaugegraph.png 1010 170 &animation-in=fade,250,250,CUBIC_OUT &animation-in=move,250,250,-64,0,CUBIC_OUT
 
 	////// score //////
-		#Result @image result_score_layer graphic/result_score_layer.png 388 400
+		#Result @image result_score_layer graphic/result_score_layer.png 388 400 &animation-in=fade,400,200,CUBIC_OUT &animation-in=move,400,250,0,128,CUBIC_OUT
+
+		#Result @text result_score_curscore * 388 426 ps64 &animation-in=increase.text,450,2000,8 &animation-in=fade,450,200,CUBIC_OUT &animation-in=move,450,250,-32,0,CUBIC_OUT &layerlv=2 &color=255,255,255
+		#Result @text result_score_curability * 532 515 ps24 &animation-in=increase.text,500,1000,-3 &animation-in=fade,500,200,CUBIC_OUT &animation-in=move,500,250,-32,0,CUBIC_OUT &layerlv=2 &color=255,255,255 &extratext={*sp}pts
+		#Result @text result_score_mybestscore * 788 439 ps24 &animation-in=increase.text,550,750,8 &animation-in=fade,550,200,CUBIC_OUT &animation-in=move,550,250,-32,0,CUBIC_OUT &layerlv=2 &color=255,255,255
+		#Result @text result_score_mybestability * 788 508 ps16 &animation-in=increase.text,550,500,-3 &animation-in=fade,550,200,CUBIC_OUT &animation-in=move,550,250,-32,0,CUBIC_OUT &layerlv=2 &color=255,255,255 &extratext={*sp}pts
+		#Result @text result_score_targetscore * 998 439 ps24 &animation-in=increase.text,600,750,8 &animation-in=fade,600,200,CUBIC_OUT &animation-in=move,600,250,-32,0,CUBIC_OUT &layerlv=2 &color=255,255,255
+
+		#Result @text result_score_dif_mybest_score * 788 471 ps16 &animation-in=fade,600,250,CUBIC_OUT &animation-in=move,600,250,-32,0,CUBIC_OUT &layerlv=2
+		#Result @text result_score_dif_mybest_ability * 788 531 ps16 &animation-in=fade,600,250,CUBIC_OUT &animation-in=move,600,250,-32,0,CUBIC_OUT &layerlv=2
+		#Result @text result_score_dif_target_score * 998 471 ps16 &animation-in=fade,600,250,CUBIC_OUT &animation-in=move,600,250,-32,0,CUBIC_OUT &layerlv=2
+
+	////// judge detail //////
+		#Result @image result_judgedetail_layer graphic/result_judgedetail_layer.png 270 600 &animation-in=fade,600,200,CUBIC_OUT &animation-in=move,600,250,0,128,CUBIC_OUT
+
+		#Result @text result_judgedetail_numexcellent * 539 643 ps20 &animation-in=fade,750,250,CUBIC_OUT &animation-in=move,750,250,-32,0,CUBIC_OUT &animation-in=increase.text,750,600,4 result_text_style
+		#Result @text result_judgedetail_numgreat * 539 685 ps20 &animation-in=fade,800,250,CUBIC_OUT &animation-in=move,800,250,-32,0,CUBIC_OUT &animation-in=increase.text,775,600,4 result_text_style
+		#Result @text result_judgedetail_numgood * 539 727 ps20 &animation-in=fade,850,250,CUBIC_OUT &animation-in=move,850,250,-32,0,CUBIC_OUT &animation-in=increase.text,800,600,4 result_text_style
+		#Result @text result_judgedetail_numbad * 539 769 ps20 &animation-in=fade,900,250,CUBIC_OUT &animation-in=move,900,250,-32,0,CUBIC_OUT &animation-in=increase.text,825,600,4 result_text_style
+		#Result @text result_judgedetail_nummiss * 539 811 ps20 &animation-in=fade,950,250,CUBIC_OUT &animation-in=move,950,250,-32,0,CUBIC_OUT &animation-in=increase.text,850,600,4 result_text_style
+
+		#Result @text result_judgedetail_numexcellent_ratio * 628 643 ps20 &animation-in=fade,800,250,CUBIC_OUT &animation-in=move,800,250,-32,0,CUBIC_OUT &animation-in=increase.text,800,250,-2 result_text_style &extratext={*sp}%
+		#Result @text result_judgedetail_numgreat_ratio * 628 685 ps20 &animation-in=fade,850,250,CUBIC_OUT &animation-in=move,850,250,-32,0,CUBIC_OUT &animation-in=increase.text,850,250,-2 result_text_style &extratext={*sp}%
+		#Result @text result_judgedetail_numgood_ratio * 628 727 ps20 &animation-in=fade,900,250,CUBIC_OUT &animation-in=move,900,250,-32,0,CUBIC_OUT &animation-in=increase.text,900,250,-2 result_text_style &extratext={*sp}%
+		#Result @text result_judgedetail_numbad_ratio * 628 769 ps20 &animation-in=fade,950,250,CUBIC_OUT &animation-in=move,950,250,-32,0,CUBIC_OUT &animation-in=increase.text,950,250,-2 result_text_style &extratext={*sp}%
+		#Result @text result_judgedetail_nummiss_ratio * 628 811 ps20 &animation-in=fade,1000,250,CUBIC_OUT &animation-in=move,1000,250,-32,0,CUBIC_OUT &animation-in=increase.text,1000,250,-2 result_text_style &extratext={*sp}%
+
+		#Result @image result_judgedetail_numexcellent_graph * 720 644 &hide &imgwidth=300 &imgheight=24
+		#Result @image result_judgedetail_numgreat_graph * 720 686 &hide &imgwidth=300 &imgheight=24
+		#Result @image result_judgedetail_numgood_graph * 720 728 &hide &imgwidth=300 &imgheight=24
+		#Result @image result_judgedetail_numbad_graph * 720 770 &hide &imgwidth=300 &imgheight=24
+		#Result @image result_judgedetail_nummiss_graph * 720 812 &hide &imgwidth=300 &imgheight=24
+
+		#Result @text result_judgedetail_numearly * 507 914 ps20 &animation-in=fade,1000,250,CUBIC_OUT &animation-in=move,1000,250,-32,0,CUBIC_OUT &animation-in=increase.text,1000,600,4 result_text_style
+		#Result @text result_judgedetail_numlate * 507 957 ps20 &animation-in=fade,1050,250,CUBIC_OUT &animation-in=move,1050,250,-32,0,CUBIC_OUT &animation-in=increase.text,1050,600,4 result_text_style
+		#Result @text result_judgedetail_numearly_ratio * 596 914 ps20 &animation-in=fade,1050,250,CUBIC_OUT &animation-in=move,1050,250,-32,0,CUBIC_OUT &animation-in=increase.text,1050,250,-2 result_text_style &extratext={*sp}%
+		#Result @text result_judgedetail_numlate_ratio * 596 957 ps20 &animation-in=fade,1100,250,CUBIC_OUT &animation-in=move,1100,250,-32,0,CUBIC_OUT &animation-in=increase.text,1100,250,-2 result_text_style &extratext={*sp}%
+
+		#Result @text result_judgedetail_avgoffset * 1000 890 ps20 &animation-in=fade,1100,250,CUBIC_OUT &animation-in=move,1100,250,-32,0,CUBIC_OUT result_text_style
+		#Result @text result_judgedetail_maxjudgeacc * 1000 926 ps20 &animation-in=fade,1150,250,CUBIC_OUT &animation-in=move,1150,250,-32,0,CUBIC_OUT result_text_style
+
+	////// others //////
+		#Result @image result_others_layer graphic/result_others_layer.png 1163 622 &animation-in=zoom,900,250,0.8,CUBIC_OUT &animation-in=fade,900,200,CUBIC_OUT
+
+		#Result @text result_others_curcleartype * 1327 660 ps16 &animation-in=fade,1000,250,CUBIC_OUT &animation-in=move,1000,250,0,16,CUBIC_OUT &layerlv=2 &color=0,0,0
+		#Result @text result_others_curmaxcombo * 1327 692 ps16 &animation-in=fade,1000,250,CUBIC_OUT &animation-in=move,1000,250,0,16,CUBIC_OUT &layerlv=2 &color=0,0,0
+		#Result @text result_others_mybestcleartype * 1487 660 ps16 &animation-in=fade,1050,250,CUBIC_OUT &animation-in=move,1050,250,0,16,CUBIC_OUT &layerlv=2 &color=0,0,0
+		#Result @text result_others_mybestmaxcombo * 1487 692 ps16 &animation-in=fade,1050,250,CUBIC_OUT &animation-in=move,1050,250,0,16,CUBIC_OUT &layerlv=2 &color=0,0,0
+
+	////// status //////
+		#Result @image result_status_load * 1200 830 &animation-in=zoom,1200,250,0,CUBIC_OUT &imgwidth=80 &imgheight=80
+		#Result @text result_status スコアを送信中・・・ 1300 853 rom1cm24 &animation-in=fade,1400,200,CUBIC_OUT &animation-in=move,1400,250,64,0,CUBIC_OUT result_text_style

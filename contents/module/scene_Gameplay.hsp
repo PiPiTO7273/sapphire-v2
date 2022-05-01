@@ -27,6 +27,7 @@
 	ddim AddSpeed,1	//ユーザー指定の速度値
 	sdim PlayOptionList	//使用オプション
 	dim FrameTime		//1フレームあたりの時間
+	ddim MaxSubThreadFPS,1	//サブスレッドの最大フレームレート
 	dim Mapload_updateinterval_std
 	PlayOptionList="-"
 	dup AddSpeed,pfreg_AddSpeed
@@ -441,9 +442,26 @@
 		sdim targetgraph_buf,4*objmax
 		dim n
 		repeat objmax
+
+			if pfreg_Target==PLAYOPT_ID_TARGET_MYBEST :n=lpeek(mybestgraph_buf,cnt*4)
+			if pfreg_Target==PLAYOPT_ID_TARGET_WR :n+(mapdb_ir_score(item,lv,0)-score_AddBonusScore)/objmax
+
 			lpoke targetgraph_buf,4*cnt,n
-			if cnt==0 :n+score_AddBonusScore
-			n+score_AddObjScore
+
+			if pfreg_Target!PLAYOPT_ID_TARGET_MYBEST {
+				if cnt==0 :n+score_AddBonusScore
+			}
+
+			targetscore=n
+
+			switch pfreg_Target
+				case PLAYOPT_ID_TARGET_EX:n+int(double(score_AddObjScore)*0.9):swbreak
+				case PLAYOPT_ID_TARGET_S:n+int(double(score_AddObjScore)*0.8):swbreak
+				case PLAYOPT_ID_TARGET_AAA:n+int(double(score_AddObjScore)*0.7):swbreak
+				case PLAYOPT_ID_TARGET_AA:n+int(double(score_AddObjScore)*0.6):swbreak
+				case PLAYOPT_ID_TARGET_A:n+int(double(score_AddObjScore)*0.5):swbreak
+				case PLAYOPT_ID_TARGET_100:n+score_AddObjScore:swbreak
+			swend
 		loop
 
 		//スコア・ゲージ記録
@@ -463,7 +481,7 @@
 		}
 		if mapconfig_sndmode==1 {
 			//すべてのオブジェクトを判定し終わったら
-			mapconfig_playlength=objTiming(objmax-1)
+			mapconfig_playlength=objTiming(objmax-1)+3000
 		}
 
 	//判定履歴
@@ -518,6 +536,10 @@
 *scene_Gameplay
 
 	FrameTime=1000/duio_GetFPS()
+
+	if CurFPS*double(SubThreadCount)>MaxSubThreadFPS {
+		MaxSubThreadFPS=CurFPS*double(SubThreadCount)
+	}
 
 	//BGM
 		if sysclock_cur>bgmplayoffset+Pretime&bgmplayflag==FALSE {
@@ -704,6 +726,12 @@
 	//プレイ時間
 		SetDrawBlendMode DX_BLENDMODE_PMA_ALPHA,256
 		DrawRectGraph 227,152,0,0,int(200.0*(double(sysclock_cur)/double(mapconfig_playlength))),6,hdximg(igameplay_playtime_pre),TRUE
+
+		if mapconfig_playlength<sysclock_cur {
+			gosub*scene_Result_Init
+			curSceneTag="#Result"
+			return
+		}
 
 	//判定
 		if JudgeDispCount<500 {

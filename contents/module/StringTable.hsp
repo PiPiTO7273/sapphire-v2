@@ -84,4 +84,14 @@
 	sort_dropdown_event(4)="sort_dropdown_bpm"
 	sort_dropdown_event(5)="sort_dropdown_cleartype"
 
+	sdim common_cleartype
+	common_cleartype(CLEARTYPE_NODATA)="NO DATA"
+	common_cleartype(CLEARTYPE_FAILED)="FAILED"
+	common_cleartype(CLEARTYPE_ASSIST)="ASSIST-CLEAR"
+	common_cleartype(CLEARTYPE_CLEAR)="CLEAR"
+	common_cleartype(CLEARTYPE_EXPERT)="EXPERT-CLEAR"
+	common_cleartype(CLEARTYPE_MADNESS)="MADNESS-CLEAR"
+	common_cleartype(CLEARTYPE_FC)="FULL COMBO"
+	common_cleartype(CLEARTYPE_ALLEX)="ALL EXCELLENT"
+
 	return

@@ -306,11 +306,22 @@ goto*Startup
 
 		hdximg(igameplay_gauge_bgvalue)=LoadGraph("contents/graphic/gameplay_gauge_bg_value.png")
 
+		hdximg(iresult_ratio_excellent)=LoadGraph("contents/graphic/result_ratio_excellent.png")
+		hdximg(iresult_ratio_great)=LoadGraph("contents/graphic/result_ratio_great.png")
+		hdximg(iresult_ratio_good)=LoadGraph("contents/graphic/result_ratio_good.png")
+		hdximg(iresult_ratio_bad)=LoadGraph("contents/graphic/result_ratio_bad.png")
+		hdximg(iresult_ratio_miss)=LoadGraph("contents/graphic/result_ratio_miss.png")
+
 		PlayMovieToGraph hdximg(ibg_common),DX_PLAYTYPE_LOOP
 
 		dim hdximgarr_gameplay_particle,8
 		repeat 8
 			hdximgarr_gameplay_particle(cnt)=LoadGraph("contents/package/res_effect_particle/effect_Particle_"+cnt+".png")
+		loop
+
+		dim hdximgarr_load_connect,28
+		repeat 28
+			hdximgarr_load_connect(cnt)=LoadGraph("contents/package/res_loadframe_connect/if"+strf("%02d",cnt+1)+".png")
 		loop
 
 	//3DÉÇÉfÉã
@@ -339,7 +350,6 @@ goto*Startup
 		dim FPSkeepCount
 		dim SubThreadCount
 		dim DrawThreadTime
-		curSceneTag="#Result"
 		color 0,0,0:boxf 320/2-80,25,320/2-80+120,30
 
 	//ÉâÉCÉuÉâÉäì«Ç›çûÇ›
@@ -724,8 +734,9 @@ goto*Startup
 
 	gsel 0,-1
 
-	gosub*scene_Result_Init
-	;gosub*scene_MusicSelect_Init
+	curSceneTag="#MusicSelect"
+	;gosub*scene_Result_Init
+	gosub*scene_MusicSelect_Init
 	;gosub*scene_Gameplay_Init
 
 *MainLoop

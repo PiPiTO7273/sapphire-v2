@@ -137,6 +137,12 @@
 
 #enum igameplay_gauge_bgvalue
 
+#enum iresult_ratio_excellent
+#enum iresult_ratio_great
+#enum iresult_ratio_good
+#enum iresult_ratio_bad
+#enum iresult_ratio_miss
+
 #enum ogameplay_controlpanel		=	0
 
 #const MAPITEM_TYPE_GROUP		0
@@ -261,3 +267,13 @@
 #enum PLAYOPT_ID_TARGET_100
 #enum PLAYOPT_ID_TARGET_MYBEST
 #enum PLAYOPT_ID_TARGET_WR
+
+//ƒNƒŠƒA‚ÌŽí—Þ
+#enum CLEARTYPE_NODATA		=	0
+#enum CLEARTYPE_FAILED
+#enum CLEARTYPE_ASSIST
+#enum CLEARTYPE_CLEAR
+#enum CLEARTYPE_EXPERT
+#enum CLEARTYPE_MADNESS
+#enum CLEARTYPE_FC
+#enum CLEARTYPE_ALLEX

@@ -979,13 +979,15 @@
 							}
 						}
 						if UIset_Text_In_Mode(i)&UI_EASEIN_INCREASETEXT {
-							setease 0,int(UIset_Text_Body(i)),ease_cubic_out
 							if UIset_Text_EaseIn_Increase_Digit(i)==-1 {	//桁数処理なし
+								setease 0,int(UIset_Text_Body(i)),ease_cubic_out
 								UIset_Text_drawBody(i)=str(getease(UIset_Text_count(i)*(1000/int(CurDUIObasedFPS))-UIset_Text_EaseIn_Increase_Delay(i),UIset_Text_EaseIn_Increase_Length(i)))
 							} else {
 								if UIset_Text_EaseIn_Increase_Digit(i)<0 {	//小数点以下指定
-									UIset_Text_drawBody(i)=strf("%."+(UIset_Text_EaseIn_Increase_Digit(i)*-1-1)+"f",getease(UIset_Text_count(i)*(1000/int(CurDUIObasedFPS))-UIset_Text_EaseIn_Increase_Delay(i),UIset_Text_EaseIn_Increase_Length(i)))
+									setease 0.0,double(UIset_Text_Body(i)),ease_cubic_out
+									UIset_Text_drawBody(i)=strf("%."+(UIset_Text_EaseIn_Increase_Digit(i)*-1-1)+"f",geteasef(UIset_Text_count(i)*(1000/int(CurDUIObasedFPS))-UIset_Text_EaseIn_Increase_Delay(i),UIset_Text_EaseIn_Increase_Length(i)))
 								} else {	//整数値指定
+									setease 0,int(UIset_Text_Body(i)),ease_cubic_out
 									UIset_Text_drawBody(i)=strf("%0"+UIset_Text_EaseIn_Increase_Digit(i)+"d",getease(UIset_Text_count(i)*(1000/int(CurDUIObasedFPS))-UIset_Text_EaseIn_Increase_Delay(i),UIset_Text_EaseIn_Increase_Length(i)))
 								}
 							}
@@ -1228,6 +1230,12 @@
 
 #defcfunc duio_GetImagePositionY int _uisetid
 	return UIset_Image_Y(_uisetid)
+
+#defcfunc duio_GetImageWidth int _uisetid
+	return UIset_Image_Width(_uisetid)
+
+#defcfunc duio_GetImageHeight int _uisetid
+	return UIset_Image_Height(_uisetid)
 
 #deffunc duio_AddInButtonAnimation_Zoom int _uisetid,int _delay,int _length,double _prmn,int _func
 	UIset_Button_In_Mode(_uisetid)=UIset_Button_In_Mode(_uisetid)|UI_EASEIN_ZOOM
@@ -1528,3 +1536,7 @@
 
 #defcfunc duio_GetButtonPushTime int _uisetid
 	return UIset_Button_rawpushCount(_uisetid)
+
+#deffunc duio_SetTextColor int _uisetid,int _colorcode
+	UIset_Text_Color(_uisetid)=_colorcode
+	return

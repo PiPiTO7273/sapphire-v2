@@ -1,14 +1,152 @@
 
 *scene_Result_Init
 
+	dim SceneCount
+
 	UpdateProfileDisp
 
 	dim item:dim lv
 	item=curselect_item
 	lv=curselect_lv
 
+	//debug ★★★★★★★★★★★★★★★★★★★★★★★
+	/*curScore=9999999
+	targetscore=1234567
+	dim curJudge,7
+	curJudge(JUDGEID_GOOD)=999
+	objmax=1000
+	dim gaugecapture_buf,350
+	repeat 350
+		setease 0,100,ease_cubic_inout
+		poke gaugecapture_buf,cnt,getease(cnt,300)
+	loop*/
+	//★★★★★★★★★★★★★★★★★★★★★★★★★★
+
+	//ジャケット画像
 	duio_ChangeImage duio_ImageID2UIsetID("result_artwork"),mapdb_hartwork(item,lv)
 
+	//メタデータ
+	duio_ChangeTextBody duio_TextID2UIsetID("result_meta_title"),mapdb_title(item,lv)
+	duio_ChangeTextBody duio_TextID2UIsetID("result_meta_artist"),mapdb_artist(item,lv)
+	duio_ChangeImage duio_ImageID2UIsetID("result_meta_lvimg"),hdximg(imusicselect_item_normal+mapdb_difficulty(item,lv))
+	duio_ChangeTextBody duio_TextID2UIsetID("result_meta_lv"),"Lv. "+mapdb_level(item,lv)
+
+	//スコア
+		//今回
+		duio_ChangeTextBody duio_TextID2UIsetID("result_score_curscore"),str(curScore)
+		duio_ChangeTextBody duio_TextID2UIsetID("result_score_curability"),str(curAbilityScore)
+
+		//自己ベスト
+		duio_ChangeTextBody duio_TextID2UIsetID("result_score_mybestscore"),str(mapdb_mybest_score(item,lv))
+		duio_ChangeTextBody duio_TextID2UIsetID("result_score_mybestability"),str(mapdb_mybest_pfpoint(item,lv))
+
+		//目標スコア
+		duio_ChangeTextBody duio_TextID2UIsetID("result_score_targetscore"),str(targetscore)
+
+		//差分表示
+		if curScore-mapdb_mybest_score(item,lv)>=0 {
+			duio_ChangeTextBody duio_TextID2UIsetID("result_score_dif_mybest_score"),"+"+str(curScore-mapdb_mybest_score(item,lv))
+			duio_SetTextColor duio_TextID2UIsetID("result_score_dif_mybest_score"),$0090FF
+		} else {
+			duio_ChangeTextBody duio_TextID2UIsetID("result_score_dif_mybest_score"),str(curScore-mapdb_mybest_score(item,lv))
+			duio_SetTextColor duio_TextID2UIsetID("result_score_dif_mybest_score"),$FF00A1
+		}
+		if curScore-targetscore>=0 {
+			duio_ChangeTextBody duio_TextID2UIsetID("result_score_dif_target_score"),"+"+str(curScore-targetscore)
+			duio_SetTextColor duio_TextID2UIsetID("result_score_dif_target_score"),$0090FF
+		} else {
+			duio_ChangeTextBody duio_TextID2UIsetID("result_score_dif_target_score"),str(curScore-targetscore)
+			duio_SetTextColor duio_TextID2UIsetID("result_score_dif_target_score"),$FF00A1
+		}
+		if curAbilityScore-mapdb_mybest_pfpoint(item,lv)>=0.0 {
+			duio_ChangeTextBody duio_TextID2UIsetID("result_score_dif_mybest_ability"),"+"+strf("%.2f pts",curAbilityScore-mapdb_mybest_pfpoint(item,lv))
+			duio_SetTextColor duio_TextID2UIsetID("result_score_dif_mybest_ability"),$0090FF
+		} else {
+			duio_ChangeTextBody duio_TextID2UIsetID("result_score_dif_mybest_ability"),strf("%.2f pts",curAbilityScore-mapdb_mybest_pfpoint(item,lv))
+			duio_SetTextColor duio_TextID2UIsetID("result_score_dif_mybest_ability"),$FF00A1
+		}
+
+	//判定の割合
+		ddim numjudgeratio,7
+		repeat 7
+			numjudgeratio(cnt)=double(curJudge(cnt))/double(objmax)
+		loop
+
+		//グラフの準備
+			//位置
+				dim numjudgeratio_graphpos,5,2
+				numjudgeratio_graphpos(JUDGEID_EXCELLENT,0)=duio_GetImagePositionX(duio_ImageID2UIsetID(("result_judgedetail_numexcellent_graph")))
+				numjudgeratio_graphpos(JUDGEID_EXCELLENT,1)=duio_GetImagePositionY(duio_ImageID2UIsetID(("result_judgedetail_numexcellent_graph")))
+				numjudgeratio_graphpos(JUDGEID_GREAT,0)=duio_GetImagePositionX(duio_ImageID2UIsetID(("result_judgedetail_numgreat_graph")))
+				numjudgeratio_graphpos(JUDGEID_GREAT,1)=duio_GetImagePositionY(duio_ImageID2UIsetID(("result_judgedetail_numgreat_graph")))
+				numjudgeratio_graphpos(JUDGEID_GOOD,0)=duio_GetImagePositionX(duio_ImageID2UIsetID(("result_judgedetail_numgood_graph")))
+				numjudgeratio_graphpos(JUDGEID_GOOD,1)=duio_GetImagePositionY(duio_ImageID2UIsetID(("result_judgedetail_numgood_graph")))
+				numjudgeratio_graphpos(JUDGEID_BAD,0)=duio_GetImagePositionX(duio_ImageID2UIsetID(("result_judgedetail_numbad_graph")))
+				numjudgeratio_graphpos(JUDGEID_BAD,1)=duio_GetImagePositionY(duio_ImageID2UIsetID(("result_judgedetail_numbad_graph")))
+				numjudgeratio_graphpos(JUDGEID_MISS,0)=duio_GetImagePositionX(duio_ImageID2UIsetID(("result_judgedetail_nummiss_graph")))
+				numjudgeratio_graphpos(JUDGEID_MISS,1)=duio_GetImagePositionY(duio_ImageID2UIsetID(("result_judgedetail_nummiss_graph")))
+			//サイズ
+				dim numjudgeratio_graphsize,5,2
+				numjudgeratio_graphsize(JUDGEID_EXCELLENT,1)=duio_GetImageHeight(duio_ImageID2UIsetID(("result_judgedetail_numexcellent_graph")))
+				numjudgeratio_graphsize(JUDGEID_EXCELLENT,0)=duio_GetImageWidth(duio_ImageID2UIsetID(("result_judgedetail_numexcellent_graph")))
+				numjudgeratio_graphsize(JUDGEID_GREAT,0)=duio_GetImageWidth(duio_ImageID2UIsetID(("result_judgedetail_numgreat_graph")))
+				numjudgeratio_graphsize(JUDGEID_GREAT,1)=duio_GetImageHeight(duio_ImageID2UIsetID(("result_judgedetail_numgreat_graph")))
+				numjudgeratio_graphsize(JUDGEID_GOOD,0)=duio_GetImageWidth(duio_ImageID2UIsetID(("result_judgedetail_numgood_graph")))
+				numjudgeratio_graphsize(JUDGEID_GOOD,1)=duio_GetImageHeight(duio_ImageID2UIsetID(("result_judgedetail_numgood_graph")))
+				numjudgeratio_graphsize(JUDGEID_BAD,0)=duio_GetImageWidth(duio_ImageID2UIsetID(("result_judgedetail_numbad_graph")))
+				numjudgeratio_graphsize(JUDGEID_BAD,1)=duio_GetImageHeight(duio_ImageID2UIsetID(("result_judgedetail_numbad_graph")))
+				numjudgeratio_graphsize(JUDGEID_MISS,0)=duio_GetImageWidth(duio_ImageID2UIsetID(("result_judgedetail_nummiss_graph")))
+				numjudgeratio_graphsize(JUDGEID_MISS,1)=duio_GetImageHeight(duio_ImageID2UIsetID(("result_judgedetail_nummiss_graph")))
+
+		//テキスト反映
+			duio_ChangeTextBody duio_TextID2UIsetID("result_judgedetail_numexcellent"),str(curJudge(JUDGEID_EXCELLENT))
+			duio_ChangeTextBody duio_TextID2UIsetID("result_judgedetail_numgreat"),str(curJudge(JUDGEID_GREAT))
+			duio_ChangeTextBody duio_TextID2UIsetID("result_judgedetail_numgood"),str(curJudge(JUDGEID_GOOD))
+			duio_ChangeTextBody duio_TextID2UIsetID("result_judgedetail_numbad"),str(curJudge(JUDGEID_BAD))
+			duio_ChangeTextBody duio_TextID2UIsetID("result_judgedetail_nummiss"),str(curJudge(JUDGEID_MISS))
+			duio_ChangeTextBody duio_TextID2UIsetID("result_judgedetail_numearly"),str(curJudge(JUDGEID_EARLY))
+			duio_ChangeTextBody duio_TextID2UIsetID("result_judgedetail_numlate"),str(curJudge(JUDGEID_LATE))
+
+			duio_ChangeTextBody duio_TextID2UIsetID("result_judgedetail_numexcellent_ratio"),str(numjudgeratio(JUDGEID_EXCELLENT)*100.0)
+			duio_ChangeTextBody duio_TextID2UIsetID("result_judgedetail_numgreat_ratio"),str(numjudgeratio(JUDGEID_GREAT)*100.0)
+			duio_ChangeTextBody duio_TextID2UIsetID("result_judgedetail_numgood_ratio"),str(numjudgeratio(JUDGEID_GOOD)*100.0)
+			duio_ChangeTextBody duio_TextID2UIsetID("result_judgedetail_numbad_ratio"),str(numjudgeratio(JUDGEID_BAD)*100.0)
+			duio_ChangeTextBody duio_TextID2UIsetID("result_judgedetail_nummiss_ratio"),str(numjudgeratio(JUDGEID_MISS)*100.0)
+			duio_ChangeTextBody duio_TextID2UIsetID("result_judgedetail_numearly_ratio"),str(numjudgeratio(JUDGEID_EARLY)*100.0)
+			duio_ChangeTextBody duio_TextID2UIsetID("result_judgedetail_numlate_ratio"),str(numjudgeratio(JUDGEID_LATE)*100.0)
+
+			duio_ChangeTextBody duio_TextID2UIsetID("result_others_curmaxcombo"),strf("%04d",maxCombo)
+			if mapdb_mybest_cleartype(item,lv)=="" {
+				duio_ChangeTextBody duio_TextID2UIsetID("result_others_mybestcleartype"),"NO DATA"
+			} else {
+				duio_ChangeTextBody duio_TextID2UIsetID("result_others_mybestcleartype"),mapdb_mybest_cleartype(item,lv)
+			}
+			duio_ChangeTextBody duio_TextID2UIsetID("result_others_mybestmaxcombo"),strf("%04d",mapdb_mybest_maxcombo(item,lv))
+
+	//平均オフセット
+		ddim avgOffset
+		if RecentJudgeCount==0 {
+			duio_ChangeTextBody duio_TextID2UIsetID("result_judgedetail_avgoffset"),"-"
+		} else {
+			repeat RecentJudgeCount
+				avgOffset+double(RecentJudgeGap(cnt))
+			loop
+			avgOffset=avgOffset/double(RecentJudgeCount)
+			duio_ChangeTextBody duio_TextID2UIsetID("result_judgedetail_avgoffset"),strf("%.2f ms",avgOffset)
+		}
+
+	//最大判定精度
+		duio_ChangeTextBody duio_TextID2UIsetID("result_judgedetail_maxjudgeacc"),strf("%.2f ms",1000.0/limitf(MaxSubThreadFPS,1.0))
+
+	//クリアの種類
+		dim mybestClearType
+		mybestClearType=CLEARTYPE_NODATA
+		foreach common_cleartype
+			if common_cleartype(cnt)==mapdb_mybest_cleartype(item,lv) :mybestClearType=cnt:break
+		loop
+		dim curClearType
+		curClearType=CLEARTYPE_NODATA
+		if pfreg_GaugeType==PLAYOPT_ID_GAUGE_ASSIST&curGauge>=70.0 :curClearType=CLEARTYPE_ASSIST
 	return
 
 *scene_Result
@@ -24,5 +162,26 @@
 
 	duio_Draw"#Result"
 	duio_Draw"#Common_Profile"
+
+	//判定の割合グラフ (excellent,great,good,bad,miss)
+	SetDrawBlendMode DX_BLENDMODE_PMA_ALPHA,256
+	repeat 5
+		setease 0,int(double(numjudgeratio_graphsize(cnt,0))*numjudgeratio(cnt)),ease_cubic_inout
+		DrawExtendGraph numjudgeratio_graphpos(cnt,0),numjudgeratio_graphpos(cnt,1),numjudgeratio_graphpos(cnt,0)+getease(1000.0/duio_GetFPS()*SceneCount-800,1000),numjudgeratio_graphpos(cnt,1)+numjudgeratio_graphsize(cnt,1),hdximg(iresult_ratio_excellent+cnt),TRUE
+	loop
+
+	//ゲージの推移
+	ddim x:ddim y
+	setease 0,350-1,ease_cubic_out
+	repeat getease(1000.0/duio_GetFPS()*SceneCount-500,1000),1
+		x(0)=double(duio_GetImagePositionX(duio_ImageID2UIsetID("result_bg_gaugegraph"))+cnt*2)
+		y(0)=double(duio_GetImagePositionY(duio_ImageID2UIsetID("result_bg_gaugegraph"))+44+100-gaugecapture_buf(cnt-1))
+		x(1)=x(0)+2.0
+		y(1)=double(duio_GetImagePositionY(duio_ImageID2UIsetID("result_bg_gaugegraph"))+44+100-gaugecapture_buf(cnt))
+		DrawLineAA d2f(x(0)),d2f(y(0)),d2f(x(1)),d2f(y(1)),0,d2f(2.0)
+	loop
+
+	//接続中
+	duio_ChangeImage duio_ImageID2UIsetID("result_status_load"),hdximgarr_load_connect(int(1000.0/duio_GetFPS()*SceneCount/20)\28)
 
 	return

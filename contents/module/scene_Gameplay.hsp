@@ -9,7 +9,11 @@
 	duio_Change3DSquareImage duio_3DSquareID2UIsetID("gameplay_bg_effect_r0"),hdximg(igameplay_bg_sidelr)
 	duio_Change3DSquareImage duio_3DSquareID2UIsetID("gameplay_bg_grid"),hdximg(igameplay_bg_grid)
 
+	duio_InitAllCount"#Gameplay"
 	duio_SetActiveScene"#Gameplay"
+
+	dim SceneCount
+	dim SceneTime
 
 	dim curScore			//スコア（10000000満点）
 	ddim curPfScore		//パフォーマンス評価
@@ -546,9 +550,8 @@
 			cfunc64v BASS_ChannelPlay,bgaudio_hchannel
 			bgmplayflag=TRUE
 		}
-		if mapconfig_sndmode==0&mapconfig_finishflag==FALSE&sysclock_cur>mapconfig_playlength {
-			mapconfig_finishflag=TRUE
-		}
+		if mapconfig_sndmode==0&mapconfig_finishflag==FALSE&sysclock_cur>mapconfig_playlength :mapconfig_finishflag=TRUE
+		if mapconfig_sndmode==1&mapconfig_finishflag==FALSE&sysclock_cur>objTiming(objmax-1)+2000 :mapconfig_finishflag=TRUE
 
 	//プレイ時間
 		duio_ChangeTextBody duio_TextID2UIsetID("gameplay_playtime_value"),hm2str(sysclock_cur)
@@ -660,12 +663,10 @@
 			SetDrawBlendMode DX_BLENDMODE_PMA_ALPHA,255
 
 			//オブジェクト描画
-			if mapconfig_sndmode==1 :mapconfig_finishflag=TRUE
 			repeat objmax
 				i=cnt
 
 				if objJudgeFlag(i)==TRUE :continue
-				if mapconfig_sndmode==1 :mapconfig_finishflag=FALSE
 
 				ObjPosition(i)-playtheme_noteheight
 
@@ -711,8 +712,8 @@
 	//背景
 		SetDrawScreen hdximg(igameplay_bg_sidelr)
 			ClearDrawScreen
-			DrawGraph 0,-1024+(double(SceneCount)*double(FrameTime)*1.2)\1024,hdximg(igameplay_bgorg_side_0),TRUE
-			DrawGraph 0,-1024+(double(SceneCount)*double(FrameTime)*1.2)\1024+1024,hdximg(igameplay_bgorg_side_0),TRUE
+			DrawGraph 0,-1024+(double(SceneCount)*double(FrameTime)*0.4)\1024,hdximg(igameplay_bgorg_side_0),TRUE
+			DrawGraph 0,-1024+(double(SceneCount)*double(FrameTime)*0.4)\1024+1024,hdximg(igameplay_bgorg_side_0),TRUE
 
 		SetDrawScreen hdximg(igameplay_bg_grid)
 			ClearDrawScreen
@@ -727,7 +728,10 @@
 		SetDrawBlendMode DX_BLENDMODE_PMA_ALPHA,256
 		DrawRectGraph 227,152,0,0,int(200.0*(double(sysclock_cur)/double(mapconfig_playlength))),6,hdximg(igameplay_playtime_pre),TRUE
 
-		if mapconfig_playlength<sysclock_cur {
+		if mapconfig_finishflag {
+			
+			gosub*scene_Gameplay_free
+
 			gosub*scene_Result_Init
 			curSceneTag="#Result"
 			return
@@ -755,7 +759,7 @@
 			if cnt>=RecentJudgeCount :continue
 
 			RecentJudgeDrawGap=RecentJudgeGap(limit(RecentJudgeCount-cnt,0,length(RecentJudgeGap)-1))
-			RecentJudgeDrawPos=671+int(80.0*double(RecentJudgeDrawGap)/double(jWid_Miss))
+			RecentJudgeDrawPos=671+int(80.0*(double(RecentJudgeDrawGap)/double(jWid_Miss)))
 
 			//判定ごとに色分け
 			if abs(RecentJudgeDrawGap)<jWid_Miss :RecentJudgeDrawColor=$858585
@@ -1037,6 +1041,20 @@
 	SceneCount++
 
 	ScreenFlip
+	return
+
+*scene_Gameplay_free
+
+	cfunc64v BASS_SampleFree,bgaudio_hsample
+	cfunc64v BASS_ChannelFree,bgaudio_hchannel
+
+	foreach sndDB_hsample
+		cfunc64v BASS_SampleFree,sndDB_hsample(cnt)
+	loop
+	foreach sndDB_hchannel
+		cfunc64v BASS_ChannelFree,sndDB_hchannel(cnt)
+	loop
+
 	return
 
 #deffunc ObjJudgeProg int _judge,int _ch

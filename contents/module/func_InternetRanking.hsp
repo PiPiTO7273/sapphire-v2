@@ -13,4 +13,43 @@
 	logmes GetTimeStamp()+" [portal-websvc] Downloading Records..."
 	return webapi_get("http://"+duio_idsGet("Server")+"/apiv2/API-GetRecord.php?key="+duio_idsGet("_keymac_APIkey_GetRecord")+"&name="+_id)
 
+#deffunc PortalWebSvc_UploadRecord str _mapuuid,str _playerid,int _score,array _judge,int _maxcombo,str _cleartype,array _gaugecapture,str _scorecapture,double _ability
+	sdim HTTPrequestData
+	HTTPrequestData=""
+	HTTPrequestData+"key="+duio_idsGet("_keymac_APIkey_SendNewRecord")+"&"
+	HTTPrequestData+"id="+_mapuuid+"&"
+	HTTPrequestData+"name="+_playerid+"&"
+	HTTPrequestData+"score="+str(_score)+"&"
+	HTTPrequestData+"j_ex="+_judge(JUDGEID_EXCELLENT)+"&"
+	HTTPrequestData+"j_gr="+_judge(JUDGEID_GREAT)+"&"
+	HTTPrequestData+"j_go="+_judge(JUDGEID_GOOD)+"&"
+	HTTPrequestData+"j_ba="+_judge(JUDGEID_BAD)+"&"
+	HTTPrequestData+"j_mi="+_judge(JUDGEID_MISS)+"&"
+	HTTPrequestData+"j_ea="+_judge(JUDGEID_EARLY)+"&"
+	HTTPrequestData+"j_la="+_judge(JUDGEID_LATE)+"&"
+	HTTPrequestData+"maxcombo="+_maxcombo+"&"
+	HTTPrequestData+"type="+_cleartype+"&"
+
+	//ゲージ推移
+	sdim orgbindata,350
+	repeat 350
+		poke orgbindata,cnt,_gaugecapture(cnt)
+	loop
+	sdim convbindata
+	ConvHEXenc convbindata,orgbindata,350
+	HTTPrequestData+"g64="+convbindata+"&"
+
+	//スコアグラフ
+	HTTPrequestData+"s64="+_scorecapture+"&"
+
+	HTTPrequestData+"ability="+_ability
+
+	sdim orgbindata
+	sdim convbindata
+
+	return webapi_post("http://"+duio_idsGet("Server")+"/apiv2/API-SendNewRecord.php",HTTPrequestData)
+
+#deffunc PortalWebSvc_UploadIR str _id,str _name,int _score
+	return webapi_get("http://"+duio_idsGet("Server")+"/apiv2/API-SendGlobalRanking.php?key="+duio_idsGet("_keymac_APIkey_SendGlobalRanking")+"&id="+_id+"&name="+_name+"&score="+str(_score))
+
 #global

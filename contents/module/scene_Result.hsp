@@ -2,24 +2,25 @@
 *scene_Result_Init
 
 	dim SceneCount
+	dim SceneTime
 
 	UpdateProfileDisp
+
+	duio_InitAllCount"#Common_Profile"
+	duio_InitAllCount"#Result"
 
 	dim item:dim lv
 	item=curselect_item
 	lv=curselect_lv
 
 	//debug ★★★★★★★★★★★★★★★★★★★★★★★
-	/*curScore=9999999
-	targetscore=1234567
-	dim curJudge,7
-	curJudge(JUDGEID_GOOD)=999
-	objmax=1000
-	dim gaugecapture_buf,350
-	repeat 350
-		setease 0,100,ease_cubic_inout
-		poke gaugecapture_buf,cnt,getease(cnt,300)
-	loop*/
+	;curScore=9999999
+	;targetscore=1234567
+	;dim curJudge,7
+	;curJudge(JUDGEID_GOOD)=999
+	;objmax=1000
+	;dim gaugecapture_buf,350
+	;dim scorecapture_buf,objmax
 	//★★★★★★★★★★★★★★★★★★★★★★★★★★
 
 	//ジャケット画像
@@ -114,15 +115,6 @@
 			duio_ChangeTextBody duio_TextID2UIsetID("result_judgedetail_nummiss_ratio"),str(numjudgeratio(JUDGEID_MISS)*100.0)
 			duio_ChangeTextBody duio_TextID2UIsetID("result_judgedetail_numearly_ratio"),str(numjudgeratio(JUDGEID_EARLY)*100.0)
 			duio_ChangeTextBody duio_TextID2UIsetID("result_judgedetail_numlate_ratio"),str(numjudgeratio(JUDGEID_LATE)*100.0)
-
-			duio_ChangeTextBody duio_TextID2UIsetID("result_others_curmaxcombo"),strf("%04d",maxCombo)
-			if mapdb_mybest_cleartype(item,lv)=="" {
-				duio_ChangeTextBody duio_TextID2UIsetID("result_others_mybestcleartype"),"NO DATA"
-			} else {
-				duio_ChangeTextBody duio_TextID2UIsetID("result_others_mybestcleartype"),mapdb_mybest_cleartype(item,lv)
-			}
-			duio_ChangeTextBody duio_TextID2UIsetID("result_others_mybestmaxcombo"),strf("%04d",mapdb_mybest_maxcombo(item,lv))
-
 	//平均オフセット
 		ddim avgOffset
 		if RecentJudgeCount==0 {
@@ -138,15 +130,105 @@
 	//最大判定精度
 		duio_ChangeTextBody duio_TextID2UIsetID("result_judgedetail_maxjudgeacc"),strf("%.2f ms",1000.0/limitf(MaxSubThreadFPS,1.0))
 
-	//クリアの種類
-		dim mybestClearType
-		mybestClearType=CLEARTYPE_NODATA
-		foreach common_cleartype
-			if common_cleartype(cnt)==mapdb_mybest_cleartype(item,lv) :mybestClearType=cnt:break
-		loop
-		dim curClearType
-		curClearType=CLEARTYPE_NODATA
-		if pfreg_GaugeType==PLAYOPT_ID_GAUGE_ASSIST&curGauge>=70.0 :curClearType=CLEARTYPE_ASSIST
+	//その他の情報（表）
+		//クリアの種類
+			//自己ベスト（文字列→定数）
+				dim mybestClearType
+				mybestClearType=CLEARTYPE_NODATA
+				foreach common_cleartype
+					if common_cleartype(cnt)==mapdb_mybest_cleartype(item,lv) :mybestClearType=cnt:break
+				loop
+
+			//今回
+				dim curClearType
+				curClearType=CLEARTYPE_FAILED
+				if pfreg_GaugeType==PLAYOPT_ID_GAUGE_ASSIST&curGauge>=70.0 :curClearType=CLEARTYPE_ASSIST
+				if pfreg_GaugeType==PLAYOPT_ID_GAUGE_NORMAL&curGauge>=70.0 :curClearType=CLEARTYPE_CLEAR
+				if pfreg_GaugeType==PLAYOPT_ID_GAUGE_EXPERT&curGauge>0.0 :curClearType=CLEARTYPE_EXPERT
+				if pfreg_GaugeType==PLAYOPT_ID_GAUGE_MADNESS&curGauge>0.0 :curClearType=CLEARTYPE_MADNESS
+				if curCombo==objmax :curClearType=CLEARTYPE_FC
+				if curJudge(JUDGEID_EXCELLENT)==objmax :curClearType=CLEARTYPE_ALLEX
+
+			
+		duio_ChangeTextBody duio_TextID2UIsetID("result_others_curcleartype"),common_cleartype(curClearType)
+		duio_ChangeTextBody duio_TextID2UIsetID("result_others_curmaxcombo"),strf("%04d",maxCombo)
+		duio_ChangeTextBody duio_TextID2UIsetID("result_others_mybestcleartype"),common_cleartype(mybestClearType)
+		duio_ChangeTextBody duio_TextID2UIsetID("result_others_mybestmaxcombo"),strf("%04d",mapdb_mybest_maxcombo(item,lv))
+
+	//送信用データ
+		dim saveScore:dim saveJudge:dim saveMaxCombo:dim saveClearType:dim saveGaugeCapture:sdim saveScoreCapture:ddim saveability
+		if curScore>mapdb_mybest_score(item,lv) {
+			//自己ベストスコアを更新
+			duio_SetImageVisible duio_ImageID2UIsetID("result_score_new_score"),TRUE
+			saveScore=curScore
+
+			//判定
+			repeat 7
+				saveJudge(cnt)=curJudge(cnt)
+			loop
+
+			//スコアグラフ
+			saveScoreCapture="K"
+			repeat objmax
+				saveScoreCapture+scorecapture_buf(cnt)
+			loop
+		} else {
+			//自己ベストスコアを下回った
+			duio_SetImageVisible duio_ImageID2UIsetID("result_score_new_score"),FALSE
+			saveScore=mapdb_mybest_score(item,lv)
+
+			//判定
+			repeat 7
+				saveJudge(cnt)=mapdb_mybest_judgedetail(item,lv,cnt)
+			loop
+
+			//スコアグラフ
+			saveScoreCapture=mapdb_mybest_score4binhex(item,lv)
+		}
+		if maxcombo>mapdb_mybest_maxcombo(item,lv) {
+			//自己ベストの最大コンボを更新
+			duio_SetImageVisible duio_ImageID2UIsetID("result_others_new_maxcombo"),TRUE
+			saveMaxCombo=maxcombo
+		} else {
+			//自己ベストの最大コンボを下回った
+			duio_SetImageVisible duio_ImageID2UIsetID("result_others_new_maxcombo"),FALSE
+			saveMaxCombo=mapdb_mybest_maxcombo(item,lv)
+		}
+		if curClearType>mybestClearType {
+			//自己ベストのクリアランプを更新
+			duio_SetImageVisible duio_ImageID2UIsetID("result_others_new_cleartype"),TRUE
+			saveClearType=curClearType
+
+			//ゲージ推移
+			repeat 350
+				saveGaugeCapture(cnt)=gaugecapture_buf(cnt)
+			loop
+		} else {
+			//自己ベストのクリアランプを更新しない
+			duio_SetImageVisible duio_ImageID2UIsetID("result_others_new_cleartype"),FALSE
+			saveClearType=mybestClearType
+
+			//ゲージ推移
+			repeat 350
+				saveGaugeCapture(cnt)=peek(mapdb_mybest_gauge4binhex(item,lv),cnt)
+			loop
+		}
+		if curAbilityScore>mapdb_mybest_pfpoint(item,lv) {
+			//自己ベストの能力値を更新
+			duio_SetImageVisible duio_ImageID2UIsetID("result_score_new_ability"),TRUE
+			saveability=curAbilityScore
+		} else {
+			//自己ベストの能力値を下回った
+			duio_SetImageVisible duio_ImageID2UIsetID("result_score_new_ability"),FALSE
+			saveability=mapdb_mybest_pfpoint(item,lv)
+		}
+
+	//処理フラグ
+		dim recordsend_flag
+		dim irsend_flag
+		dim recordload_flag
+		dim irload_flag
+
 	return
 
 *scene_Result
@@ -182,6 +264,51 @@
 	loop
 
 	//接続中
-	duio_ChangeImage duio_ImageID2UIsetID("result_status_load"),hdximgarr_load_connect(int(1000.0/duio_GetFPS()*SceneCount/20)\28)
+	duio_ChangeImage duio_ImageID2UIsetID("result_status_load"),hdximgarr_load_connect(SceneTime/20\28)
+
+	if SceneTime>1500&recordsend_flag==FALSE {
+		PortalWebSvc_UploadRecord map_uuid(item,lv),PlayerID,saveScore,saveJudge,saveMaxCombo,common_cleartype(saveClearType),saveGaugeCapture,saveScoreCapture,saveability
+		recordsend_flag=TRUE
+	}
+	if SceneTime>1800&irsend_flag==FALSE {
+		PortalWebSvc_UploadIR map_uuid(item,lv),PlayerID,saveScore
+		irsend_flag=TRUE
+	}
+	if SceneTime>2100&recordload_flag==FALSE {
+		gosub*syncRecords
+		recordload_flag=TRUE
+	}
+	if SceneTime>2500&irload_flag==FALSE {
+		gosub*syncIR
+		irload_flag=TRUE
+
+		duio_SetImageOutro duio_ImageID2UIsetID("result_status_load"),TRUE
+		duio_SetTextOutro duio_TextID2UIsetID("result_status"),TRUE
+
+		duio_SetImageVisible duio_ImageID2UIsetID("result_action_layer"),TRUE
+		duio_SetButtonVisible duio_ButtonID2UIsetID("result_action_twitter"),TRUE
+		duio_SetButtonVisible duio_ButtonID2UIsetID("result_action_savepicture"),TRUE
+		duio_SetButtonVisible duio_ButtonID2UIsetID("result_action_retry"),TRUE
+		duio_SetButtonVisible duio_ButtonID2UIsetID("result_action_next"),TRUE
+	}
+
+	if duio_GetButtonEventStack()!"" :gosub*scene_Result_eventStack
+
+	return
+
+*scene_Result_eventstack
+
+	switch duio_GetButtonEventStack()
+
+		//次へ
+		case"next"
+			curSceneTag="#MusicSelect"
+			gosub*scene_MusicSelect_Init
+		swbreak
+
+		//ゲーム終了
+		case"game.exit":goto*Exit:swbreak
+
+	swend
 
 	return

@@ -91,7 +91,7 @@
 	common_cleartype(CLEARTYPE_CLEAR)="CLEAR"
 	common_cleartype(CLEARTYPE_EXPERT)="EXPERT-CLEAR"
 	common_cleartype(CLEARTYPE_MADNESS)="MADNESS-CLEAR"
-	common_cleartype(CLEARTYPE_FC)="FULL COMBO"
-	common_cleartype(CLEARTYPE_ALLEX)="ALL EXCELLENT"
+	common_cleartype(CLEARTYPE_FC)="FULLCOMBO"
+	common_cleartype(CLEARTYPE_ALLEX)="ALL-EXCELLENT"
 
 	return

@@ -15,7 +15,91 @@
 	loop
 	return
 
+*syncIR
+	sdim IRrawdata:sdim IRdivdata
+	sdim IRproc_prm
+	sdim IRproc_data_UUID
+	sdim IRproc_data_Rank
+	sdim IRproc_data_PlayerName
+	sdim IRproc_data_Score
+	dim item:dim lv
+	IRrawdata=PortalWebSvc_DownloadIRraw()
+	split IRrawdata,"\n",IRdivdata
+	repeat length(IRdivdata)
+		split IRdivdata(cnt),"=",IRproc_prm
+		split IRproc_prm(0),".",IRproc_data_UUID,IRproc_data_Rank
+		split IRproc_prm(1),",",IRproc_data_PlayerName,IRproc_data_Score
+		strrep IRproc_data_Rank,"RANK#",""
+
+		if IRproc_data_UUID!""&int(IRproc_data_Rank)!0 {
+			SearchDBfromUUID IRproc_data_UUID,item,lv
+			mapdb_ir_name(item,lv,int(IRproc_data_Rank)-1)=IRproc_data_PlayerName
+			mapdb_ir_score(item,lv,int(IRproc_data_Rank)-1)=int(IRproc_data_Score)
+			if IRproc_data_PlayerName==PlayerID {	//自分の順位
+				mapdb_ir_myrank(item,lv)=int(IRproc_data_Rank)-1
+			}
+			if int(IRproc_data_Rank)>mapdb_ir_regmax(item,lv) {
+				mapdb_ir_regmax(item,lv)=int(IRproc_data_Rank)
+			}
+
+			if IRproc_data_PlayerName!"" {
+				logmes GetTimeStamp()+" [irsync] Registered IR (uuid="+IRproc_data_UUID+",("+item+","+lv+"),name="+IRproc_data_PlayerName+",score="+IRproc_data_Score+",rank="+IRproc_data_Rank+")"
+			}
+		}
+	loop
+
+	return
+
+*syncRecords
+	sdim mybestrawdata:sdim mybestdivdata
+	dim item:dim lv:sdim INIkey:sdim INIvalue
+	mybestrawdata=PortalWebSvc_DownloadRecord(PlayerID)
+	split mybestrawdata,"\n",mybestdivdata
+
+	repeat length(mybestdivdata)
+		if strmid(mybestdivdata(cnt),0,1)=="[" {	//セクション検出
+			strrep mybestdivdata(cnt),"[",""
+			strrep mybestdivdata(cnt),"]",""
+			SearchDBfromUUID mybestdivdata(cnt),item,lv
+			logmes GetTimeStamp()+" Import Records (UUID="+mybestdivdata(cnt)+",Item="+item+",Level="+lv+")"
+		} else {
+			//通常の処理
+			split mybestdivdata(cnt),"=",INIkey,INIvalue
+			switch INIkey
+
+				case"Score":mapdb_mybest_score(item,lv)=int(INIvalue):swbreak							//スコア
+				case"NumExcellent":mapdb_mybest_judgedetail(item,lv,JUDGEID_EXCELLENT)=int(INIvalue):swbreak	//EXCELLENT数
+				case"NumGreat":mapdb_mybest_judgedetail(item,lv,JUDGEID_GREAT)=int(INIvalue):swbreak			//GREAT数
+				case"NumGood":mapdb_mybest_judgedetail(item,lv,JUDGEID_GOOD)=int(INIvalue):swbreak			//GOOD数
+				case"NumBad":mapdb_mybest_judgedetail(item,lv,JUDGEID_BAD)=int(INIvalue):swbreak			//BAD数
+				case"NumMiss":mapdb_mybest_judgedetail(item,lv,JUDGEID_MISS)=int(INIvalue):swbreak			//MISS数
+				case"NumEarly":mapdb_mybest_judgedetail(item,lv,JUDGEID_EARLY)=int(INIvalue):swbreak			//EARLY数
+				case"NumLate":mapdb_mybest_judgedetail(item,lv,JUDGEID_LATE)=int(INIvalue):swbreak			//LATE数
+				case"MaxCombo":mapdb_mybest_maxcombo(item,lv)=int(INIvalue):swbreak						//最大コンボ
+				case"Type":mapdb_mybest_cleartype(item,lv)=INIvalue:swbreak								//クリアの種類
+				case"Ability":mapdb_mybest_pfpoint(item,lv)=double(INIvalue):swbreak						//能力値
+				case"Date":mapdb_mybest_regdate(item,lv)=INIvalue:swbreak								//記録日時
+
+				case"Gauge_64"																	//ゲージ推移
+					sdim tmphexbuf
+					ConvHEXdec tmphexbuf,INIvalue
+					memcpy mapdb_mybest_gauge4binhex(item,lv),tmphexbuf,350
+				swbreak
+
+				case"Score_64":mapdb_mybest_score4binhex(item,lv)=INIvalue:swbreak
+
+			swend
+		}
+	loop
+
+	return
+
 *scene_MusicSelect_Init
+
+	dim SceneCount
+	dim SceneTime
+
+	CreateMapItem MAPITEM_TYPE_GROUP,"",TRUE
 
 	dim mapitem_cursorwheel
 	dim mapitem_scrollfix
@@ -37,6 +121,12 @@
 	dim SearchItem_hInput
 
 	UpdateProfileDisp
+
+	duio_InitAllCount"#MusicSelect"
+	duio_InitAllCount"#Common_Profile"
+	duio_InitAllCount"#Dialog-KeywordSearch-Nomatch"
+	duio_InitAllCount"#PlayOption"
+	duio_InitAllCount"#MusicSelect-Decide"
 
 	duio_ChangeButtonImage duio_ButtonID2UIsetID("musicselect_button_folder"),hdximg(imusicselect_folder_all)
 	duio_ChangeButtonImage duio_ButtonID2UIsetID("musicselect_button_sort"),hdximg(imusicselect_sort_default)
@@ -120,7 +210,7 @@
 	gosub*scene_MusicSelect_UpdatePlayOptionUI
 	gosub*scene_MusicSelect_UpdateMetadataString
 
-	duio_SetActiveScene"#MusicSelect"
+	duio_SetActiveScene"#MusicSelect",TRUE
 
 	return
 
@@ -197,10 +287,10 @@
 		DrawGraph 1870,130+int(700.0*(-double(duio_GetButtonPositionY(mapitem_uisetid(0))-159)/double(mapitem_scrollpos))),hdximg(imusicselect_itemscroll_circle),TRUE
 
 		//選択中の難易度を強調表示
-		if SceneCount*(1000/duio_GetFPS())>750 {
+		if SceneTime>750 {
 			setease 1,1.2,ease_linear+ease_loop
-			EaseWidth=int(64.0*geteasef(SceneCount*(1000/duio_GetFPS())-750,250))
-			EaseHeight=int(33.0*geteasef(SceneCount*(1000/duio_GetFPS())-750,250))
+			EaseWidth=int(64.0*geteasef(SceneTime-750,250))
+			EaseHeight=int(33.0*geteasef(SceneTime-750,250))
 			EasePosY=330+33/2-EaseHeight/2
 			switch curselect_lv
 				case 0
@@ -230,7 +320,7 @@
 			repeat 100
 	
 				//アイコン
-				SetDrawBlendMode DX_BLENDMODE_PMA_ALPHA,256
+				SetDrawBlendMode DX_BLENDMODE_PMA_ALPHA,limit(SceneTime/2-300,0,255)
 				switch cnt
 					case 0:DrawGraph 0,tmpdrawpos,hdximg(imusicselect_ir_icon_1),TRUE:swbreak
 					case 1:DrawGraph 0,tmpdrawpos,hdximg(imusicselect_ir_icon_2),TRUE:swbreak
@@ -476,7 +566,8 @@
 			duio_SetImageOutro duio_ImageID2UIsetID("dialog_keywordsearch_nomatch"),TRUE
 			duio_SetButtonOutro duio_ButtonID2UIsetID("dialog_keywordsearch_nomatch_ok"),TRUE
 			duio_SetButtonEnable duio_ButtonID2UIsetID("dialog_keywordsearch_nomatch_ok"),FALSE
-			duio_SetActiveScene"#MusicSelect"
+			duio_SetActiveScene"#MusicSelect",TRUE
+			duio_SetActiveScene"#Dialog-KeywordSearch-Nomatch",FALSE
 		swbreak
 
 		//決定
@@ -511,7 +602,8 @@
 			duio_SetButtonEnable duio_ButtonID2UIsetID("playoption_close_0"),TRUE
 			optionwindowflag=TRUE:optionwindowclosecount=-1
 
-			duio_SetActiveScene"#PlayOption"
+			duio_SetActiveScene"#PlayOption",TRUE
+			duio_SetActiveScene"#MusicSelect",FALSE
 		swbreak
 
 		//オプション（閉じる）
@@ -777,7 +869,8 @@
 	duio_SetButtonEnable duio_ButtonID2UIsetID("playoption_close_0"),FALSE
 	optionwindowclosecount=0
 
-	duio_SetActiveScene"#MusicSelect"
+	duio_SetActiveScene"#MusicSelect",TRUE
+	duio_SetActiveScene"#PlayOption",FALSE
 
 	return
 
@@ -1057,7 +1150,8 @@
 	if mapitem_max==0 {
 		duio_SetImageVisible duio_ImageID2UIsetID("dialog_keywordsearch_nomatch"),TRUE
 		duio_SetButtonVisible duio_ButtonID2UIsetID("dialog_keywordsearch_nomatch_ok"),TRUE
-		duio_SetActiveScene"#Dialog-KeywordSearch-Nomatch"
+		duio_SetActiveScene"#Dialog-KeywordSearch-Nomatch",TRUE
+		duio_SetActiveScene"#MusicSelect",FALSE
 	}
 
 	return

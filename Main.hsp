@@ -350,6 +350,7 @@ goto*Startup
 		dim FPSkeepCount
 		dim SubThreadCount
 		dim DrawThreadTime
+		dim SubThreadTime
 		color 0,0,0:boxf 320/2-80,25,320/2-80+120,30
 
 	//ライブラリ読み込み
@@ -576,37 +577,7 @@ goto*Startup
 		color 0,0,0:boxf 320/2-80,25,320/2-80+140,30
 
 		//IR
-			sdim IRrawdata:sdim IRdivdata
-			sdim IRproc_prm
-			sdim IRproc_data_UUID
-			sdim IRproc_data_Rank
-			sdim IRproc_data_PlayerName
-			sdim IRproc_data_Score
-			dim item:dim lv
-			IRrawdata=PortalWebSvc_DownloadIRraw()
-			split IRrawdata,"\n",IRdivdata
-			repeat length(IRdivdata)
-				split IRdivdata(cnt),"=",IRproc_prm
-				split IRproc_prm(0),".",IRproc_data_UUID,IRproc_data_Rank
-				split IRproc_prm(1),",",IRproc_data_PlayerName,IRproc_data_Score
-				strrep IRproc_data_Rank,"RANK#",""
-
-				if IRproc_data_UUID!""&int(IRproc_data_Rank)!0 {
-					SearchDBfromUUID IRproc_data_UUID,item,lv
-					mapdb_ir_name(item,lv,int(IRproc_data_Rank)-1)=IRproc_data_PlayerName
-					mapdb_ir_score(item,lv,int(IRproc_data_Rank)-1)=int(IRproc_data_Score)
-					if IRproc_data_PlayerName==PlayerID {	//自分の順位
-						mapdb_ir_myrank(item,lv)=int(IRproc_data_Rank)-1
-					}
-					if int(IRproc_data_Rank)>mapdb_ir_regmax(item,lv) {
-						mapdb_ir_regmax(item,lv)=int(IRproc_data_Rank)
-					}
-
-					if IRproc_data_PlayerName!"" {
-						logmes GetTimeStamp()+" [irsync] Registered IR (uuid="+IRproc_data_UUID+",("+item+","+lv+"),name="+IRproc_data_PlayerName+",score="+IRproc_data_Score+",rank="+IRproc_data_Rank+")"
-					}
-				}
-			loop
+			gosub*syncIR
 			color 0,0,0:boxf 320/2-80,25,320/2-80+160,30
 
 		//プロフィール取得
@@ -687,49 +658,9 @@ goto*Startup
 			if pfreg_dispname=="" :pfreg_dispname=PlayerID	//表示名が未設定の場合、IDをそのまま反映
 
 		//自己ベスト記録
-			sdim mybestrawdata:sdim mybestdivdata
-			dim item:dim lv:sdim INIkey:sdim INIvalue
-			mybestrawdata=PortalWebSvc_DownloadRecord(PlayerID)
-			split mybestrawdata,"\n",mybestdivdata
-
-			repeat length(mybestdivdata)
-				if strmid(mybestdivdata(cnt),0,1)=="[" {	//セクション検出
-					strrep mybestdivdata(cnt),"[",""
-					strrep mybestdivdata(cnt),"]",""
-					SearchDBfromUUID mybestdivdata(cnt),item,lv
-					logmes GetTimeStamp()+" Import Records (UUID="+mybestdivdata(cnt)+",Item="+item+",Level="+lv+")"
-				} else {
-					//通常の処理
-					split mybestdivdata(cnt),"=",INIkey,INIvalue
-					switch INIkey
-
-						case"Score":mapdb_mybest_score(item,lv)=int(INIvalue):swbreak							//スコア
-						case"NumExcellent":mapdb_mybest_judgedetail(item,lv,JUDGEID_EXCELLENT)=int(INIvalue):swbreak	//EXCELLENT数
-						case"NumGreat":mapdb_mybest_judgedetail(item,lv,JUDGEID_GREAT)=int(INIvalue):swbreak			//GREAT数
-						case"NumGood":mapdb_mybest_judgedetail(item,lv,JUDGEID_GOOD)=int(INIvalue):swbreak			//GOOD数
-						case"NumBad":mapdb_mybest_judgedetail(item,lv,JUDGEID_BAD)=int(INIvalue):swbreak			//BAD数
-						case"NumMiss":mapdb_mybest_judgedetail(item,lv,JUDGEID_MISS)=int(INIvalue):swbreak			//MISS数
-						case"NumEarly":mapdb_mybest_judgedetail(item,lv,JUDGEID_EARLY)=int(INIvalue):swbreak			//EARLY数
-						case"NumLate":mapdb_mybest_judgedetail(item,lv,JUDGEID_LATE)=int(INIvalue):swbreak			//LATE数
-						case"MaxCombo":mapdb_mybest_maxcombo(item,lv)=int(INIvalue):swbreak						//最大コンボ
-						case"Type":mapdb_mybest_cleartype(item,lv)=INIvalue:swbreak								//クリアの種類
-						case"Ability":mapdb_mybest_pfpoint(item,lv)=double(INIvalue):swbreak						//能力値
-						case"Date":mapdb_mybest_regdate(item,lv)=INIvalue:swbreak								//記録日時
-
-						case"Gauge_64"																	//ゲージ推移
-							sdim tmphexbuf
-							ConvHEXdec tmphexbuf,INIvalue
-							memcpy mapdb_mybest_gauge4binhex(item,lv),tmphexbuf,350
-						swbreak
-
-						case"Score_64":mapdb_mybest_score4binhex(item,lv)=INIvalue:swbreak
-
-					swend
-				}
-			loop
+			gosub*syncRecords
 
 	//初期状態
-	CreateMapItem MAPITEM_TYPE_GROUP,"",FALSE
 	SetWindowVisibleFlag TRUE
 
 	gsel 0,-1
@@ -741,9 +672,13 @@ goto*Startup
 
 *MainLoop
 
+	duio_DeleteEventStack
+
 	FPSkeepCount_std=GetNowCount()
 
 	if ProcessMessage()==-1 :goto*Exit
+
+	SceneTime=int(1000.0/duio_GetFPS()*SceneCount)
 
 	//カーソル座標
 	cfunc64v GetMousePoint,varptr64(cursorPosX),varptr64(cursorPosY)
@@ -798,6 +733,8 @@ goto*Startup
 	DrawOverlayString 0,0,"MainThread FPS="+strf("%.2f",CurFPS)
 	DrawOverlayString 0,20,"MainThread Average-FPS="+strf("%.2f",AvgFPS)
 	DrawOverlayString 0,40,"SubThread FPS="+strf("%.2f",CurFPS*double(SubThreadCount))
+	DrawOverlayString 0,60,"Draw "+DrawThreadTime+"ms , SubThread "+SubThreadTime+" ms"
+	DrawOverlayString 0,80,"Cursor ("+cursorPosX+","+cursorPosY+") w="+cursorWheel
 
 	bfcursorStatus=cursorStatus
 	bfCursorWheelraw=cursorWheelraw
@@ -808,15 +745,17 @@ goto*Startup
 	//サブスレッド
 	SubThreadCount=0
 	DrawThreadTime=GetNowCount()-FPSkeepCount_std
-	repeat SubThreadLimit
+	repeat abs(SubThreadLimit)
 
-		if (GetNowCount()-FPSkeepCount_std)>(1000/duio_GetFPS()-1) :break
+		if ((GetNowCount()-FPSkeepCount_std)>(1000/duio_GetFPS()-SubThreadTime-1))&SubThreadLimit>0&cnt!0 :break
 
 		switch curSceneTag
 			case"#Gameplay"
 				gosub*scene_Gameplay_subThread
 			swbreak
 		swend
+
+		if cnt==0 :SubThreadTime=GetNowCount()-FPSkeepCount_std-DrawThreadTime
 
 		SubThreadCount++
 		await 1

@@ -3,6 +3,11 @@
 
 	logmes GetTimeStamp()+" [duio-thread] Initializing thread..."
 
+	//シーンタグ
+		dim UIset_tag_id
+		dim UIset_tag_active
+		dim UIset_tag_max
+
 	//ボタン
 		sdim UIset_Button_Tag
 		sdim UIset_Button_ID
@@ -174,9 +179,6 @@
 	//数値計算モジュール初期化
 		mfx_init
 
-	//アクティブシーン
-		sdim UIset_curActiveScene
-
 	return
 
 #defcfunc duio_fx str _fx
@@ -298,6 +300,16 @@
 				loop
 
 				if length(UIsetscript_linediv)==1 :end
+
+				dim UIset_tagalreadyset
+				repeat UIset_tag_max
+					if UIset_tag_id(cnt)==UIsetscript_linediv(0) :UIset_tagalreadyset=TRUE:break
+				loop
+				if UIset_tagalreadyset==FALSE {
+					UIset_tag_id(UIset_tag_max)=UIsetscript_linediv(0)
+					UIset_tag_active(UIset_tag_max)=TRUE
+					UIset_tag_max++
+				}
 
 				//コンポーネント別処理
 				switch UIsetscript_linediv(1)
@@ -760,9 +772,12 @@
 	;CurDUIObasedFPS=limitf(double(cfunc64f(GetFPS)),1.0)
 	CurDUIObasedFPS=60
 
-	if UIset_curActiveScene==""|UIset_curActiveScene==_scenetag {
+	dim UIset_tagactiveflag
+	repeat UIset_tag_max
+		if UIset_tag_id(cnt)==_scenetag&UIset_tag_active(cnt) :UIset_tagactiveflag=TRUE:break
+	loop
+	if UIset_tagactiveflag {
 		UIset_Button_hoverFlag=FALSE
-		UIset_Button_onEventStack=""
 		repeat UIset_maxdrawLev
 			UIset_curdrawLev=(UIset_maxdrawLev-1)-cnt
 			repeat UIset_Button_max
@@ -834,7 +849,11 @@
 							} else {
 								setease 0,UIset_Image_Alpha(i),UIset_Image_EaseIn_Fade_EaseFunc(i)
 							}
-							SetDrawBlendMode DX_BLENDMODE_PMA_ALPHA,getease(UIset_Image_count(i)*(1000/int(CurDUIObasedFPS))-UIset_Image_EaseIn_Fade_Delay(i),UIset_Image_EaseIn_Fade_Length(i))
+							if UIset_Image_count(i)*(1000/int(CurDUIObasedFPS))>=UIset_Image_EaseIn_Fade_Delay(i) {
+								SetDrawBlendMode DX_BLENDMODE_PMA_ALPHA,getease(UIset_Image_count(i)*(1000/int(CurDUIObasedFPS))-UIset_Image_EaseIn_Fade_Delay(i),UIset_Image_EaseIn_Fade_Length(i))
+							} else {
+								SetDrawBlendMode DX_BLENDMODE_PMA_ALPHA,0
+							}
 						}
 						if UIset_Image_In_Mode(i)&UI_EASEIN_MOVE {
 							if UIset_Image_Outroflag(i) {
@@ -1398,13 +1417,13 @@
 	if _flag {
 		UIset_Image_Outroflag(_uisetid)=TRUE
 		if UIset_Image_In_Mode(_uisetid)&UI_EASEIN_ZOOM {
-			UIset_Image_count(_uisetid)=UIset_Image_EaseIn_Zoom_Length(_uisetid)/(1000/int(CurDUIObasedFPS))
+			UIset_Image_count(_uisetid)=(UIset_Image_EaseIn_Zoom_Delay(_uisetid)+UIset_Image_EaseIn_Zoom_Length(_uisetid))/(1000/int(CurDUIObasedFPS))
 		}
 		if UIset_Image_In_Mode(_uisetid)&UI_EASEIN_FADE {
-			UIset_Image_count(_uisetid)=UIset_Image_EaseIn_Fade_Length(_uisetid)/(1000/int(CurDUIObasedFPS))
+			UIset_Image_count(_uisetid)=(UIset_Image_EaseIn_Fade_Delay(_uisetid)+UIset_Image_EaseIn_Fade_Length(_uisetid))/(1000/int(CurDUIObasedFPS))
 		}
 		if UIset_Image_In_Mode(_uisetid)&UI_EASEIN_MOVE {
-			UIset_Image_count(_uisetid)=UIset_Image_EaseIn_Move_Length(_uisetid)/(1000/int(CurDUIObasedFPS))
+			UIset_Image_count(_uisetid)=(UIset_Image_EaseIn_Move_Delay(_uisetid)+UIset_Image_EaseIn_Move_Length(_uisetid))/(1000/int(CurDUIObasedFPS))
 		}
 	} else {
 		UIset_Image_Outroflag(_uisetid)=FALSE
@@ -1427,14 +1446,11 @@
 #deffunc duio_SetTextOutro int _uisetid,int _flag
 	if _flag {
 		UIset_Text_Outroflag(_uisetid)=TRUE
-		if UIset_Text_In_Mode(_uisetid)&UI_EASEIN_ZOOM {
-			UIset_Text_count(_uisetid)=UIset_Text_EaseIn_Zoom_Length(_uisetid)/(1000/int(CurDUIObasedFPS))
-		}
 		if UIset_Text_In_Mode(_uisetid)&UI_EASEIN_FADE {
-			UIset_Text_count(_uisetid)=UIset_Text_EaseIn_Fade_Length(_uisetid)/(1000/int(CurDUIObasedFPS))
+			UIset_Text_count(_uisetid)=(UIset_Text_EaseIn_Fade_Delay(_uisetid)+UIset_Text_EaseIn_Fade_Length(_uisetid))/(1000/int(CurDUIObasedFPS))
 		}
 		if UIset_Text_In_Mode(_uisetid)&UI_EASEIN_MOVE {
-			UIset_Text_count(_uisetid)=UIset_Text_EaseIn_Move_Length(_uisetid)/(1000/int(CurDUIObasedFPS))
+			UIset_Text_count(_uisetid)=(UIset_Text_EaseIn_Move_Delay(_uisetid)+UIset_Text_EaseIn_Move_Length(_uisetid))/(1000/int(CurDUIObasedFPS))
 		}
 	} else {
 		UIset_Text_Outroflag(_uisetid)=FALSE
@@ -1530,8 +1546,10 @@
 	loop
 	return
 
-#deffunc duio_SetActiveScene str _tag
-	UIset_curActiveScene=_tag
+#deffunc duio_SetActiveScene str _tag,int _status
+	repeat UIset_tag_max
+		if UIset_tag_id(cnt)==_tag :UIset_tag_active(cnt)=_status:break
+	loop
 	return
 
 #defcfunc duio_GetButtonPushTime int _uisetid
@@ -1539,4 +1557,8 @@
 
 #deffunc duio_SetTextColor int _uisetid,int _colorcode
 	UIset_Text_Color(_uisetid)=_colorcode
+	return
+
+#deffunc duio_DeleteEventStack
+	UIset_Button_onEventStack=""
 	return

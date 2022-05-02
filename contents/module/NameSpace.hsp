@@ -155,13 +155,13 @@
 #enum MAPITEM_SORT_BPM
 #enum MAPITEM_SORT_CLEARTYPE
 
-#enum JUDGEID_EXCELLENT		=	0
-#enum JUDGEID_GREAT
-#enum JUDGEID_GOOD
-#enum JUDGEID_BAD
-#enum JUDGEID_MISS
-#enum JUDGEID_EARLY
-#enum JUDGEID_LATE
+#enum global JUDGEID_EXCELLENT		=	0
+#enum global JUDGEID_GREAT
+#enum global JUDGEID_GOOD
+#enum global JUDGEID_BAD
+#enum global JUDGEID_MISS
+#enum global JUDGEID_EARLY
+#enum global JUDGEID_LATE
 
 //譜面フォーマットの各チャンクの識別番号
 #const ID_DUMMY			0
@@ -209,11 +209,11 @@
 
 #const Pretime		3000
 
-#const SubThreadLimit		4		//サブスレッドの最大処理回数
+#const SubThreadLimit		16		//サブスレッドの最大処理回数（負の数で実行回数を固定）
 #const AudioBufferSize		0		//オーディオバッファサイズ（0で自動）
 #const TexLv				4		//テクスチャの画質（数値が上がるほど荒くなる）
 #const MSAAflag			1		//アンチエイリアスを有効にするフラグ
-#const SndEventThread		0		//ゲームプレイのサウンドイベント処理を行うスレッド（0=メインスレッド,1=サブスレッド,2=処理しない）
+#const SndEventThread		1		//ゲームプレイのサウンドイベント処理を行うスレッド（0=メインスレッド,1=サブスレッド,2=処理しない）
 #const GameplayWindowLayout	1+2+4	//1=プロフィール,2=スコアグラフ,4=判定の詳細情報
 
 #const UIlayout_Profile		1

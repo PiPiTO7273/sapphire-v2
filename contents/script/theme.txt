@@ -7,17 +7,17 @@
 //****************************************//
 
 //----- Profile -----//
-		#Common_Profile @image musicselect_profile graphic/musicselect_profile.png 759 0 &animation-in=fade,20,350,CUBIC_OUT &animation-in=move,20,350,128,0,CUBIC_OUT &layerlv=2
+		#Common-Profile @image musicselect_profile graphic/musicselect_profile.png 759 0 &animation-in=fade,20,350,CUBIC_OUT &animation-in=move,20,350,128,0,CUBIC_OUT &layerlv=2
 		
 		rp:profile_text_animation>>&animation-in=fade,150,250,CUBIC_OUT &animation-in=move,150,250,-64,0,CUBIC_OUT &animation-in=random.text,150,250 &color=10,10,10 &layerlv=3
-		#Common_Profile @text common_profile_name * 820 29 ps24 profile_text_animation
-		#Common_Profile @text common_profile_badge * 820 10 rom1cm12 profile_text_animation
-		#Common_Profile @text common_profile_pfpoint * 1053 31 ps24 profile_text_animation &align-center-size=54
-		#Common_Profile @text common_profile_numtickets * 1340 12 ps16 profile_text_animation
-		#Common_Profile @text common_profile_numfragments * 1340 40 ps16 profile_text_animation
-		#Common_Profile @text common_profile_numlepus * 1522 12 ps16 profile_text_animation
+		#Common-Profile @text common_profile_name * 820 29 ps24 profile_text_animation
+		#Common-Profile @text common_profile_badge * 820 10 rom1cm12 profile_text_animation
+		#Common-Profile @text common_profile_pfpoint * 1053 31 ps24 profile_text_animation &align-center-size=54
+		#Common-Profile @text common_profile_numtickets * 1340 12 ps16 profile_text_animation
+		#Common-Profile @text common_profile_numfragments * 1340 40 ps16 profile_text_animation
+		#Common-Profile @text common_profile_numlepus * 1522 12 ps16 profile_text_animation
 
-		#Common_Profile @button common_exit graphic/common_exit.png 1860 22 25 25 &animation-in=fade,150,200,CUBIC_OUT &animation-in=zoom,150,200,1.2,CUBIC_OUT &layerlv=3 &event=game.exit &pushsound=pushbutton
+		#Common-Profile @button common_exit graphic/common_exit.png 1860 22 25 25 &animation-in=fade,150,200,CUBIC_OUT &animation-in=zoom,150,200,1.2,CUBIC_OUT &layerlv=3 &event=game.exit &pushsound=pushbutton
 
 //----- Music Select -----//
 
@@ -318,6 +318,12 @@
 	////// Skin //////
 		ids<>:playtheme_0_name>>デフォルト
 		ids<>:playtheme_0_single_height>>32
+
+	////// shutter //////
+		#Gameplay-Shutter @image shutter_10 graphic/shutter_10.png 0 0 &animation-in=move,200,600,-1920,1080,CUBIC_OUT &hide
+		#Gameplay-Shutter @image shutter_11 graphic/shutter_11.png 0 0 &animation-in=move,200,600,1920,-1080,CUBIC_OUT &hide
+		#Gameplay-Shutter @image shutter_00 graphic/shutter_00.png 0 0 &animation-in=move,0,500,-1920,1080,CUBIC_OUT &hide
+		#Gameplay-Shutter @image shutter_01 graphic/shutter_01.png 0 0 &animation-in=move,0,500,1920,-1080,CUBIC_OUT &hide
 
 //----- Result -----//
 	////// base //////

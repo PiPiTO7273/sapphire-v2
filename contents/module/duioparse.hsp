@@ -1312,7 +1312,7 @@
 	return UIset_Button_onEventStack
 
 #deffunc duio_SetButtonVisible int _uisetid,int _val
-	if _val :duio_SetButtonOutro _uisetid,FALSE
+	if _val :duio_SetButtonOutro _uisetid,FALSE:else:UIset_Button_count(_uisetid)=0
 	UIset_Button_DrawFlag(_uisetid)=_val
 	return
 
@@ -1324,7 +1324,7 @@
 	return UIset_Button_DrawFlag(_uisetid)
 
 #deffunc duio_SetImageVisible int _uisetid,int _val
-	if _val :duio_SetImageOutro _uisetid,FALSE
+	if _val :duio_SetImageOutro _uisetid,FALSE:else:UIset_Image_count(_uisetid)=0
 	UIset_Image_DrawFlag(_uisetid)=_val
 	return
 
@@ -1335,7 +1335,7 @@
 	return UIset_Image_Outroflag(_uisetid)
 
 #deffunc duio_SetTextVisible int _uisetid,int _val
-	if _val :duio_SetTextOutro _uisetid,FALSE
+	if _val :duio_SetTextOutro _uisetid,FALSE:else:UIset_text_count(_uisetid)=0
 	UIset_Text_DrawFlag(_uisetid)=_val
 	return
 
@@ -1426,6 +1426,7 @@
 			UIset_Image_count(_uisetid)=(UIset_Image_EaseIn_Move_Delay(_uisetid)+UIset_Image_EaseIn_Move_Length(_uisetid))/(1000/int(CurDUIObasedFPS))
 		}
 	} else {
+		UIset_Image_DrawFlag(_uisetid)=TRUE
 		UIset_Image_Outroflag(_uisetid)=FALSE
 		UIset_Image_count(_uisetid)=0
 	}

@@ -137,13 +137,16 @@
 
 #enum igameplay_gauge_bgvalue
 
+#enum igameplay_bg_stgfailed
+#enum igameplay_bg_stgclear
+#enum igameplay_bg_stgfc
+#enum igameplay_bg_stgallex
+
 #enum iresult_ratio_excellent
 #enum iresult_ratio_great
 #enum iresult_ratio_good
 #enum iresult_ratio_bad
 #enum iresult_ratio_miss
-
-#enum ogameplay_controlpanel		=	0
 
 #const MAPITEM_TYPE_GROUP		0
 #const MAPITEM_TYPE_SINGLE		1
@@ -209,7 +212,7 @@
 
 #const Pretime		3000
 
-#const SubThreadLimit		16		//サブスレッドの最大処理回数（負の数で実行回数を固定）
+#const SubThreadLimit		4		//サブスレッドの最大処理回数（負の数で実行回数を固定）
 #const AudioBufferSize		0		//オーディオバッファサイズ（0で自動）
 #const TexLv				4		//テクスチャの画質（数値が上がるほど荒くなる）
 #const MSAAflag			1		//アンチエイリアスを有効にするフラグ

@@ -6,7 +6,7 @@
 
 	UpdateProfileDisp
 
-	duio_InitAllCount"#Common_Profile"
+	duio_InitAllCount"#Common-Profile"
 	duio_InitAllCount"#Result"
 
 	dim item:dim lv
@@ -229,6 +229,18 @@
 		dim recordload_flag
 		dim irload_flag
 
+	//アクション
+		duio_SetImageVisible duio_ImageID2UIsetID("result_action_layer"),FALSE
+		duio_SetButtonVisible duio_ButtonID2UIsetID("result_action_twitter"),FALSE
+		duio_SetButtonVisible duio_ButtonID2UIsetID("result_action_savepicture"),FALSE
+		duio_SetButtonVisible duio_ButtonID2UIsetID("result_action_retry"),FALSE
+		duio_SetButtonVisible duio_ButtonID2UIsetID("result_action_next"),FALSE
+
+		duio_SetImageOutro duio_ImageID2UIsetID("result_status_load"),FALSE
+		duio_SetTextOutro duio_TextID2UIsetID("result_status"),FALSE
+
+	duio_SetAllImageOutro"#Gameplay-Shutter"
+
 	return
 
 *scene_Result
@@ -243,7 +255,7 @@
 	DrawGraph shapemovepos\1920+1920,20,hdximg(icommon_ironline),TRUE
 
 	duio_Draw"#Result"
-	duio_Draw"#Common_Profile"
+	duio_Draw"#Common-Profile"
 
 	//判定の割合グラフ (excellent,great,good,bad,miss)
 	SetDrawBlendMode DX_BLENDMODE_PMA_ALPHA,256
@@ -262,6 +274,9 @@
 		y(1)=double(duio_GetImagePositionY(duio_ImageID2UIsetID("result_bg_gaugegraph"))+44+100-gaugecapture_buf(cnt))
 		DrawLineAA d2f(x(0)),d2f(y(0)),d2f(x(1)),d2f(y(1)),0,d2f(2.0)
 	loop
+
+	//シャッター
+	duio_Draw"#Gameplay-Shutter"
 
 	//接続中
 	duio_ChangeImage duio_ImageID2UIsetID("result_status_load"),hdximgarr_load_connect(SceneTime/20\28)

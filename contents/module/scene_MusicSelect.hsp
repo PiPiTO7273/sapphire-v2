@@ -123,7 +123,7 @@
 	UpdateProfileDisp
 
 	duio_InitAllCount"#MusicSelect"
-	duio_InitAllCount"#Common_Profile"
+	duio_InitAllCount"#Common-Profile"
 	duio_InitAllCount"#Dialog-KeywordSearch-Nomatch"
 	duio_InitAllCount"#PlayOption"
 	duio_InitAllCount"#MusicSelect-Decide"
@@ -132,13 +132,6 @@
 	duio_ChangeButtonImage duio_ButtonID2UIsetID("musicselect_button_sort"),hdximg(imusicselect_sort_default)
 
 	//オブジェクトの配置
-		//ボタンの画像ハンドル
-		dim playoption_objplace_hbuttonimg,6,2
-		repeat 6
-			playoption_objplace_hbuttonimg(cnt,0)=duio_GetButtonhImg(duio_ButtonID2UIsetID(playoption_objplace_buttonid(cnt)))
-			playoption_objplace_hbuttonimg(cnt,1)=hdximg(iplayoption_objplace_normal_enabled+cnt)
-		loop
-
 		dim playoption_objplace_select
 		playoption_objplace_select=pfreg_Placement
 		//後方互換性のために設定値を新バージョン仕様に変更
@@ -152,13 +145,6 @@
 			playoption_objplace_select-100
 
 	//ゲージの難易度
-		//ボタンの画像ハンドル
-		dim playoption_gauge_hbuttonimg,6,2
-		repeat 6
-			playoption_gauge_hbuttonimg(cnt,0)=duio_GetButtonhImg(duio_ButtonID2UIsetID(playoption_gauge_buttonid(cnt)))
-			playoption_gauge_hbuttonimg(cnt,1)=hdximg(iplayoption_gauge_normal_enabled+cnt)
-		loop
-
 		dim playoption_gauge_select
 		playoption_gauge_select=pfreg_GaugeType
 		//後方互換性のために設定値を新バージョン仕様に変更
@@ -172,24 +158,10 @@
 			playoption_gauge_select-100
 
 	//ウィンドウレイアウト
-		//ボタンの画像ハンドル
-		dim playoption_window_hbuttonimg,3,2
-		repeat 3
-			playoption_window_hbuttonimg(cnt,0)=duio_GetButtonhImg(duio_ButtonID2UIsetID(playoption_window_buttonid(cnt)))
-			playoption_window_hbuttonimg(cnt,1)=hdximg(iplayoption_window_profile_enabled+cnt)
-		loop
-
 		dim playoption_window_select
 		playoption_window_select=pfreg_WindowLayout
 
 	//目標スコア
-		//ボタンの画像ハンドル
-		dim playoption_target_hbuttonimg,8,2
-		repeat 8
-			playoption_target_hbuttonimg(cnt,0)=duio_GetButtonhImg(duio_ButtonID2UIsetID(playoption_target_buttonid(cnt)))
-			playoption_target_hbuttonimg(cnt,1)=hdximg(iplayoption_target_ex_enabled+cnt)
-		loop
-
 		dim playoption_target_select
 		playoption_target_select=pfreg_Target
 		//後方互換性のために設定値を新バージョン仕様に変更
@@ -218,7 +190,7 @@
 
 	//UIパーツ
 	if decidecount!-1 {
-		DrawCommonBackground SceneCount
+		DrawCommonBackground FrameCount
 		
 		SetDrawBlendMode DX_BLENDMODE_PMA_ALPHA,256
 		DrawGraph 0,0,hdximg(icommon_bglayer),TRUE
@@ -244,7 +216,7 @@
 		DrawGraph shapemovepos\1920+1920,20,hdximg(icommon_ironline),TRUE
 
 		duio_Draw"#MusicSelect"
-		duio_Draw"#Common_Profile"
+		duio_Draw"#Common-Profile"
 		duio_Draw"#Dialog-KeywordSearch-Nomatch"
 	}
 

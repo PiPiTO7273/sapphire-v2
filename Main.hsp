@@ -306,6 +306,11 @@ goto*Startup
 
 		hdximg(igameplay_gauge_bgvalue)=LoadGraph("contents/graphic/gameplay_gauge_bg_value.png")
 
+		hdximg(igameplay_bg_stgfailed)=LoadGraph("contents/package/res_stg/stg_Failed.ogv")
+		hdximg(igameplay_bg_stgclear)=LoadGraph("contents/package/res_stg/stg_Clear.ogv")
+		hdximg(igameplay_bg_stgfc)=LoadGraph("contents/package/res_stg/stg_FullCombo.ogv")
+		hdximg(igameplay_bg_stgallex)=LoadGraph("contents/package/res_stg/stg_AllEx.ogv")
+
 		hdximg(iresult_ratio_excellent)=LoadGraph("contents/graphic/result_ratio_excellent.png")
 		hdximg(iresult_ratio_great)=LoadGraph("contents/graphic/result_ratio_great.png")
 		hdximg(iresult_ratio_good)=LoadGraph("contents/graphic/result_ratio_good.png")
@@ -663,6 +668,28 @@ goto*Startup
 	//初期状態
 	SetWindowVisibleFlag TRUE
 
+	//オプション画面のボタン配置
+		dim playoption_objplace_hbuttonimg,6,2
+		repeat 6
+			playoption_objplace_hbuttonimg(cnt,0)=duio_GetButtonhImg(duio_ButtonID2UIsetID(playoption_objplace_buttonid(cnt)))
+			playoption_objplace_hbuttonimg(cnt,1)=hdximg(iplayoption_objplace_normal_enabled+cnt)
+		loop
+		dim playoption_gauge_hbuttonimg,6,2
+		repeat 6
+			playoption_gauge_hbuttonimg(cnt,0)=duio_GetButtonhImg(duio_ButtonID2UIsetID(playoption_gauge_buttonid(cnt)))
+			playoption_gauge_hbuttonimg(cnt,1)=hdximg(iplayoption_gauge_normal_enabled+cnt)
+		loop
+		dim playoption_window_hbuttonimg,3,2
+		repeat 3
+			playoption_window_hbuttonimg(cnt,0)=duio_GetButtonhImg(duio_ButtonID2UIsetID(playoption_window_buttonid(cnt)))
+			playoption_window_hbuttonimg(cnt,1)=hdximg(iplayoption_window_profile_enabled+cnt)
+		loop
+		dim playoption_target_hbuttonimg,8,2
+		repeat 8
+			playoption_target_hbuttonimg(cnt,0)=duio_GetButtonhImg(duio_ButtonID2UIsetID(playoption_target_buttonid(cnt)))
+			playoption_target_hbuttonimg(cnt,1)=hdximg(iplayoption_target_ex_enabled+cnt)
+		loop
+
 	gsel 0,-1
 
 	curSceneTag="#MusicSelect"
@@ -730,11 +757,12 @@ goto*Startup
 	CurFPS=double(cfunc64f(GetFPS))
 	SumFPS+CurFPS
 	if FrameCount\60==0 :AvgFPS=SumFPS/60.0:SumFPS=0.0
-	DrawOverlayString 0,0,"MainThread FPS="+strf("%.2f",CurFPS)
+	/*DrawOverlayString 0,0,"MainThread FPS="+strf("%.2f",CurFPS)
 	DrawOverlayString 0,20,"MainThread Average-FPS="+strf("%.2f",AvgFPS)
 	DrawOverlayString 0,40,"SubThread FPS="+strf("%.2f",CurFPS*double(SubThreadCount))
 	DrawOverlayString 0,60,"Draw "+DrawThreadTime+"ms , SubThread "+SubThreadTime+" ms"
 	DrawOverlayString 0,80,"Cursor ("+cursorPosX+","+cursorPosY+") w="+cursorWheel
+	DrawOverlayString 0,100,"Scene="+curSceneTag*/
 
 	bfcursorStatus=cursorStatus
 	bfCursorWheelraw=cursorWheelraw

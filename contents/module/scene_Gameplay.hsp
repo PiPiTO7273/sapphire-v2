@@ -10,7 +10,8 @@
 	duio_Change3DSquareImage duio_3DSquareID2UIsetID("gameplay_bg_grid"),hdximg(igameplay_bg_grid)
 
 	duio_InitAllCount"#Gameplay"
-	duio_SetActiveScene"#Gameplay"
+	duio_InitAllCount"#Gameplay-Shutter"
+	duio_SetActiveScene"#Gameplay",TRUE
 
 	dim SceneCount
 	dim SceneTime
@@ -180,6 +181,11 @@
 			dim mapconfig_sidenoteflag
 			dim mapconfig_finishflag
 			dim mapconfig_playlength
+			dim mapconfig_finishtime
+			dim mapconfig_compefftime
+			dim mapconfig_hcompeff
+			dim mapconfig_compeff_shutterflag
+			mapconfig_compefftime=-1
 
 			//プレイ終了の判定方法（0=BGMの再生が終了したら,1=最後のオブジェクトが判定されたら）
 			dim mapconfig_sndmode
@@ -550,8 +556,20 @@
 			cfunc64v BASS_ChannelPlay,bgaudio_hchannel
 			bgmplayflag=TRUE
 		}
-		if mapconfig_sndmode==0&mapconfig_finishflag==FALSE&sysclock_cur>mapconfig_playlength :mapconfig_finishflag=TRUE
-		if mapconfig_sndmode==1&mapconfig_finishflag==FALSE&sysclock_cur>objTiming(objmax-1)+2000 :mapconfig_finishflag=TRUE
+
+		//プレイ終了判定
+		if mapconfig_sndmode==0&mapconfig_finishflag==FALSE&sysclock_cur>mapconfig_playlength :mapconfig_finishflag=TRUE:mapconfig_compefftime=0
+		if mapconfig_sndmode==1&mapconfig_finishflag==FALSE&sysclock_cur>objTiming(objmax-1) :mapconfig_finishflag=TRUE:mapconfig_compefftime=0
+
+		if mapconfig_compefftime==0 {
+			mapconfig_hcompeff=hdximg(igameplay_bg_stgfailed)
+			if (pfreg_GaugeType==PLAYOPT_ID_GAUGE_ASSIST|pfreg_GaugeType==PLAYOPT_ID_GAUGE_NORMAL)&curGauge>=70.0 :mapconfig_hcompeff=hdximg(igameplay_bg_stgclear)
+			if (pfreg_GaugeType==PLAYOPT_ID_GAUGE_EXPERT|pfreg_GaugeType==PLAYOPT_ID_GAUGE_MADNESS)&curGauge>0.0 :mapconfig_hcompeff=hdximg(igameplay_bg_stgclear)
+			if maxcombo==objmax :mapconfig_hcompeff=hdximg(igameplay_bg_stgfc)
+			if curJudge(JUDGEID_EXCELLENT)==objmax :mapconfig_hcompeff=hdximg(igameplay_bg_stgallex)
+
+			PlayMovieToGraph mapconfig_hcompeff
+		}
 
 	//プレイ時間
 		duio_ChangeTextBody duio_TextID2UIsetID("gameplay_playtime_value"),hm2str(sysclock_cur)
@@ -712,8 +730,8 @@
 	//背景
 		SetDrawScreen hdximg(igameplay_bg_sidelr)
 			ClearDrawScreen
-			DrawGraph 0,-1024+(double(SceneCount)*double(FrameTime)*0.4)\1024,hdximg(igameplay_bgorg_side_0),TRUE
-			DrawGraph 0,-1024+(double(SceneCount)*double(FrameTime)*0.4)\1024+1024,hdximg(igameplay_bgorg_side_0),TRUE
+			DrawGraph 0,-1024+(double(SceneCount)*double(FrameTime)*0.8)\1024,hdximg(igameplay_bgorg_side_0),TRUE
+			DrawGraph 0,-1024+(double(SceneCount)*double(FrameTime)*0.8)\1024+1024,hdximg(igameplay_bgorg_side_0),TRUE
 
 		SetDrawScreen hdximg(igameplay_bg_grid)
 			ClearDrawScreen
@@ -727,15 +745,6 @@
 	//プレイ時間
 		SetDrawBlendMode DX_BLENDMODE_PMA_ALPHA,256
 		DrawRectGraph 227,152,0,0,int(200.0*(double(sysclock_cur)/double(mapconfig_playlength))),6,hdximg(igameplay_playtime_pre),TRUE
-
-		if mapconfig_finishflag {
-			
-			gosub*scene_Gameplay_free
-
-			gosub*scene_Result_Init
-			curSceneTag="#Result"
-			return
-		}
 
 	//判定
 		if JudgeDispCount<500 {
@@ -851,11 +860,34 @@
 			SetDrawBlendMode DX_BLENDMODE_ALPHA,256
 			DrawStringToHandle 415,295+320-int(curDrawGaugeB*3.2),strf("%.2f%%",curDrawGaugeB),$EEEEEE,duio_GetFontHandle("ps16")
 
+	//プレイ終了
+		if mapconfig_compefftime!-1 {
+			if mapconfig_compefftime<300 {
+				//暗転in
+				setease 0,200,ease_linear
+				SetDrawBlendMode DX_BLENDMODE_ALPHA,getease(mapconfig_compefftime,300)
+			} else {
+				//暗転out
+				setease 200,0,ease_linear
+				SetDrawBlendMode DX_BLENDMODE_ALPHA,getease(mapconfig_compefftime-300-2500,300)
+			}
+			DrawBox 0,0,BufWidth,BufHeight,0,TRUE
+
+			SetDrawBlendMode DX_BLENDMODE_ADD,256
+			DrawGraph BufWidth/2-1280/2,BufHeight/2-720/2,mapconfig_hcompeff,FALSE
+
+			//シャッター
+			if mapconfig_compefftime>2500&mapconfig_compeff_shutterflag==FALSE {
+				gosub*scene_Gameplay_onshutter
+				mapconfig_compeff_shutterflag=TRUE
+			}
+		}
+
 	//見逃しミス判定
 		repeat objmax
 			if objJudgeFlag(cnt) :continue
 			if sysclock_cur-objTiming(cnt)>jWid_Miss&ProgLongNoteID(0)-1!cnt&ProgLongNoteID(1)-1!cnt&ProgLongNoteID(2)-1!cnt&ProgLongNoteID(3)-1!cnt&ProgLongNoteID(4)-1!cnt&ProgLongNoteID(5)-1!cnt {
-				NearNoteSign(objChannel(cnt))=-1	//符号の概念はない
+				NearNoteSign(objChannel(cnt))=1	//遅すぎなのでlate扱い
 				NearNoteID(objChannel(cnt))=cnt
 				ObjJudgeProg JUDGEID_MISS,objChannel(cnt)
 				ObjJudgeFlag(cnt)=TRUE
@@ -876,6 +908,21 @@
 			}
 		loop
 
+	//途中終了
+		if mapconfig_finishflag {
+			duio_Draw"#Gameplay-Shutter"
+		} else {
+			if ((pfreg_GaugeType==PLAYOPT_ID_GAUGE_EXPERT)|(pfreg_GaugeType==PLAYOPT_ID_GAUGE_MADNESS))&curGauge==0.0 {	//EXPERT or MADNESS
+				gosub*scene_Gameplay_onshutter
+			}
+			if pfreg_GaugeType==PLAYOPT_ID_GAUGE_AR_FC&(curJudge(JUDGEID_BAD)!0|curJudge(JUDGEID_MISS)!0) {	//FCチャレンジ
+				gosub*scene_Gameplay_onshutter
+			}
+			if pfreg_GaugeType==PLAYOPT_ID_GAUGE_AR_ALLEX&(curJudge(JUDGEID_EARLY)!0|curJudge(JUDGEID_LATE)!0) {	//ALLEXチャレンジ
+				gosub*scene_Gameplay_onshutter
+			}
+		}
+
 	if JudgeDispCount!-1 :JudgeDispCount+FrameTime
 	curScore_dispcount+FrameTime
 	repeat 6
@@ -886,7 +933,34 @@
 	loop
 	curDrawGauge_EaseCount+FrameTime
 
+	if mapconfig_finishflag :mapconfig_finishtime+FrameTime
+	if mapconfig_finishflag&mapconfig_finishtime>3500 {
+		//リソース解放
+		gosub*scene_Gameplay_free
+
+		//リザルト画面に移動
+		gosub*scene_Result_Init
+		curSceneTag="#Result"
+		return
+	}
+
+	if mapconfig_compefftime!-1 :mapconfig_compefftime+FrameTime
+
 	if SndEventThread==0 :gosub*scene_Gameplay_PlaySoundEvent
+
+	if duio_GetButtonEventStack()!"" :gosub*scene_Gameplay_eventstack
+
+	return
+
+*scene_Gameplay_eventstack
+
+	switch duio_GetButtonEventStack()
+
+		case"gameplay_event_retire"
+			gosub*scene_Gameplay_onshutter
+		swbreak
+
+	swend
 
 	return
 
@@ -1026,7 +1100,7 @@
 	SetDrawScreen hcommonLayer
 	ClearDrawScreen
 
-	DrawCommonBackground SceneCount
+	DrawCommonBackground FrameCount
 	SetDrawBlendMode DX_BLENDMODE_PMA_ALPHA,256
 	DrawGraph 0,0,hdximg(icommon_bglayer),TRUE
 
@@ -1043,6 +1117,17 @@
 	ScreenFlip
 	return
 
+*scene_Gameplay_onshutter
+
+	duio_SetImageVisible duio_ImageID2UIsetID("shutter_10"),TRUE
+	duio_SetImageVisible duio_ImageID2UIsetID("shutter_11"),TRUE
+	duio_SetImageVisible duio_ImageID2UIsetID("shutter_00"),TRUE
+	duio_SetImageVisible duio_ImageID2UIsetID("shutter_01"),TRUE
+
+	mapconfig_finishflag=TRUE
+
+	return
+
 *scene_Gameplay_free
 
 	cfunc64v BASS_SampleFree,bgaudio_hsample
@@ -1054,6 +1139,10 @@
 	foreach sndDB_hchannel
 		cfunc64v BASS_ChannelFree,sndDB_hchannel(cnt)
 	loop
+
+	if mapconfig_hcompeff!0 {
+		PauseMovieToGraph mapconfig_hcompeff
+	}
 
 	return
 

@@ -52,4 +52,20 @@
 #deffunc PortalWebSvc_UploadIR str _id,str _name,int _score
 	return webapi_get("http://"+duio_idsGet("Server")+"/apiv2/API-SendGlobalRanking.php?key="+duio_idsGet("_keymac_APIkey_SendGlobalRanking")+"&id="+_id+"&name="+_name+"&score="+str(_score))
 
+//プロフィールをまとめて保存（初期化）
+#deffunc PortalWebSvc_mSendProfile_Init
+	sdim tmpsendcue
+	dim tmpsendcue_max
+	return
+
+//プロフィールをまとめて保存（登録）
+#deffunc PortalWebSvc_mSendProfile_Reg str _key,str _value
+	tmpsendcue+"object_"+tmpsendcue_max+"="+_key+"&value_"+tmpsendcue_max+"="+_value+"&"
+	tmpsendcue_max++
+	return
+
+//プロフィールをまとめて保存（送信）
+#deffunc PortalWebSvc_SendProfile_Send str _id,str _password
+	return webapi_post("http://"+duio_idsGet("Server")+"/apiv2/API-SendProfile-Multiple.php?key="+duio_idsGet("_keymac_APIkey_SendProfile")+"&id="+_id+"&password="+_password+"&decode="+duio_idsGet("_keymac_SSL_Decode_0")+duio_idsGet("_keymac_SSL_Decode_1")+duio_idsGet("_keymac_SSL_Decode_2")+duio_idsGet("_keymac_SSL_Decode_3"),tmpsendcue)
+
 #global

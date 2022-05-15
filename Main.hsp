@@ -45,16 +45,6 @@ goto*Startup
 	sdim dir_default
 	dir_default=dir_cur
 
-	//スプラッシュ画面
-		bgscr 0,320,60,0,ginfo(20)/2-320/2,(ginfo(21)-40)/2-60/2
-		title"":gsel 0,2
-		color 100,100,100:boxf
-		color 255,255,255:boxf 1,1,ginfo(12)-2,ginfo(13)-2
-		color 100,100,100:font"MS GOTHIC",12
-		pos 20,21:mes"起動中"
-		color 230,230,230:boxf 320/2-80,25,320/2-80+160,30
-		color 0,0,0:boxf 320/2-80,25,320/2-80+10,30
-
 	gosub*DrawInitDebugMsg
 
 	//セーブデータ読み込み
@@ -66,7 +56,6 @@ goto*Startup
 		}
 		sdim ClientSaveData,strsize
 		bload"contents/savedata.bin",ClientSaveData
-		color 0,0,0:boxf 320/2-80,25,320/2-80+30,30
 
 	//復号化
 		logmes GetTimeStamp()+" Decrypting savedata (seed="+8881109+")"
@@ -107,8 +96,10 @@ goto*Startup
 		SetAlwaysRunFlag TRUE
 		ChangeWindowMode TRUE
 		SetGraphMode DispWidth,DispHeight
-		SetWindowVisibleFlag FALSE
+		;SetWindowVisibleFlag FALSE
 		;SetWaitVSyncFlag FALSE
+		;SetWindowStyleMode 7
+		;SetWindowSizeChangeEnableFlag TRUE,TRUE
 		DxLib_Init
 		if MSAAflag :SetDrawMode DX_DRAWMODE_BILINEAR
 		SetUsePremulAlphaConvertLoad TRUE
@@ -118,9 +109,10 @@ goto*Startup
 		sdim dxversionarr:dxversionarr="[ERROR]","9","9 EX","11"
 		logmes GetTimeStamp()+" - DirectX API version : "+dxversionarr(GetUseDirect3DVersion())
 
+		DrawString 0,0,"Now Loading...",$FFFFFF
+
 		SetUseLighting FALSE
 		SetCameraNearFar d2f(100),d2f(4000)
-		color 0,0,0:boxf 320/2-80,25,320/2-80+40,30
 
 		LoadAllImgResource
 
@@ -155,9 +147,8 @@ goto*Startup
 	//UI構成初期化
 		duio_Init
 		duio_LoadFontData"contents/fontdata"
-		duio_LoadSoundData"contents/sound"
+		duio_LoadSoundData"contents/sound/data.txt"
 		duio_LoadScript duioScenePath,duioScenePath+".tmp"
-		color 0,0,0:boxf 320/2-80,25,320/2-80+50,30
 
 	//キー登録
 		#addition"contents/module/puorosvc.key"
@@ -186,6 +177,12 @@ goto*Startup
 		hdximg(imusicselect_folder_lv5_8)=LoadGraph("contents/graphic/musicselect_button_folder_lv5-8.png")
 		hdximg(imusicselect_folder_lv9_11)=LoadGraph("contents/graphic/musicselect_button_folder_lv9-11.png")
 		hdximg(imusicselect_folder_lv12)=LoadGraph("contents/graphic/musicselect_button_folder_lv12.png")
+		hdximg(imusicselect_folder_ex)=LoadGraph("contents/graphic/musicselect_button_folder_ex.png")
+		hdximg(imusicselect_folder_s)=LoadGraph("contents/graphic/musicselect_button_folder_s.png")
+		hdximg(imusicselect_folder_aaa)=LoadGraph("contents/graphic/musicselect_button_folder_aaa.png")
+		hdximg(imusicselect_folder_aa)=LoadGraph("contents/graphic/musicselect_button_folder_aa.png")
+		hdximg(imusicselect_folder_a)=LoadGraph("contents/graphic/musicselect_button_folder_a.png")
+		hdximg(imusicselect_folder_failed)=LoadGraph("contents/graphic/musicselect_button_folder_failed.png")
 		hdximg(imusicselect_folder_assist)=LoadGraph("contents/graphic/musicselect_button_folder_assist.png")
 		hdximg(imusicselect_folder_clear)=LoadGraph("contents/graphic/musicselect_button_folder_clear.png")
 		hdximg(imusicselect_folder_expert)=LoadGraph("contents/graphic/musicselect_button_folder_expert.png")
@@ -311,6 +308,8 @@ goto*Startup
 		hdximg(igameplay_bg_stgfc)=LoadGraph("contents/package/res_stg/stg_FullCombo.ogv")
 		hdximg(igameplay_bg_stgallex)=LoadGraph("contents/package/res_stg/stg_AllEx.ogv")
 
+		hdximg(igameplay_bg_wall)=LoadGraph("contents/graphic/gameplay_bg_wall.png")
+
 		hdximg(iresult_ratio_excellent)=LoadGraph("contents/graphic/result_ratio_excellent.png")
 		hdximg(iresult_ratio_great)=LoadGraph("contents/graphic/result_ratio_great.png")
 		hdximg(iresult_ratio_good)=LoadGraph("contents/graphic/result_ratio_good.png")
@@ -328,12 +327,6 @@ goto*Startup
 		repeat 28
 			hdximgarr_load_connect(cnt)=LoadGraph("contents/package/res_loadframe_connect/if"+strf("%02d",cnt+1)+".png")
 		loop
-
-	//3Dモデル
-		dim hdxobj
-		hdxobj(ogameplay_controlpanel)=MV1LoadModel("contents/object/gameplay_controlpanel.mv1")
-
-		color 0,0,0:boxf 320/2-80,25,320/2-80+80,30
 
 	//グローバル変数
 		sdim curSceneTag
@@ -356,7 +349,6 @@ goto*Startup
 		dim SubThreadCount
 		dim DrawThreadTime
 		dim SubThreadTime
-		color 0,0,0:boxf 320/2-80,25,320/2-80+120,30
 
 	//ライブラリ読み込み
 		sdim mapgroup
@@ -387,6 +379,8 @@ goto*Startup
 		dim mapdb_totalnotes,mapgroup_max,3		//合計オブジェクト数
 		dim mapdb_release,mapgroup_max,3			//リリースされたバージョン（0=legacy,1=v2）
 		sdim mapdb_mapdesign,64,mapgroup_max,3		//譜面製作者
+		dim mapdb_hpreview_smp,mapgroup_max,3		//プレビュー音声のハンドル（サンプル）
+		dim mapdb_hpreview,mapgroup_max,3			//プレビュー音声のハンドル
 
 		//IRデータ
 		dim mapdb_ir_score,mapgroup_max,3,100		//IRスコア
@@ -576,14 +570,17 @@ goto*Startup
 					if mapdb_hartwork(item,lv)=-1 {
 						mapdb_hartwork(item,lv)=LoadGraph("contents/graphic/common_artwork.png")
 					}
+
+					mapdb_hpreview_smp(item,lv)=cfunc64i(BASS_SampleLoad,FALSE,"contents/maps/"+mapdb_resource(item,lv)+"/preview.wav",0,0,16,0)
+					if mapdb_hpreview_smp(item,lv)==0 :mapdb_hpreview_smp(item,lv)=cfunc64i(BASS_SampleLoad,FALSE,"contents/maps/"+mapdb_resource(item,lv)+"/preview.ogg",0,0,16,0)
+					mapdb_hpreview(item,lv)=cfunc64i(BASS_SampleGetChannel,mapdb_hpreview_smp(item,lv),0)
+					cfunc64v BASS_ChannelSetAttribute,mapdb_hpreview(item,lv),BASS_ATTRIB_VOL,d2f(0.7)
 				}
 			loop
 		loop
-		color 0,0,0:boxf 320/2-80,25,320/2-80+140,30
 
 		//IR
 			gosub*syncIR
-			color 0,0,0:boxf 320/2-80,25,320/2-80+160,30
 
 		//プロフィール取得
 			sdim PFrawdata:sdim PFdivdata
@@ -613,8 +610,6 @@ goto*Startup
 				dim pfreg_Target			//目標スコア
 				dim pfreg_JudgeOffset		//判定オフセット
 				dim pfreg_DispOffset		//表示オフセット
-				dim pfreg_Autoplay			//オートプレイフラグ
-				dim pfreg_Bonusflag			//能力値のボーナスを有効にするフラグ
 				dim pfreg_WindowLayout		//ウィンドウレイアウト
 				pfreg_AddSpeed=1.0
 				pfreg_Bonusflag=TRUE
@@ -626,6 +621,9 @@ goto*Startup
 				volume_BGM=70
 				volume_SE=70
 				volume_PLAY=70
+
+				dim curselect_item
+				dim curselect_lv
 
 			repeat length(PFdivdata)
 				split PFdivdata(cnt),"=",INIkey,INIvalue
@@ -651,12 +649,14 @@ goto*Startup
 					case"XODA.OPTION.TARGET":pfreg_Target=int(INIvalue):swbreak
 					case"XODA.OPTION.JUDGEOFFSET":pfreg_JudgeOffset=int(INIvalue):swbreak
 					case"XODA.OPTION.DISPOFFSET":pfreg_DispOffset=int(INIvalue):swbreak
-					case"XODA.OPTION.AUTOPLAY":pfreg_Autoplay=int(INIvalue):swbreak
-					case"XODA.OPTION.BONUSFLAG":pfreg_Bonusflag=int(INIvalue):swbreak
+					case"XODA.OPTION.LAYOUT":pfreg_WindowLayout=int(INIvalue):swbreak
 
 					case"XODA.VOLUME.BGM":volume_BGM=int(INIvalue):swbreak
 					case"XODA.VOLUME.SE":volume_SE=int(INIvalue):swbreak
 					case"XODA.VOLUME.PLAY":volume_PLAY=int(INIvalue):swbreak
+
+					case"XODAV2.SELECT.ITEM":curselect_item=int(INIvalue):swbreak
+					case"XODAV2.SELECT.LV":curselect_lv=int(INIvalue):swbreak
 				swend
 			loop
 
@@ -666,7 +666,7 @@ goto*Startup
 			gosub*syncRecords
 
 	//初期状態
-	SetWindowVisibleFlag TRUE
+	;SetWindowVisibleFlag TRUE
 
 	//オプション画面のボタン配置
 		dim playoption_objplace_hbuttonimg,6,2
@@ -692,6 +692,8 @@ goto*Startup
 
 	gsel 0,-1
 
+	duio_Draw""
+
 	curSceneTag="#MusicSelect"
 	;gosub*scene_Result_Init
 	gosub*scene_MusicSelect_Init
@@ -706,6 +708,7 @@ goto*Startup
 	if ProcessMessage()==-1 :goto*Exit
 
 	SceneTime=int(1000.0/duio_GetFPS()*SceneCount)
+	FrameTime=1000/duio_GetFPS()
 
 	//カーソル座標
 	cfunc64v GetMousePoint,varptr64(cursorPosX),varptr64(cursorPosY)
@@ -793,10 +796,49 @@ goto*Startup
 
 	goto*MainLoop
 
+*onshutter
+
+	duio_PlaySound"shutter_in"
+
+	duio_SetImageVisible duio_ImageID2UIsetID("shutter_10"),TRUE
+	duio_SetImageVisible duio_ImageID2UIsetID("shutter_11"),TRUE
+	duio_SetImageVisible duio_ImageID2UIsetID("shutter_00"),TRUE
+	duio_SetImageVisible duio_ImageID2UIsetID("shutter_01"),TRUE
+	return
+
 *SystemError
 	ExportDebugLog
 	end
 
 *Exit
+
+	PortalWebSvc_mSendProfile_Init
+	PortalWebSvc_mSendProfile_Reg"DISP.NAME",pfreg_dispname
+	PortalWebSvc_mSendProfile_Reg"REG.DATE",pfreg_RegDate
+	PortalWebSvc_mSendProfile_Reg"EMAIL.ADDRESS",pfreg_EmailAddress
+	PortalWebSvc_mSendProfile_Reg"INVITATION",pfreg_InvitationCode
+	PortalWebSvc_mSendProfile_Reg"XODA.NEWDATA",str(pfreg_NewdataFlag)
+	PortalWebSvc_mSendProfile_Reg"XODA.NUMLILLY",str(pfreg_NumLilly)
+	PortalWebSvc_mSendProfile_Reg"XODA.NUMLEPUS",str(pfreg_NumLepus)
+	PortalWebSvc_mSendProfile_Reg"XODA.NUMFRAGMENTS",str(pfreg_NumFragments)
+	PortalWebSvc_mSendProfile_Reg"XODA.LEVEL",str(pfreg_Level)
+	PortalWebSvc_mSendProfile_Reg"XODA.EXP",str(pfreg_EXPvalue)
+	PortalWebSvc_mSendProfile_Reg"XODA.RATE",str(pfreg_PFpoint)
+	PortalWebSvc_mSendProfile_Reg"XODA.BADGE",pfreg_Badge
+	PortalWebSvc_mSendProfile_Reg"XODA.NUMTICKETS",str(pfreg_NumTickets)
+	PortalWebSvc_mSendProfile_Reg"XODA.OPTION.ADDSPEED",str(pfreg_AddSpeed)
+	PortalWebSvc_mSendProfile_Reg"XODA.OPTION.GAUGE",str(pfreg_GaugeType)
+	PortalWebSvc_mSendProfile_Reg"XODA.OPTION.PLACEMENT",str(pfreg_Placement)
+	PortalWebSvc_mSendProfile_Reg"XODA.OPTION.TARGET",str(pfreg_Target)
+	PortalWebSvc_mSendProfile_Reg"XODA.OPTION.JUDGEOFFSET",str(pfreg_JudgeOffset)
+	PortalWebSvc_mSendProfile_Reg"XODA.OPTION.DISPOFFSET",str(pfreg_DispOffset)
+	PortalWebSvc_mSendProfile_Reg"XODA.OPTION.LAYOUT",str(pfreg_WindowLayout)
+	PortalWebSvc_mSendProfile_Reg"XODA.VOLUME.BGM",str(volume_BGM)
+	PortalWebSvc_mSendProfile_Reg"XODA.VOLUME.SE",str(volume_SE)
+	PortalWebSvc_mSendProfile_Reg"XODA.VOLUME.PLAY",str(volume_PLAY)
+	PortalWebSvc_mSendProfile_Reg"XODAV2.SELECT.ITEM",str(curselect_item)
+	PortalWebSvc_mSendProfile_Reg"XODAV2.SELECT.LV",str(curselect_lv)
+	PortalWebSvc_SendProfile_Send PlayerID,PlayerPassword
+
 	DxLib_End
 	end

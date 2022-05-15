@@ -36,6 +36,12 @@
 #enum imusicselect_folder_lv5_8
 #enum imusicselect_folder_lv9_11
 #enum imusicselect_folder_lv12
+#enum imusicselect_folder_ex
+#enum imusicselect_folder_s
+#enum imusicselect_folder_aaa
+#enum imusicselect_folder_aa
+#enum imusicselect_folder_a
+#enum imusicselect_folder_failed
 #enum imusicselect_folder_assist
 #enum imusicselect_folder_clear
 #enum imusicselect_folder_expert
@@ -142,6 +148,8 @@
 #enum igameplay_bg_stgfc
 #enum igameplay_bg_stgallex
 
+#enum igameplay_bg_wall
+
 #enum iresult_ratio_excellent
 #enum iresult_ratio_great
 #enum iresult_ratio_good
@@ -217,7 +225,6 @@
 #const TexLv				4		//テクスチャの画質（数値が上がるほど荒くなる）
 #const MSAAflag			1		//アンチエイリアスを有効にするフラグ
 #const SndEventThread		1		//ゲームプレイのサウンドイベント処理を行うスレッド（0=メインスレッド,1=サブスレッド,2=処理しない）
-#const GameplayWindowLayout	1+2+4	//1=プロフィール,2=スコアグラフ,4=判定の詳細情報
 
 #const UIlayout_Profile		1
 #const UIlayout_ScoreGraph	2

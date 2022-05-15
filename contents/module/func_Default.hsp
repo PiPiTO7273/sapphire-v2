@@ -75,27 +75,15 @@
 
 	//スコア数値からランクを判定
 	#defcfunc GetScoreRank double _rate
-		if _rate>=100.0 :return"MAX"
-		if _rate>95.0 :return"EX+"
 		if _rate>90.0 :return"EX"
-		if _rate>86.6 :return"SSS"
-		if _rate>83.3 :return"SS"
 		if _rate>80.0 :return"S"
-		if _rate>75.0 :return"AAA+"
 		if _rate>70.0 :return"AAA"
-		if _rate>65.0 :return"AA+"
 		if _rate>60.0 :return"AA"
-		if _rate>55.0 :return"A+"
 		if _rate>50.0 :return"A"
-		if _rate>45.0 :return"B+"
 		if _rate>40.0 :return"B"
-		if _rate>35.0 :return"C+"
 		if _rate>30.0 :return"C"
-		if _rate>25.0 :return"D+"
 		if _rate>20.0 :return"D"
-		if _rate>15.0 :return"E+"
 		if _rate>10.0 :return"E"
-		if _rate>5.0 :return"F+"
 		if _rate>0.0 :return"F"
 		if _rate<=0.0 :return"---"
 		return"-"
@@ -163,7 +151,7 @@
 					case"1":graphcurscore+int(addobjscore*0.5):swbreak	//GREAT
 					case"2":graphcurscore+int(addobjscore*0.25):swbreak	//GOOD
 					case"3":graphcurscore+int(addobjscore*0.1):swbreak	//BAD
-					case"4":graphcurscore+int(addobjscore*1.0):swbreak	//MISS
+					case"4":graphcurscore+int(addobjscore*0.0):swbreak	//MISS
 				swend
 
 				//ボーナス
@@ -193,5 +181,20 @@
 		}
 
 	return
+
+	//LF改行コードが入ってるか
+	#defcfunc checkLF var x
+		dim flag
+		repeat varsize(x)
+			if peek(x,cnt)==10 :flag=1:break
+		loop
+		return flag
+
+	//LF改行コードを削除
+	#deffunc delLF var x
+		repeat varsize(x)
+			if peek(x,cnt)==10 :poke x,cnt,0
+		loop
+		return
 
 #global

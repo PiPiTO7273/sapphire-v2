@@ -737,33 +737,93 @@
 
 	return
 
-#deffunc duio_LoadSoundData str _dirpath
-	//サウンドデータ読み込み
-		chdir _dirpath
-		sdim direxp
-		dirlist direxp,"*.wav",1
+#deffunc duio_LoadSoundData str _scriptpath
 
-	//キーと値に分解
-		sdim commonsndDB_Key
-		dim commonsndDB_hSample
-		dim commonsndDB_hChannel
-		strrep direxp,".wav",""
-		split direxp,"\n",commonsndDB_Key
-		repeat length(commonsndDB_Key)
-			if commonsndDB_Key(cnt)=="" :continue
-			logmes GetTimeStamp()+" [duio-build-ac] Loading sounddata \""+commonsndDB_Key(cnt)+"\""
+	exist _scriptpath
+	sdim scriptbuf,strsize
+	notesel scriptbuf
+	noteload _scriptpath
 
-			commonsndDB_hSample(cnt)=cfunc64i(BASS_SampleLoad,FALSE,commonsndDB_Key(cnt)+".wav",0,0,16,0)
-			if commonsndDB_hSample(cnt)==0 {
-				logmes GetTimeStamp()+" [Warning] Failed to load audio sample (\""+commonsndDB_Key(cnt)+".wav"+"\",Code="+BASS_ErrorGetCode()+")"
+	sdim scriptbuf_line,64
+	dim scriptbuf_max
+	dim scripttmp_sampleflag
+
+	split scriptbuf,"\n",scriptbuf_line
+
+	sdim commonsndDB_Key
+	ddim commonsndDB_Volume
+	dim commonsndDB_hSample
+	dim commonsndDB_hChannel
+
+	repeat length(scriptbuf_line)
+
+		if scriptbuf_line(cnt)=="" :continue			//空行
+		if strmid(scriptbuf_line(cnt),0,2)=="//" :continue	//コメント行
+
+		sdim scriptprm
+		split scriptbuf_line(cnt),";",scriptprm
+
+		commonsndDB_Key(scriptbuf_max)=scriptprm(0)
+		commonsndDB_Volume(scriptbuf_max)=double(scriptprm(2))
+
+			logmes GetTimeStamp()+" [duio-build-ac] Loading sounddata \""+scriptprm(1)+"\""
+
+			scripttmp_sampleflag=0
+
+			if int(scriptprm(3)) :scripttmp_sampleflag+BASS_SAMPLE_LOOP		//ループ属性
+
+			commonsndDB_hSample(scriptbuf_max)=cfunc64i(BASS_SampleLoad,FALSE,"contents/sound/"+scriptprm(1),0,0,16,scripttmp_sampleflag)
+			if commonsndDB_hSample(scriptbuf_max)==0 {
+				logmes GetTimeStamp()+" [Warning] Failed to load audio sample (\""+scriptprm(1)+"\",Code="+BASS_ErrorGetCode()+")"
 			}
 
-			commonsndDB_hChannel(cnt)=cfunc64i(BASS_SampleGetChannel,commonsndDB_hSample(cnt),0)
-			if commonsndDB_hChannel(cnt)==0 {
-				logmes GetTimeStamp()+" [Warning] Failed to load audio channel (\""+commonsndDB_Key(cnt)+".wav"+"\",Code="+BASS_ErrorGetCode()+")"
+			commonsndDB_hChannel(scriptbuf_max)=cfunc64i(BASS_SampleGetChannel,commonsndDB_hSample(scriptbuf_max),0)
+			if commonsndDB_hChannel(scriptbuf_max)==0 {
+				logmes GetTimeStamp()+" [Warning] Failed to load audio channel (\""+scriptprm(1)+"\",Code="+BASS_ErrorGetCode()+")"
 			}
-		loop
-		chdir dir_default
+
+			BASS_ChannelSetAttribute commonsndDB_hChannel(scriptbuf_max),BASS_ATTRIB_VOL,d2f(commonsndDB_Volume(scriptbuf_max))	//音量
+
+		scriptbuf_max++
+	loop
+
+	return
+
+#defcfunc duio_GetHandle str _name
+	dim tmphandle:tmphandle=-1
+	repeat length(commonsndDB_Key)
+		if commonsndDB_Key(cnt)==_name {
+			tmphandle=commonsndDB_hChannel(cnt)
+		}
+	loop
+	return tmphandle
+
+#deffunc duio_PlaySound str _name
+	dim hduioplaycue:hduioplaycue=duio_GetHandle(_name)
+
+	if hduioplaycue!-1 {
+		cfunc64v BASS_ChannelSetPosition,hduioplaycue,0,0
+		cfunc64v BASS_ChannelPlay,hduioplaycue
+	}
+
+	return
+
+#deffunc duio_StopSound str _name
+	dim hduioplaycue:hduioplaycue=duio_GetHandle(_name)
+
+	if hduioplaycue!-1 {
+		cfunc64v BASS_ChannelPause,hduioplaycue
+	}
+
+	return
+
+#deffunc duio_SetVolume str _name,double _vol
+
+	repeat length(commonsndDB_Key)
+		if commonsndDB_Key(cnt)==_name {
+			cfunc64v BASS_ChannelSetAttribute,commonsndDB_hChannel(cnt),BASS_ATTRIB_VOL,d2f(commonsndDB_Volume(cnt)*_vol)
+		}
+	loop
 
 	return
 
@@ -793,7 +853,7 @@
 					} else {
 						UIset_Button_rawpushCount(i)=0
 					}
-					if (cursorStatus&MOUSE_INPUT_LEFT)==FALSE&(bfcursorStatus&MOUSE_INPUT_LEFT)==TRUE {
+					if (cursorStatus&MOUSE_INPUT_LEFT)==FALSE&(bfcursorStatus&MOUSE_INPUT_LEFT)==TRUE&UIset_Button_Outroflag(i)==FALSE {
 						UIset_Button_onEventStack=UIset_Button_PushEvent(i)
 
 						if UIset_Button_hPushSound(i)!-1 {
@@ -1131,7 +1191,7 @@
 #defcfunc duio_idsGet str _key
 	sdim idsres
 	repeat idsDB_max
-		if idsDB_Key(cnt)==_key :idsres=idsDB_Value(cnt)
+		if idsDB_Key(cnt)==_key :idsres=idsDB_Value(cnt):break
 	loop
 	return idsres
 
@@ -1454,6 +1514,7 @@
 			UIset_Text_count(_uisetid)=(UIset_Text_EaseIn_Move_Delay(_uisetid)+UIset_Text_EaseIn_Move_Length(_uisetid))/(1000/int(CurDUIObasedFPS))
 		}
 	} else {
+		UIset_Text_DrawFlag(_uisetid)=TRUE
 		UIset_Text_Outroflag(_uisetid)=FALSE
 		UIset_Text_count(_uisetid)=0
 	}

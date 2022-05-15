@@ -39,7 +39,7 @@
 		#MusicSelect @button musicselect_button_option graphic/musicselect_button_option.png 340 810 250 50 &animation-in=fade,500,300,CUBIC_OUT &animation-in=zoom,500,300,0.8,CUBIC_OUT &pushsound=pushbutton &event=musicselect_option
 		#MusicSelect @button musicselect_button_free graphic/musicselect_button_free.png 340 868 250 50 &animation-in=fade,550,300,CUBIC_OUT &animation-in=zoom,550,300,0.8,CUBIC_OUT &pushsound=pushbutton &hide
 		#MusicSelect @button musicselect_button_private graphic/musicselect_button_private.png 340 926 250 50 &animation-in=fade,600,300,CUBIC_OUT &animation-in=zoom,600,300,0.8,CUBIC_OUT &pushsound=pushbutton &hide
-		#MusicSelect @button musicselect_button_autoplay graphic/musicselect_button_autoplay.png 340 984 250 50 &animation-in=fade,650,300,CUBIC_OUT &animation-in=zoom,650,300,0.8,CUBIC_OUT &pushsound=pushbutton
+		#MusicSelect @button musicselect_button_autoplay graphic/musicselect_button_autoplay.png 340 984 250 50 &animation-in=fade,650,300,CUBIC_OUT &animation-in=zoom,650,300,0.8,CUBIC_OUT &pushsound=decide &event=musicselect_autoplay
 
 		#MusicSelect @button musicselect_button_folder graphic/musicselect_button_folder.png 759 83 284 54 &animation-in=fade,350,300,CUBIC_OUT &animation-in=zoom,350,300,0.8,CUBIC_OUT &layerlv=2 &event=folder_dropdown &pushsound=pushbutton
 		#MusicSelect @button musicselect_button_sort graphic/musicselect_button_sort.png 1059 83 284 54 &animation-in=fade,400,300,CUBIC_OUT &animation-in=zoom,400,400,0.8,CUBIC_OUT &layerlv=2 &event=sort_dropdown &pushsound=pushbutton
@@ -92,21 +92,27 @@
 
 		//folder
 			#MusicSelect @button musicselect_button_folder_all_dl graphic/musicselect_button_folder_all_dl.png 763 137 280 32 &event=folder_dropdown_all folder_dropdown_animation dropdown_animation_move,0,-32,CUBIC_OUT
-			#MusicSelect @button musicselect_button_folder_alllv_dl graphic/musicselect_button_folder_alllv_dl.png 763 169 280 32 &event=folder_dropdown_alllv folder_dropdown_animation dropdown_animation_move,0,-64,CUBIC_OUT
-			#MusicSelect @button musicselect_button_folder_lv1-4_dl graphic/musicselect_button_folder_lv1-4_dl.png 763 201 280 32 &event=folder_dropdown_lv1_4 folder_dropdown_animation dropdown_animation_move,0,-96,CUBIC_OUT
-			#MusicSelect @button musicselect_button_folder_lv5-8_dl graphic/musicselect_button_folder_lv5-8_dl.png 763 233 280 32 &event=folder_dropdown_lv5_8 folder_dropdown_animation dropdown_animation_move,0,-128,CUBIC_OUT
-			#MusicSelect @button musicselect_button_folder_lv9-11_dl graphic/musicselect_button_folder_lv9-11_dl.png 763 265 280 32 &event=folder_dropdown_lv9_11 folder_dropdown_animation dropdown_animation_move,0,-160,CUBIC_OUT
-			#MusicSelect @button musicselect_button_folder_lv12_dl graphic/musicselect_button_folder_lv12_dl.png 763 297 280 32 &event=folder_dropdown_lv12 folder_dropdown_animation dropdown_animation_move,0,-192,CUBIC_OUT
-			#MusicSelect @button musicselect_button_folder_assist_dl graphic/musicselect_button_folder_assist_dl.png 763 329 280 32 &event=folder_dropdown_assist folder_dropdown_animation dropdown_animation_move,0,-224,CUBIC_OUT
-			#MusicSelect @button musicselect_button_folder_clear_dl graphic/musicselect_button_folder_clear_dl.png 763 361 280 32 &event=folder_dropdown_clear folder_dropdown_animation dropdown_animation_move,0,-256,CUBIC_OUT
-			#MusicSelect @button musicselect_button_folder_expert_dl graphic/musicselect_button_folder_expert_dl.png 763 393 280 32 &event=folder_dropdown_expert folder_dropdown_animation dropdown_animation_move,0,-288,CUBIC_OUT
-			#MusicSelect @button musicselect_button_folder_madness_dl graphic/musicselect_button_folder_madness_dl.png 763 425 280 32 &event=folder_dropdown_madness folder_dropdown_animation dropdown_animation_move,0,-320,CUBIC_OUT
-			#MusicSelect @button musicselect_button_folder_fc_dl graphic/musicselect_button_folder_fc_dl.png 763 457 280 32 &event=folder_dropdown_fc folder_dropdown_animation dropdown_animation_move,0,-352,CUBIC_OUT
-			#MusicSelect @button musicselect_button_folder_allex_dl graphic/musicselect_button_folder_allex_dl.png 763 489 280 32 &event=folder_dropdown_allex folder_dropdown_animation dropdown_animation_move,0,-384,CUBIC_OUT
-			#MusicSelect @button musicselect_button_folder_normal_dl graphic/musicselect_button_folder_normal_dl.png 763 521 280 32 &event=folder_dropdown_normal folder_dropdown_animation dropdown_animation_move,0,-416,CUBIC_OUT
-			#MusicSelect @button musicselect_button_folder_hard_dl graphic/musicselect_button_folder_hard_dl.png 763 553 280 32 &event=folder_dropdown_hard folder_dropdown_animation dropdown_animation_move,0,-448,CUBIC_OUT
-			#MusicSelect @button musicselect_button_folder_chaos_dl graphic/musicselect_button_folder_chaos_dl.png 763 585 280 32 &event=folder_dropdown_chaos folder_dropdown_animation dropdown_animation_move,0,-480,CUBIC_OUT
-			#MusicSelect @button musicselect_button_folder_s1_dl graphic/musicselect_button_folder_s1_dl.png 763 617 280 32 &event=folder_dropdown_s1 folder_dropdown_animation dropdown_animation_move,0,-512,CUBIC_OUT
+			#MusicSelect @button musicselect_button_folder_alllv_dl graphic/musicselect_button_folder_alllv_dl.png 763 137+32*1 280 32 &event=folder_dropdown_alllv folder_dropdown_animation dropdown_animation_move,0,-32*2,CUBIC_OUT
+			#MusicSelect @button musicselect_button_folder_lv1-4_dl graphic/musicselect_button_folder_lv1-4_dl.png 763 137+32*2 280 32 &event=folder_dropdown_lv1_4 folder_dropdown_animation dropdown_animation_move,0,-32*3,CUBIC_OUT
+			#MusicSelect @button musicselect_button_folder_lv5-8_dl graphic/musicselect_button_folder_lv5-8_dl.png 763 137+32*3 280 32 &event=folder_dropdown_lv5_8 folder_dropdown_animation dropdown_animation_move,0,-32*4,CUBIC_OUT
+			#MusicSelect @button musicselect_button_folder_lv9-11_dl graphic/musicselect_button_folder_lv9-11_dl.png 763 137+32*4 280 32 &event=folder_dropdown_lv9_11 folder_dropdown_animation dropdown_animation_move,0,-32*5,CUBIC_OUT
+			#MusicSelect @button musicselect_button_folder_lv12_dl graphic/musicselect_button_folder_lv12_dl.png 763 137+32*5 280 32 &event=folder_dropdown_lv12 folder_dropdown_animation dropdown_animation_move,0,-32*6,CUBIC_OUT
+			#MusicSelect @button musicselect_button_folder_ex_dl graphic/musicselect_button_folder_ex_dl.png 763 137+32*6 280 32 &event=folder_dropdown_ex folder_dropdown_animation dropdown_animation_move,0,-32*7,CUBIC_OUT
+			#MusicSelect @button musicselect_button_folder_s_dl graphic/musicselect_button_folder_s_dl.png 763 137+32*7 280 32 &event=folder_dropdown_s folder_dropdown_animation dropdown_animation_move,0,-32*8,CUBIC_OUT
+			#MusicSelect @button musicselect_button_folder_aaa_dl graphic/musicselect_button_folder_aaa_dl.png 763 137+32*8 280 32 &event=folder_dropdown_aaa folder_dropdown_animation dropdown_animation_move,0,-32*9,CUBIC_OUT
+			#MusicSelect @button musicselect_button_folder_aa_dl graphic/musicselect_button_folder_aa_dl.png 763 137+32*9 280 32 &event=folder_dropdown_aa folder_dropdown_animation dropdown_animation_move,0,-32*10,CUBIC_OUT
+			#MusicSelect @button musicselect_button_folder_a_dl graphic/musicselect_button_folder_a_dl.png 763 137+32*10 280 32 &event=folder_dropdown_a folder_dropdown_animation dropdown_animation_move,0,-32*11,CUBIC_OUT
+			#MusicSelect @button musicselect_button_folder_failed_dl graphic/musicselect_button_folder_failed_dl.png 763 137+32*11 280 32 &event=folder_dropdown_failed folder_dropdown_animation dropdown_animation_move,0,-32*12,CUBIC_OUT
+			#MusicSelect @button musicselect_button_folder_assist_dl graphic/musicselect_button_folder_assist_dl.png 763 137+32*12 280 32 &event=folder_dropdown_assist folder_dropdown_animation dropdown_animation_move,0,-32*13,CUBIC_OUT
+			#MusicSelect @button musicselect_button_folder_clear_dl graphic/musicselect_button_folder_clear_dl.png 763 137+32*13 280 32 &event=folder_dropdown_clear folder_dropdown_animation dropdown_animation_move,0,-32*14,CUBIC_OUT
+			#MusicSelect @button musicselect_button_folder_expert_dl graphic/musicselect_button_folder_expert_dl.png 763 137+32*14 280 32 &event=folder_dropdown_expert folder_dropdown_animation dropdown_animation_move,0,-32*15,CUBIC_OUT
+			#MusicSelect @button musicselect_button_folder_madness_dl graphic/musicselect_button_folder_madness_dl.png 763 137+32*15 280 32 &event=folder_dropdown_madness folder_dropdown_animation dropdown_animation_move,0,-32*16,CUBIC_OUT
+			#MusicSelect @button musicselect_button_folder_fc_dl graphic/musicselect_button_folder_fc_dl.png 763 137+32*16 280 32 &event=folder_dropdown_fc folder_dropdown_animation dropdown_animation_move,0,-32*17,CUBIC_OUT
+			#MusicSelect @button musicselect_button_folder_allex_dl graphic/musicselect_button_folder_allex_dl.png 763 137+32*17 280 32 &event=folder_dropdown_allex folder_dropdown_animation dropdown_animation_move,0,-32*18,CUBIC_OUT
+			#MusicSelect @button musicselect_button_folder_normal_dl graphic/musicselect_button_folder_normal_dl.png 763 137+32*18 280 32 &event=folder_dropdown_normal folder_dropdown_animation dropdown_animation_move,0,-32*19,CUBIC_OUT
+			#MusicSelect @button musicselect_button_folder_hard_dl graphic/musicselect_button_folder_hard_dl.png 763 137+32*19 280 32 &event=folder_dropdown_hard folder_dropdown_animation dropdown_animation_move,0,-32*20,CUBIC_OUT
+			#MusicSelect @button musicselect_button_folder_chaos_dl graphic/musicselect_button_folder_chaos_dl.png 763 137+32*20 280 32 &event=folder_dropdown_chaos folder_dropdown_animation dropdown_animation_move,0,-32*21,CUBIC_OUT
+			#MusicSelect @button musicselect_button_folder_s1_dl graphic/musicselect_button_folder_s1_dl.png 763 137+32*21 280 32 &event=folder_dropdown_s1 folder_dropdown_animation dropdown_animation_move,0,-32*22,CUBIC_OUT
 
 		//sort
 			#MusicSelect @button musicselect_button_sort_default_dl graphic/musicselect_button_sort_default_dl.png 1063 137 280 32 &event=sort_dropdown_default sort_dropdown_animation dropdown_animation_move,0,-32,CUBIC_OUT
@@ -133,7 +139,7 @@
 //----- Play Option -----//
 
 	////// base //////
-		rp:playoption_style>>&layerlv=5 &color=0,0,0
+		rp:playoption_style>>&layerlv=5 &color=0,0,0 &pushsound=opchange
 		#PlayOption @image playoption_dark graphic/common_bg_dark.png 0 0 &animation-in=fade,0,300,CUBIC_OUT &layerlv=3
 		#PlayOption @image playoption_bg graphic/playoption_bg.png 0 0 &animation-in=move,0,300,-700,0,CUBIC_OUT playoption_style
 		#PlayOption @image playoption_textlayer graphic/playoption_textlayer.png 36 141 &animation-in=move,200,350,-500,0,CUBIC_OUT &animation-in=fade,200,350,CUBIC_OUT playoption_style
@@ -200,13 +206,28 @@
 		#PlayOption @text playoption_val_volplay * 217 918 ps20 &animation-in=move,700,300,-64,0,CUBIC_OUT &animation-in=fade,700,300,CUBIC_OUT playoption_style &align-center-size=30
 
 	////// help //////
-		#PlayOption @button playoption_button_help_objspeed graphic/playoption_button_help.png 290 141 32 32 &animation-in=zoom,400,250,0,CUBIC_OUT playoption_style
-		#PlayOption @button playoption_button_help_judgeoffset graphic/playoption_button_help.png 600 141 32 32 &animation-in=zoom,400,250,0,CUBIC_OUT playoption_style
-		#PlayOption @button playoption_button_help_objplace graphic/playoption_button_help.png 290 281 32 32 &animation-in=zoom,400,250,0,CUBIC_OUT playoption_style
-		#PlayOption @button playoption_button_help_gauge graphic/playoption_button_help.png 600 281 32 32 &animation-in=zoom,400,250,0,CUBIC_OUT playoption_style
-		#PlayOption @button playoption_button_help_window graphic/playoption_button_help.png 290 553 32 32 &animation-in=zoom,400,250,0,CUBIC_OUT playoption_style
-		#PlayOption @button playoption_button_help_target graphic/playoption_button_help.png 600 553 32 32 &animation-in=zoom,400,250,0,CUBIC_OUT playoption_style
-		#PlayOption @button playoption_button_help_volume graphic/playoption_button_help.png 290 761 32 32 &animation-in=zoom,400,250,0,CUBIC_OUT playoption_style
+		#PlayOption @button playoption_button_help_objspeed graphic/playoption_button_help.png 290 141 32 32 &animation-in=zoom,400,250,0,CUBIC_OUT playoption_style &event=help_objspeed_open &pushsound=pushbutton
+		#PlayOption @button playoption_button_help_judgeoffset graphic/playoption_button_help.png 600 141 32 32 &animation-in=zoom,400,250,0,CUBIC_OUT playoption_style &event=help_judgeoffset_open &pushsound=pushbutton
+		#PlayOption @button playoption_button_help_objplace graphic/playoption_button_help.png 290 281 32 32 &animation-in=zoom,400,250,0,CUBIC_OUT playoption_style &event=help_objplace_open &pushsound=pushbutton
+		#PlayOption @button playoption_button_help_gauge graphic/playoption_button_help.png 600 281 32 32 &animation-in=zoom,400,250,0,CUBIC_OUT playoption_style &event=help_gauge_open &pushsound=pushbutton
+		#PlayOption @button playoption_button_help_window graphic/playoption_button_help.png 290 553 32 32 &animation-in=zoom,400,250,0,CUBIC_OUT playoption_style &event=help_window_open &pushsound=pushbutton
+
+		rp:help_closebutton>>&pushsound=cancel &animation-in=fade,200,100,LINEAR
+		//----- Help-ObjSpeed -----//
+			#Help-ObjSpeed @image playoption_help_objspeed graphic/playoption_help_objspeed.png 340 142 &animation-in=zoom,0,250,0,CUBIC_OUT &animation-in=move,0,250,-400+(290-340),-250,CUBIC_OUT &animation-in=fade,0,250,CUBIC_OUT
+			#Help-ObjSpeed @button help_button_close_0 graphic/common_exit.png 1075 172 25 25 help_closebutton &event=help_objspeed_close
+		//----- Help-JudgeOffset -----//
+			#Help-JudgeOffset @image playoption_help_judgeoffset graphic/playoption_help_judgeoffset.png 681 142 &animation-in=zoom,0,250,0,CUBIC_OUT &animation-in=move,0,250,-400+(600-681),-135,CUBIC_OUT &animation-in=fade,0,250,CUBIC_OUT
+			#Help-JudgeOffset @button help_button_close_1 graphic/common_exit.png 1416 172 25 25 help_closebutton &event=help_judgeoffset_close
+		//----- Help-ObjPlace -----//
+			#Help-ObjPlace @image playoption_help_objplace graphic/playoption_help_objplace.png 340 276 &animation-in=zoom,0,250,0,CUBIC_OUT &animation-in=move,0,250,-415+(290-340),-250,CUBIC_OUT &animation-in=fade,0,250,CUBIC_OUT
+			#Help-ObjPlace @button help_button_close_2 graphic/common_exit.png 1105 306 25 25 help_closebutton &event=help_objplace_close
+		//----- Help-Gauge -----//
+			#Help-Gauge @image playoption_help_gauge graphic/playoption_help_gauge.png 681 276 &animation-in=zoom,0,250,0,CUBIC_OUT &animation-in=move,0,250,-350+(600-681),-230,CUBIC_OUT &animation-in=fade,0,250,CUBIC_OUT
+			#Help-Gauge @button help_button_close_3 graphic/common_exit.png 1316 306 25 25 help_closebutton &event=help_gauge_close
+		//----- Help-Window -----//
+			#Help-Window @image playoption_help_window graphic/playoption_help_window.png 340 550 &animation-in=zoom,0,250,0,CUBIC_OUT &animation-in=move,0,250,-415+(290-340),-250,CUBIC_OUT &animation-in=fade,0,250,CUBIC_OUT
+			#Help-Window @button help_button_close_4 graphic/common_exit.png 1105 580 25 25 help_closebutton &event=help_window_close
 
 //----- Keyword Search , Nomatch Dialog -----//
 		#Dialog-KeywordSearch-Nomatch @image dialog_keywordsearch_nomatch graphic/dialog_keywordsearch_nomatch.png 933 390 &animation-in=zoom,0,200,0,CUBIC_OUT &animation-in=move,0,200,174,-395,CUBIC_OUT &hide
@@ -237,7 +258,7 @@
 
 	////// Background //////
 		#Gameplay @3dsquare gameplay_bg_grid (-2000,0,0) (2000,4000,0) (2000,0,0) (-2000,4000,0) * &alpha=100
-		#Gameplay @3dsquare gameplay_bg_wall (-1500,4000,1100) (1500,4000,0) (1500,4000,1100) (-1500,4000,0) graphic/gameplay_bg_wall.png
+		#Gameplay @3dsquare gameplay_bg_wall (1500,4000,0) (-1500,4000,1100) (-1500,4000,0) (1500,4000,1100) *
 
 	////// Main Lane //////
 		#Gameplay @3dsquare gameplay_lane_main (400,300,0) (-400,7000,0) (-400,300,0) (400,7000,0) * &layerlv=1 &disable-imgalpha
@@ -268,8 +289,8 @@
 		#Gameplay @image gameplay_mapimg * 26 64 &animation-in=zoom,200,400,1.2,CUBIC_OUT &animation-in=fade,200,400,CUBIC_OUT &layerlv=2 &disable-imgalpha &imgwidth=150 &imgheight=150
 		#Gameplay @image gameplay_lvimg * 28 217 &animation-in=move,300,300,-32,0,CUBIC_OUT &animation-in=fade,300,300,CUBIC_OUT &layerlv=2 &imgwidth=64 &imgheight=33
 		#Gameplay @text gameplay_lvvalue * 108 230 ps16 &animation-in=move,350,300,-32,0,CUBIC_OUT &animation-in=fade,350,300,CUBIC_OUT gameplay_uitext_style
-		#Gameplay @button gameplay_button_restart graphic/gameplay_button_restart.png 220 65 170 24 &event=gameplay_event_restart &animation-in=fade,250,300,CUBIC_OUT &animation-in=move,250,300,32,0,CUBIC_OUT &layerlv=2
-		#Gameplay @button gameplay_button_retire graphic/gameplay_button_retire.png 220 97 154 24 &event=gameplay_event_retire &animation-in=fade,280,300,CUBIC_OUT &animation-in=move,280,300,32,0,CUBIC_OUT &layerlv=2
+		#Gameplay @button gameplay_button_restart graphic/gameplay_button_restart.png 220 65 170 24 &event=gameplay_event_restart &animation-in=fade,250,300,CUBIC_OUT &animation-in=move,250,300,32,0,CUBIC_OUT &layerlv=2 &pushsound=pushbutton
+		#Gameplay @button gameplay_button_retire graphic/gameplay_button_retire.png 220 97 154 24 &event=gameplay_event_retire &animation-in=fade,280,300,CUBIC_OUT &animation-in=move,280,300,32,0,CUBIC_OUT &layerlv=2 &pushsound=pushbutton
 
 		#Gameplay @image gameplay_playtime graphic/gameplay_playtime.png 227 152 &animation-in=zoom,300,400,0,CUBIC_OUT &layerlv=2 
 		#Gameplay @text gameplay_playtime_value * 227 130 ps16 &animation-in=fade,200,200,LINEAR gameplay_uitext_style
@@ -318,12 +339,6 @@
 	////// Skin //////
 		ids<>:playtheme_0_name>>デフォルト
 		ids<>:playtheme_0_single_height>>32
-
-	////// shutter //////
-		#Gameplay-Shutter @image shutter_10 graphic/shutter_10.png 0 0 &animation-in=move,200,600,-1920,1080,CUBIC_OUT &hide
-		#Gameplay-Shutter @image shutter_11 graphic/shutter_11.png 0 0 &animation-in=move,200,600,1920,-1080,CUBIC_OUT &hide
-		#Gameplay-Shutter @image shutter_00 graphic/shutter_00.png 0 0 &animation-in=move,0,500,-1920,1080,CUBIC_OUT &hide
-		#Gameplay-Shutter @image shutter_01 graphic/shutter_01.png 0 0 &animation-in=move,0,500,1920,-1080,CUBIC_OUT &hide
 
 //----- Result -----//
 	////// base //////
@@ -407,11 +422,17 @@
 	////// action //////
 		#Result @image result_action_layer graphic/result_action_layer.png 1162 770 &animation-in=fade,0,200,CUBIC_OUT &animation-in=move,0,250,-32,0,CUBIC_OUT &layerlv=2 &hide
 
-		#Result @button result_action_twitter graphic/result_action_twitter.png 1162 806 200 50 &animation-in=fade,100,200,CUBIC_OUT &animation-in=zoom,100,250,0.7,CUBIC_OUT &event=twitter &layerlv=2 &hide
-		#Result @button result_action_savepicture graphic/result_action_savepicture.png 1162 870 200 50 &animation-in=fade,150,200,CUBIC_OUT &animation-in=zoom,150,250,0.7,CUBIC_OUT &event=savepicture &layerlv=2 &hide
-		#Result @button result_action_retry graphic/result_action_retry.png 1412 806 200 50 &animation-in=fade,200,200,CUBIC_OUT &animation-in=zoom,200,250,0.7,CUBIC_OUT &event=retry &layerlv=2 &hide
-		#Result @button result_action_next graphic/result_action_next.png 1412 870 240 64 &animation-in=fade,250,200,CUBIC_OUT &animation-in=zoom,250,250,0.7,CUBIC_OUT &event=next &layerlv=2 &hide
+		#Result @button result_action_twitter graphic/result_action_twitter.png 1162 806 200 50 &animation-in=fade,100,200,CUBIC_OUT &animation-in=zoom,100,250,0.7,CUBIC_OUT &event=twitter &layerlv=2 &hide &pushsound=pushbutton
+		#Result @button result_action_savepicture graphic/result_action_savepicture.png 1162 870 200 50 &animation-in=fade,150,200,CUBIC_OUT &animation-in=zoom,150,250,0.7,CUBIC_OUT &event=savepicture &layerlv=2 &hide &pushsound=pushbutton
+		#Result @button result_action_retry graphic/result_action_retry.png 1412 806 200 50 &animation-in=fade,200,200,CUBIC_OUT &animation-in=zoom,200,250,0.7,CUBIC_OUT &event=retry &layerlv=2 &hide &pushsound=pushbutton
+		#Result @button result_action_next graphic/result_action_next.png 1412 870 240 64 &animation-in=fade,250,200,CUBIC_OUT &animation-in=zoom,250,250,0.7,CUBIC_OUT &event=next &layerlv=2 &hide &pushsound=pushbutton
 
 	////// status //////
 		#Result @image result_status_load * 1200 830 &animation-in=zoom,1200,250,0,CUBIC_OUT &imgwidth=80 &imgheight=80
 		#Result @text result_status スコアを送信中・・・ 1300 853 rom1cm24 &animation-in=fade,1400,200,CUBIC_OUT &animation-in=move,1400,250,64,0,CUBIC_OUT result_text_style
+
+//----- Shutter -----//
+		#Shutter @image shutter_10 graphic/shutter_10.png 0 0 &animation-in=move,200,600,-1920,1080,CUBIC_OUT &hide
+		#Shutter @image shutter_11 graphic/shutter_11.png 0 0 &animation-in=move,200,600,1920,-1080,CUBIC_OUT &hide
+		#Shutter @image shutter_00 graphic/shutter_00.png 0 0 &animation-in=move,0,500,-1920,1080,CUBIC_OUT &hide
+		#Shutter @image shutter_01 graphic/shutter_01.png 0 0 &animation-in=move,0,500,1920,-1080,CUBIC_OUT &hide

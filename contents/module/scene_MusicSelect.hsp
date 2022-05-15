@@ -108,17 +108,32 @@
 	dim folder_cur
 	dim folder_mode
 	dim sort_mode
-	dim curselect_item
-	dim curselect_lv
 	dim curselect_count
+	dim curpreview_time
 	dim irbuf_wheel
 	dim decidecount
 	dim optionwindowflag
 	dim optionwindowclosecount
+	dim helpscene
+	helpscene=""
 	optionwindowclosecount=-1
 	decidecount=-1
+	curpreview_time=-1
+
+	dim AutoPlayFlag
 
 	dim SearchItem_hInput
+
+	//総合能力値を計算
+		ddim abpointarr,mapgroup_max*3
+		repeat mapgroup_max*3
+			abpointarr(cnt)=mapdb_mybest_pfpoint(cnt/3,cnt\3)
+		loop
+		sortval abpointarr,1
+		repeat 10
+			pfreg_PFpoint(cnt)+abpointarr(cnt)
+		loop
+		pfreg_PFpoint(cnt)/10.0
 
 	UpdateProfileDisp
 
@@ -174,7 +189,6 @@
 				case PLAYOPT_ID_TARGET_A_OLD:playoption_target_select=PLAYOPT_ID_TARGET_A:swbreak
 				case PLAYOPT_ID_TARGET_MYBEST_OLD:playoption_target_select=PLAYOPT_ID_TARGET_MYBEST:swbreak
 				case PLAYOPT_ID_TARGET_ONLINETOP_OLD:playoption_target_select=PLAYOPT_ID_TARGET_WR:swbreak
-				default:playoption_target_select=PLAYOPT_ID_TARGET_EX:swbreak
 			swend
 		//扱いやすいように-100
 			playoption_target_select-100
@@ -183,6 +197,14 @@
 	gosub*scene_MusicSelect_UpdateMetadataString
 
 	duio_SetActiveScene"#MusicSelect",TRUE
+
+	duio_SetAllImageOutro"#Shutter"
+	duio_PlaySound"shutter_out"
+
+	if BASS_ChannelIsActive(duio_GetHandle("main"))!BASS_ACTIVE_PLAYING {
+		duio_PlaySound"main"
+		duio_SetVolume"main",1.0
+	}
 
 	return
 
@@ -221,6 +243,14 @@
 	}
 
 	if decidecount==-1 {
+
+		//BGM
+		if curpreview_time!-1 {
+			setease 0,1,ease_linear
+			duio_SetVolume"main",geteasef(curpreview_time-9000,500)
+		} else {
+			duio_SetVolume"main",1.0
+		}
 
 		//ボタン判定
 		if insquare(cursorPosX,cursorPosY,662,0,BufWidth,BufHeight)&mapitem_max!0 {
@@ -344,6 +374,15 @@
 					SetDrawBlendMode DX_BLENDMODE_ALPHA,256
 					DrawKeyInputString 1375,156,SearchItem_hInput
 				}
+
+				//改行コードを検出（ENTERで検索）
+				if checkLF(curSearchWord) {
+					delLF curSearchWord
+					duio_SetImageOutro duio_ImageID2UIsetID("musicselect_search_bg"),TRUE
+					DeleteKeyInput SearchItem_hInput
+	
+					CreateMapItem folder_mode,folder_dropdown_event(folder_cur),TRUE,curSearchWord
+				}
 	
 				//カーソル点滅
 				if SceneCount/8\2==0 :SetKeyInputStringColor2 DX_KEYINPSTRCOLOR_NORMAL_CURSOR,$000000:else:SetKeyInputStringColor2 DX_KEYINPSTRCOLOR_NORMAL_CURSOR,$FFFFFF
@@ -422,6 +461,7 @@
 			if optionwindowclosecount>1000 :optionwindowflag=FALSE
 		}
 
+		if helpscene!"" :duio_Draw helpscene
 	} else {
 
 		SetDrawScreen hcommonLayer
@@ -440,6 +480,7 @@
 		duio_Draw"#MusicSelect-Decide"
 
 		if (decidecount*(1000.0/duio_GetFPS()))>1500 {
+			gosub*scene_MusicSelect_free
 			gosub*scene_Gameplay_Init
 			curSceneTag="#Gameplay"
 		}
@@ -447,19 +488,25 @@
 		decidecount++
 	}
 
+	if SceneTime<1000 {
+		duio_Draw"#Shutter"
+	}
+
 	if duio_GetButtonEventStack()!"" :gosub*scene_MusicSelect_eventstack
+	
+	if curpreview_time!-1 :curpreview_time+FrameTime
 
 	return
 
 *scene_MusicSelect_eventstack
 
 	if duio_GetButtonEventStack()=="folder_dropdown"&duio_GetButtonVisible(duio_ButtonID2UIsetID(folder_dropdown_id(0)))==FALSE {
-		repeat 16
+		repeat 22
 			duio_SetButtonVisible duio_ButtonID2UIsetID(folder_dropdown_id(cnt)),TRUE
 			duio_SetButtonOutro duio_ButtonID2UIsetID(folder_dropdown_id(cnt)),FALSE
 		loop
 	} else {
-		repeat 16
+		repeat 22
 			if folder_dropdown_event(cnt)==duio_GetButtonEventStack() {
 				duio_ChangeButtonImage duio_ButtonID2UIsetID("musicselect_button_folder"),hdximg(imusicselect_folder_all+cnt)
 			}
@@ -495,6 +542,30 @@
 		case"folder_dropdown_lv9_11":CreateMapItem MAPITEM_TYPE_SINGLE,"folder_dropdown_lv9_11",TRUE:swbreak
 		//レベル１２の楽曲
 		case"folder_dropdown_lv12":CreateMapItem MAPITEM_TYPE_SINGLE,"folder_dropdown_lv12",TRUE:swbreak
+		//EXランクでクリアした楽曲
+		case"folder_dropdown_ex":CreateMapItem MAPITEM_TYPE_SINGLE,"folder_dropdown_ex",TRUE:swbreak
+		//Sランクでクリアした楽曲
+		case"folder_dropdown_s":CreateMapItem MAPITEM_TYPE_SINGLE,"folder_dropdown_s",TRUE:swbreak
+		//AAAランクでクリアした楽曲
+		case"folder_dropdown_aaa":CreateMapItem MAPITEM_TYPE_SINGLE,"folder_dropdown_aaa",TRUE:swbreak
+		//AAランクでクリアした楽曲
+		case"folder_dropdown_aa":CreateMapItem MAPITEM_TYPE_SINGLE,"folder_dropdown_aa",TRUE:swbreak
+		//Aランクでクリアした楽曲
+		case"folder_dropdown_a":CreateMapItem MAPITEM_TYPE_SINGLE,"folder_dropdown_a",TRUE:swbreak
+		//クリアできなかった楽曲
+		case"folder_dropdown_failed":CreateMapItem MAPITEM_TYPE_SINGLE,"folder_dropdown_failed",TRUE:swbreak
+		//アシスト付きでクリアした楽曲
+		case"folder_dropdown_assist":CreateMapItem MAPITEM_TYPE_SINGLE,"folder_dropdown_assist",TRUE:swbreak
+		//クリアした楽曲
+		case"folder_dropdown_clear":CreateMapItem MAPITEM_TYPE_SINGLE,"folder_dropdown_clear",TRUE:swbreak
+		//EXPERTゲージでクリアした楽曲
+		case"folder_dropdown_expert":CreateMapItem MAPITEM_TYPE_SINGLE,"folder_dropdown_expert",TRUE:swbreak
+		//MADNESSゲージでクリアした楽曲
+		case"folder_dropdown_madness":CreateMapItem MAPITEM_TYPE_SINGLE,"folder_dropdown_madness",TRUE:swbreak
+		//フルコンボクリアした楽曲
+		case"folder_dropdown_fc":CreateMapItem MAPITEM_TYPE_SINGLE,"folder_dropdown_fc",TRUE:swbreak
+		//ALL EXCELLENTでクリアした楽曲
+		case"folder_dropdown_allex":CreateMapItem MAPITEM_TYPE_SINGLE,"folder_dropdown_allex",TRUE:swbreak
 		//NORMAL難易度
 		case"folder_dropdown_normal":CreateMapItem MAPITEM_TYPE_SINGLE,"folder_dropdown_normal",TRUE:swbreak
 		//HARD難易度
@@ -510,13 +581,19 @@
 		case"sort_dropdown_name":SortMapItem MAPITEM_SORT_NAME:swbreak
 		//難易度でソート
 		case"sort_dropdown_level":SortMapItem MAPITEM_SORT_LEVEL:swbreak
+		//自己ベストスコアでソート
+		case"sort_dropdown_score":SortMapItem MAPITEM_SORT_SCORE:swbreak
 		//BPMでソート
 		case"sort_dropdown_bpm":SortMapItem MAPITEM_SORT_BPM:swbreak
+		//自己ベストのクリアの種類でソート
+		case"sort_dropdown_cleartype":SortMapItem MAPITEM_SORT_CLEARTYPE:swbreak
 
 		//難易度選択を閉じる
 		case"levelselect_close"
 			duio_SetButtonEnable duio_ButtonID2UIsetID("musicselect_levelselect_close"),FALSE
 			gosub*scene_MusicSelect_CloseLevelSelect
+			curpreview_time=-1
+			gosub*scene_MusicSelect_PauseAllPreview
 		swbreak
 
 		//検索
@@ -544,22 +621,8 @@
 
 		//決定
 		case"musicselect_decide"
-			decidecount=0
-
-			duio_ChangeImage duio_ImageID2UIsetID("musicdecide_artwork"),mapdb_hartwork(curselect_item,curselect_lv)
-
-			duio_ChangeTextBody duio_TextID2UIsetID("musicdecide_title"),mapdb_title(curselect_item,curselect_lv)
-			duio_ChangeTextBody duio_TextID2UIsetID("musicdecide_artist"),mapdb_artist(curselect_item,curselect_lv)+" / from "+mapdb_source(curselect_item,curselect_lv)+" / Map by "+mapdb_mapdesign(curselect_item,curselect_lv)
-			duio_ChangeTextBody duio_TextID2UIsetID("musicdecide_level"),str(mapdb_level(curselect_item,curselect_lv))
-			if mapdb_defbpm(curselect_item,curselect_lv)==mapdb_minbpm(curselect_item,curselect_lv)&mapdb_defbpm(curselect_item,curselect_lv)==mapdb_maxbpm(curselect_item,curselect_lv) {
-				duio_ChangeTextBody duio_TextID2UIsetID("musicdecide_bpm"),strf("%.2f",mapdb_defbpm(curselect_item,curselect_lv))
-			} else {
-				duio_ChangeTextBody duio_TextID2UIsetID("musicdecide_bpm"),strf("%.2f (%.2f - %.2f)",mapdb_defbpm(curselect_item,curselect_lv),mapdb_minbpm(curselect_item,curselect_lv),mapdb_maxbpm(curselect_item,curselect_lv))
-			}
-			duio_ChangeTextBody duio_TextID2UIsetID("musicdecide_totalnotes"),str(mapdb_totalnotes(curselect_item,curselect_lv))
-
-			duio_ChangeImage duio_ImageID2UIsetID("musicdecide_level_img"),hdximg(imusicselect_item_normal+curselect_lv)
-
+			AutoPlayFlag=FALSE
+			gosub*scene_MusicSelect_Decide
 		swbreak
 
 		//オプション（開く）
@@ -581,6 +644,12 @@
 		//オプション（閉じる）
 		case"playoption_close"
 			gosub*scene_MusicSelect_CloseOption
+		swbreak
+
+		//オートプレイ
+		case"musicselect_autoplay"
+			AutoPlayFlag=TRUE
+			gosub*scene_MusicSelect_Decide
 		swbreak
 
 		//速度-
@@ -639,6 +708,96 @@
 		case"playoption_volplay_right"
 			volume_PLAY+5
 			if volume_PLAY>100 :volume_PLAY=100
+		swbreak
+
+		//"オブジェクトの速度" ヘルプを開く
+		case"help_objspeed_open"
+			duio_SetActiveScene"#PlayOption",FALSE
+			duio_SetActiveScene"#Help-ObjSpeed",TRUE
+			duio_SetAllButtonVisible"#Help-ObjSpeed",TRUE
+			duio_SetAllImageVisible"#Help-ObjSpeed",TRUE
+			duio_InitAllCount"#Help-ObjSpeed"
+			helpscene="#Help-ObjSpeed"
+		swbreak
+		//"オブジェクトの速度" ヘルプを閉じる
+		case"help_objspeed_close"
+			duio_SetActiveScene"#PlayOption",TRUE
+			duio_SetActiveScene"#Help-ObjSpeed",FALSE
+			duio_SetAllImageOutro"#Help-ObjSpeed"
+			duio_SetAllButtonOutro"#Help-ObjSpeed"
+			helpscene="#Help-ObjSpeed"
+		swbreak
+
+		//"判定調整" ヘルプを開く
+		case"help_judgeoffset_open"
+			duio_SetActiveScene"#PlayOption",FALSE
+			duio_SetActiveScene"#Help-JudgeOffset",TRUE
+			duio_SetAllButtonVisible"#Help-JudgeOffset",TRUE
+			duio_SetAllImageVisible"#Help-JudgeOffset",TRUE
+			duio_InitAllCount"#Help-JudgeOffset"
+			helpscene="#Help-JudgeOffset"
+		swbreak
+		//"判定調整" ヘルプを閉じる
+		case"help_judgeoffset_close"
+			duio_SetActiveScene"#PlayOption",TRUE
+			duio_SetActiveScene"#Help-JudgeOffset",FALSE
+			duio_SetAllImageOutro"#Help-JudgeOffset"
+			duio_SetAllButtonOutro"#Help-JudgeOffset"
+			helpscene="#Help-JudgeOffset"
+		swbreak
+
+		//"オブジェクトの配置" ヘルプを開く
+		case"help_objplace_open"
+			duio_SetActiveScene"#PlayOption",FALSE
+			duio_SetActiveScene"#Help-ObjPlace",TRUE
+			duio_SetAllButtonVisible"#Help-ObjPlace",TRUE
+			duio_SetAllImageVisible"#Help-ObjPlace",TRUE
+			duio_InitAllCount"#Help-ObjPlace"
+			helpscene="#Help-ObjPlace"
+		swbreak
+		//"オブジェクトの配置" ヘルプを閉じる
+		case"help_objplace_close"
+			duio_SetActiveScene"#PlayOption",TRUE
+			duio_SetActiveScene"#Help-ObjPlace",FALSE
+			duio_SetAllImageOutro"#Help-ObjPlace"
+			duio_SetAllButtonOutro"#Help-ObjPlace"
+			helpscene="#Help-ObjPlace"
+		swbreak
+
+		//"ゲージの難易度" ヘルプを開く
+		case"help_gauge_open"
+			duio_SetActiveScene"#PlayOption",FALSE
+			duio_SetActiveScene"#Help-Gauge",TRUE
+			duio_SetAllButtonVisible"#Help-Gauge",TRUE
+			duio_SetAllImageVisible"#Help-Gauge",TRUE
+			duio_InitAllCount"#Help-Gauge"
+			helpscene="#Help-Gauge"
+		swbreak
+		//"ゲージの難易度" ヘルプを閉じる
+		case"help_gauge_close"
+			duio_SetActiveScene"#PlayOption",TRUE
+			duio_SetActiveScene"#Help-Gauge",FALSE
+			duio_SetAllImageOutro"#Help-Gauge"
+			duio_SetAllButtonOutro"#Help-Gauge"
+			helpscene="#Help-Gauge"
+		swbreak
+
+		//"ウィンドウレイアウト" ヘルプを開く
+		case"help_window_open"
+			duio_SetActiveScene"#PlayOption",FALSE
+			duio_SetActiveScene"#Help-Window",TRUE
+			duio_SetAllButtonVisible"#Help-Window",TRUE
+			duio_SetAllImageVisible"#Help-Window",TRUE
+			duio_InitAllCount"#Help-Window"
+			helpscene="#Help-Window"
+		swbreak
+		//"ウィンドウレイアウト" ヘルプを閉じる
+		case"help_window_close"
+			duio_SetActiveScene"#PlayOption",TRUE
+			duio_SetActiveScene"#Help-Window",FALSE
+			duio_SetAllImageOutro"#Help-Window"
+			duio_SetAllButtonOutro"#Help-Window"
+			helpscene="#Help-Window"
 		swbreak
 
 		//ゲーム終了
@@ -806,6 +965,12 @@
 			repeat mapitem_max
 				duio_SetButtonEnable mapitem_uisetid(cnt),FALSE
 			loop
+
+			gosub*scene_MusicSelect_PauseAllPreview
+
+			curpreview_time=0
+			cfunc64v BASS_ChannelSetPosition,mapdb_hpreview(item,lv),0,0
+			cfunc64v BASS_ChannelPlay,mapdb_hpreview(item,lv)
 		}
 
 	SetDrawScreen hcommonLayer
@@ -946,6 +1111,42 @@
 
 	return
 
+*scene_MusicSelect_Decide
+	decidecount=0
+
+	if curpreview_time>9000|curpreview_time==-1 {
+		gosub*scene_MusicSelect_PauseAllPreview
+		duio_SetVolume"main",0.0
+		cfunc64v BASS_ChannelSetPosition,mapdb_hpreview(curselect_item,curselect_lv),0,0
+		cfunc64v BASS_ChannelPlay,mapdb_hpreview(curselect_item,curselect_lv)
+	}
+
+	duio_ChangeImage duio_ImageID2UIsetID("musicdecide_artwork"),mapdb_hartwork(curselect_item,curselect_lv)
+
+	duio_ChangeTextBody duio_TextID2UIsetID("musicdecide_title"),mapdb_title(curselect_item,curselect_lv)
+	duio_ChangeTextBody duio_TextID2UIsetID("musicdecide_artist"),mapdb_artist(curselect_item,curselect_lv)+" / from "+mapdb_source(curselect_item,curselect_lv)+" / Map by "+mapdb_mapdesign(curselect_item,curselect_lv)
+	duio_ChangeTextBody duio_TextID2UIsetID("musicdecide_level"),str(mapdb_level(curselect_item,curselect_lv))
+	if mapdb_defbpm(curselect_item,curselect_lv)==mapdb_minbpm(curselect_item,curselect_lv)&mapdb_defbpm(curselect_item,curselect_lv)==mapdb_maxbpm(curselect_item,curselect_lv) {
+		duio_ChangeTextBody duio_TextID2UIsetID("musicdecide_bpm"),strf("%.2f",mapdb_defbpm(curselect_item,curselect_lv))
+	} else {
+		duio_ChangeTextBody duio_TextID2UIsetID("musicdecide_bpm"),strf("%.2f (%.2f - %.2f)",mapdb_defbpm(curselect_item,curselect_lv),mapdb_minbpm(curselect_item,curselect_lv),mapdb_maxbpm(curselect_item,curselect_lv))
+	}
+	duio_ChangeTextBody duio_TextID2UIsetID("musicdecide_totalnotes"),str(mapdb_totalnotes(curselect_item,curselect_lv))
+
+	duio_ChangeImage duio_ImageID2UIsetID("musicdecide_level_img"),hdximg(imusicselect_item_normal+curselect_lv)
+
+	return
+
+*scene_MusicSelect_free
+	duio_StopSound"main"
+	return
+
+*scene_MusicSelect_PauseAllPreview
+	repeat mapgroup_max*3
+		cfunc64v BASS_ChannelPause,mapdb_hpreview(cnt/3,cnt\3)
+	loop
+	return
+
 //CreateMapItem _type,_folder,_initflag
 #deffunc _CreateMapItem int _type,str _folder,int _initflag,str _search
 
@@ -1059,6 +1260,44 @@
 					if (lv==2)==FALSE :continue
 				}
 
+				if _folder=="folder_dropdown_ex" {
+					if GetScoreRank(double(mapdb_mybest_score(item,lv))/10000000.0*100.0)!"EX" :continue
+				}
+				if _folder=="folder_dropdown_s" {
+					if GetScoreRank(double(mapdb_mybest_score(item,lv))/10000000.0*100.0)!"S" :continue
+				}
+				if _folder=="folder_dropdown_aaa" {
+					if GetScoreRank(double(mapdb_mybest_score(item,lv))/10000000.0*100.0)!"AAA" :continue
+				}
+				if _folder=="folder_dropdown_aa" {
+					if GetScoreRank(double(mapdb_mybest_score(item,lv))/10000000.0*100.0)!"AA" :continue
+				}
+				if _folder=="folder_dropdown_a" {
+					if GetScoreRank(double(mapdb_mybest_score(item,lv))/10000000.0*100.0)!"A" :continue
+				}
+
+				if _folder=="folder_dropdown_failed" {
+					if mapdb_mybest_cleartype(item,lv)!common_cleartype(CLEARTYPE_FAILED) :continue
+				}
+				if _folder=="folder_dropdown_assist" {
+					if mapdb_mybest_cleartype(item,lv)!common_cleartype(CLEARTYPE_ASSIST) :continue
+				}
+				if _folder=="folder_dropdown_clear" {
+					if mapdb_mybest_cleartype(item,lv)!common_cleartype(CLEARTYPE_CLEAR) :continue
+				}
+				if _folder=="folder_dropdown_expert" {
+					if mapdb_mybest_cleartype(item,lv)!common_cleartype(CLEARTYPE_EXPERT) :continue
+				}
+				if _folder=="folder_dropdown_madness" {
+					if mapdb_mybest_cleartype(item,lv)!common_cleartype(CLEARTYPE_MADNESS) :continue
+				}
+				if _folder=="folder_dropdown_fc" {
+					if mapdb_mybest_cleartype(item,lv)!common_cleartype(CLEARTYPE_FC) :continue
+				}
+				if _folder=="folder_dropdown_allex" {
+					if mapdb_mybest_cleartype(item,lv)!common_cleartype(CLEARTYPE_ALLEX) :continue
+				}
+
 				if _folder=="folder_dropdown_s1" {
 					if (mapdb_release(item,lv)==0)==FALSE :continue
 				}
@@ -1119,11 +1358,12 @@
 		loop
 	}
 
-	if mapitem_max==0 {
+	if mapitem_max==0&_search!"" {
 		duio_SetImageVisible duio_ImageID2UIsetID("dialog_keywordsearch_nomatch"),TRUE
 		duio_SetButtonVisible duio_ButtonID2UIsetID("dialog_keywordsearch_nomatch_ok"),TRUE
-		duio_SetActiveScene"#Dialog-KeywordSearch-Nomatch",TRUE
+		duio_SetButtonEnable duio_ButtonID2UIsetID("dialog_keywordsearch_nomatch_ok"),TRUE
 		duio_SetActiveScene"#MusicSelect",FALSE
+		duio_SetActiveScene"#Dialog-KeywordSearch-Nomatch",TRUE
 	}
 
 	return
@@ -1147,7 +1387,10 @@
 
 	if _type==MAPITEM_SORT_DEFAULT :return
 
+	//譜面単位でソートが必要な場合、項目を再生成する
 	if folder_mode==MAPITEM_TYPE_GROUP&_type==MAPITEM_SORT_LEVEL :CreateMapItem MAPITEM_TYPE_SINGLE,folder_dropdown_event(folder_cur),TRUE
+	if folder_mode==MAPITEM_TYPE_GROUP&_type==MAPITEM_SORT_SCORE :CreateMapItem MAPITEM_TYPE_SINGLE,folder_dropdown_event(folder_cur),TRUE
+	if folder_mode==MAPITEM_TYPE_GROUP&_type==MAPITEM_SORT_CLEARTYPE :CreateMapItem MAPITEM_TYPE_SINGLE,folder_dropdown_event(folder_cur),TRUE
 
 		dim sortdest_map:sdim sorttar_map:dim sorttar_mode
 		repeat mapitem_max
@@ -1171,6 +1414,20 @@
 			}
 			if _type==MAPITEM_SORT_BPM {
 				sortdest_map(cnt)=mapdb_defbpm(sortdest_item,sortdest_lv)
+				sorttar_mode=0
+			}
+			if _type==MAPITEM_SORT_SCORE {
+				sortdest_map(cnt)=mapdb_mybest_score(sortdest_item,sortdest_lv)
+				sorttar_mode=0
+			}
+			if _type==MAPITEM_SORT_CLEARTYPE {
+				sortdest_map(cnt)=0
+				repeat length(common_cleartype)
+					if common_cleartype(cnt)==mapdb_mybest_cleartype(sortdest_item,sortdest_lv) {
+						sortdest_map(cnt)=cnt
+						break
+					}
+				loop
 				sorttar_mode=0
 			}
 			sorttar_map(cnt)=sortdest_map(cnt)

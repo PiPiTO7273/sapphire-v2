@@ -3,8 +3,21 @@
 
 	dim SceneCount
 	dim SceneTime
+	dim DecideCount
+	sdim DecideJumpScene
+	DecideCount=-1
 
 	UpdateProfileDisp
+
+	//アクション
+	duio_SetImageVisible duio_ImageID2UIsetID("result_action_layer"),FALSE
+	duio_SetButtonVisible duio_ButtonID2UIsetID("result_action_twitter"),FALSE
+	duio_SetButtonVisible duio_ButtonID2UIsetID("result_action_savepicture"),FALSE
+	duio_SetButtonVisible duio_ButtonID2UIsetID("result_action_retry"),FALSE
+	duio_SetButtonVisible duio_ButtonID2UIsetID("result_action_next"),FALSE
+
+	duio_SetImageOutro duio_ImageID2UIsetID("result_status_load"),FALSE
+	duio_SetTextOutro duio_TextID2UIsetID("result_status"),FALSE
 
 	duio_InitAllCount"#Common-Profile"
 	duio_InitAllCount"#Result"
@@ -202,6 +215,7 @@
 			//ゲージ推移
 			repeat 350
 				saveGaugeCapture(cnt)=gaugecapture_buf(cnt)
+				if saveGaugeCapture(cnt)<0|saveGaugeCapture(cnt)>100 :saveGaugeCapture(cnt)=0
 			loop
 		} else {
 			//自己ベストのクリアランプを更新しない
@@ -211,6 +225,7 @@
 			//ゲージ推移
 			repeat 350
 				saveGaugeCapture(cnt)=peek(mapdb_mybest_gauge4binhex(item,lv),cnt)
+				if saveGaugeCapture(cnt)<0|saveGaugeCapture(cnt)>100 :saveGaugeCapture(cnt)=0
 			loop
 		}
 		if curAbilityScore>mapdb_mybest_pfpoint(item,lv) {
@@ -229,17 +244,11 @@
 		dim recordload_flag
 		dim irload_flag
 
-	//アクション
-		duio_SetImageVisible duio_ImageID2UIsetID("result_action_layer"),FALSE
-		duio_SetButtonVisible duio_ButtonID2UIsetID("result_action_twitter"),FALSE
-		duio_SetButtonVisible duio_ButtonID2UIsetID("result_action_savepicture"),FALSE
-		duio_SetButtonVisible duio_ButtonID2UIsetID("result_action_retry"),FALSE
-		duio_SetButtonVisible duio_ButtonID2UIsetID("result_action_next"),FALSE
+		if pfreg_Placement==PLAYOPT_ID_OBJPLACE_SINGLE :recordsend_flag=TRUE:irsend_flag=TRUE
+		if AutoPlayFlag :recordsend_flag=TRUE:irsend_flag=TRUE
 
-		duio_SetImageOutro duio_ImageID2UIsetID("result_status_load"),FALSE
-		duio_SetTextOutro duio_TextID2UIsetID("result_status"),FALSE
-
-	duio_SetAllImageOutro"#Gameplay-Shutter"
+	duio_SetAllImageOutro"#Shutter"
+	duio_PlaySound"shutter_out"
 
 	return
 
@@ -276,7 +285,7 @@
 	loop
 
 	//シャッター
-	duio_Draw"#Gameplay-Shutter"
+	duio_Draw"#Shutter"
 
 	//接続中
 	duio_ChangeImage duio_ImageID2UIsetID("result_status_load"),hdximgarr_load_connect(SceneTime/20\28)
@@ -309,6 +318,17 @@
 
 	if duio_GetButtonEventStack()!"" :gosub*scene_Result_eventStack
 
+	DecideCount+FrameTime
+
+	if DecideCount>1000 {
+		switch DecideJumpScene
+			case"next"
+				curSceneTag="#MusicSelect"
+				gosub*scene_MusicSelect_Init
+			swbreak
+		swend
+	}
+
 	return
 
 *scene_Result_eventstack
@@ -317,8 +337,8 @@
 
 		//次へ
 		case"next"
-			curSceneTag="#MusicSelect"
-			gosub*scene_MusicSelect_Init
+			DecideCount=0:DecideJumpScene="next"
+			gosub*onshutter
 		swbreak
 
 		//ゲーム終了

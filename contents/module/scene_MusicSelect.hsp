@@ -1,7 +1,19 @@
 
+//譜面の項目ボタンを作成
+//CreateMapItem _type,_folder_initflag,_search
+//	_type	MAPITEM_TYPE_GROUP or MAPITEM_TYPE_SINGLE
+//	_folder	フォルダ名
+//	_initflag	項目をすべて削除してから作成するフラグ
+//	_search	検索文字列（空欄で検索をしない）
 #define CreateMapItem(%1,%2,%3,%4="") _CreateMapItem %1,%2,%3,%4
+
+//UUIDから譜面の項目IDと難易度を取得する
+//SearchDBfromUUID _uuid,_item,_lv
+//	_uuid	検索する譜面のUUID
+//	_item	項目IDを代入する変数
+//	_lv		難易度を代入する変数
 #deffunc SearchDBfromUUID str _uuid,var _item,var _lv
-	dim searchdb_item:dim searchdb_lv
+	dim searchdb_item:dim searchdb_lv:dim searchdb_res
 	repeat mapgroup_max
 		searchdb_item=cnt
 		repeat 3
@@ -9,12 +21,14 @@
 			if map_uuid(searchdb_item,searchdb_lv)==_uuid {
 				_item=searchdb_item
 				_lv=searchdb_lv
+				searchdb_res=TRUE
 				break
 			}
 		loop
 	loop
-	return
+	return searchdb_res
 
+//Internet Rankingを同期する
 *syncIR
 	sdim IRrawdata:sdim IRdivdata
 	sdim IRproc_prm
@@ -33,23 +47,26 @@
 
 		if IRproc_data_UUID!""&int(IRproc_data_Rank)!0 {
 			SearchDBfromUUID IRproc_data_UUID,item,lv
-			mapdb_ir_name(item,lv,int(IRproc_data_Rank)-1)=IRproc_data_PlayerName
-			mapdb_ir_score(item,lv,int(IRproc_data_Rank)-1)=int(IRproc_data_Score)
-			if IRproc_data_PlayerName==PlayerID {	//自分の順位
-				mapdb_ir_myrank(item,lv)=int(IRproc_data_Rank)-1
-			}
-			if int(IRproc_data_Rank)>mapdb_ir_regmax(item,lv) {
-				mapdb_ir_regmax(item,lv)=int(IRproc_data_Rank)
-			}
+			if stat {
+				mapdb_ir_name(item,lv,int(IRproc_data_Rank)-1)=IRproc_data_PlayerName
+				mapdb_ir_score(item,lv,int(IRproc_data_Rank)-1)=int(IRproc_data_Score)
+				if IRproc_data_PlayerName==PlayerID {	//自分の順位
+					mapdb_ir_myrank(item,lv)=int(IRproc_data_Rank)-1
+				}
+				if int(IRproc_data_Rank)>mapdb_ir_regmax(item,lv) {
+					mapdb_ir_regmax(item,lv)=int(IRproc_data_Rank)
+				}
 
-			if IRproc_data_PlayerName!"" {
-				logmes GetTimeStamp()+" [irsync] Registered IR (uuid="+IRproc_data_UUID+",("+item+","+lv+"),name="+IRproc_data_PlayerName+",score="+IRproc_data_Score+",rank="+IRproc_data_Rank+")"
+				if IRproc_data_PlayerName!"" {
+					logmes GetTimeStamp()+" [irsync] Registered IR (uuid="+IRproc_data_UUID+",("+item+","+lv+"),name="+IRproc_data_PlayerName+",score="+IRproc_data_Score+",rank="+IRproc_data_Rank+")"
+				}
 			}
 		}
 	loop
 
 	return
 
+//プレイヤーの記録を同期
 *syncRecords
 	sdim mybestrawdata:sdim mybestdivdata
 	dim item:dim lv:sdim INIkey:sdim INIvalue
@@ -96,11 +113,13 @@
 
 *scene_MusicSelect_Init
 
-	dim SceneCount
-	dim SceneTime
-
 	CreateMapItem MAPITEM_TYPE_GROUP,"",TRUE
 
+	//変数初期化
+	dim SceneCount
+	dim SceneTime
+	dim DecideTime
+	sdim DecideJumpScene
 	dim mapitem_cursorwheel
 	dim mapitem_scrollfix
 	dim mapitem_scrollpos
@@ -115,14 +134,14 @@
 	dim optionwindowflag
 	dim optionwindowclosecount
 	dim helpscene
+	dim curPlayhPreview
+	dim AutoPlayFlag
+	dim SearchItem_hInput
+
 	helpscene=""
 	optionwindowclosecount=-1
 	decidecount=-1
 	curpreview_time=-1
-
-	dim AutoPlayFlag
-
-	dim SearchItem_hInput
 
 	//総合能力値を計算
 		ddim abpointarr,mapgroup_max*3
@@ -137,14 +156,16 @@
 
 	UpdateProfileDisp
 
-	duio_InitAllCount"#MusicSelect"
-	duio_InitAllCount"#Common-Profile"
-	duio_InitAllCount"#Dialog-KeywordSearch-Nomatch"
-	duio_InitAllCount"#PlayOption"
-	duio_InitAllCount"#MusicSelect-Decide"
+	//シーン別カウンタを初期化
+		duio_InitAllCount"#MusicSelect"
+		duio_InitAllCount"#Common-Profile"
+		duio_InitAllCount"#Dialog-KeywordSearch-Nomatch"
+		duio_InitAllCount"#PlayOption"
+		duio_InitAllCount"#MusicSelect-Decide"
 
-	duio_ChangeButtonImage duio_ButtonID2UIsetID("musicselect_button_folder"),hdximg(imusicselect_folder_all)
-	duio_ChangeButtonImage duio_ButtonID2UIsetID("musicselect_button_sort"),hdximg(imusicselect_sort_default)
+	//フォルダとソートの表示を初期化
+		duio_ChangeButtonImage duio_ButtonID2UIsetID("musicselect_button_folder"),hdximg(imusicselect_folder_all)
+		duio_ChangeButtonImage duio_ButtonID2UIsetID("musicselect_button_sort"),hdximg(imusicselect_sort_default)
 
 	//オブジェクトの配置
 		dim playoption_objplace_select
@@ -196,15 +217,19 @@
 	gosub*scene_MusicSelect_UpdatePlayOptionUI
 	gosub*scene_MusicSelect_UpdateMetadataString
 
-	duio_SetActiveScene"#MusicSelect",TRUE
+	//シーンをアクティブ化
+		duio_SetActiveScene"#MusicSelect",TRUE
 
-	duio_SetAllImageOutro"#Shutter"
-	duio_PlaySound"shutter_out"
+	//トランジション (out)
+		duio_SetAllImageOutro"#Shutter"
+		duio_PlaySound"shutter_out"
 
-	if BASS_ChannelIsActive(duio_GetHandle("main"))!BASS_ACTIVE_PLAYING {
-		duio_PlaySound"main"
-		duio_SetVolume"main",1.0
-	}
+	//BGM再生
+	if BASS_ChannelIsActive(duio_GetHandle("main"))!BASS_ACTIVE_PLAYING :duio_PlaySound"main"
+	duio_SetVolume"main",1.0
+
+	//背景動画
+	if GetMovieStateToGraph(hdximg(ibg_common))==0 :PlayMovieToGraph hdximg(ibg_common),DX_PLAYTYPE_LOOP
 
 	return
 
@@ -212,141 +237,145 @@
 
 	//UIパーツ
 	if decidecount!-1 {
-		DrawCommonBackground FrameCount
-		
-		SetDrawBlendMode DX_BLENDMODE_PMA_ALPHA,256
-		DrawGraph 0,0,hdximg(icommon_bglayer),TRUE
+		switch DecideJumpScene
+			case"play"
 
-		setease 0,BufWidth,ease_cubic_out
-		SetDrawBlendMode DX_BLENDMODE_ALPHA,100
-		DrawBox getease(decidecount*(1000.0/duio_GetFPS())-250,400),0,BufWidth,BufHeight,$65FAFF,TRUE
-		SetDrawBlendMode DX_BLENDMODE_ALPHA,80
-		DrawBox getease(decidecount*(1000.0/duio_GetFPS())-250,320),0,BufWidth,BufHeight,$FF58E9,TRUE
-		SetDrawBlendMode DX_BLENDMODE_ALPHA,50
-		DrawBox getease(decidecount*(1000.0/duio_GetFPS())-220,400),0,BufWidth,BufHeight,$FFFFFF,TRUE
+				DrawCommonBackground FrameCount
+
+				SetDrawBlendMode DX_BLENDMODE_PMA_ALPHA,256
+				DrawGraph 0,0,hdximg(icommon_bglayer),TRUE
+
+				setease 0,BufWidth,ease_cubic_out
+				SetDrawBlendMode DX_BLENDMODE_ALPHA,100
+				DrawBox getease(decidecount*(1000.0/duio_GetFPS())-250,400),0,BufWidth,BufHeight,$65FAFF,TRUE
+				SetDrawBlendMode DX_BLENDMODE_ALPHA,80
+				DrawBox getease(decidecount*(1000.0/duio_GetFPS())-250,320),0,BufWidth,BufHeight,$FF58E9,TRUE
+				SetDrawBlendMode DX_BLENDMODE_ALPHA,50
+				DrawBox getease(decidecount*(1000.0/duio_GetFPS())-220,400),0,BufWidth,BufHeight,$FFFFFF,TRUE
+				SetDrawBlendMode DX_BLENDMODE_ALPHA,256
+				DrawBox getease(decidecount*(1000.0/duio_GetFPS())-200,300),0,BufWidth,BufHeight,$FFFFFF,TRUE
+
+				SetDrawScreen hdximg(itmplayer)
+
+			swbreak
+		swend
+	}
+
+	//背景
 		SetDrawBlendMode DX_BLENDMODE_ALPHA,256
-		DrawBox getease(decidecount*(1000.0/duio_GetFPS())-200,300),0,BufWidth,BufHeight,$FFFFFF,TRUE
+		DrawExtendGraph 0,0,BufWidth,BufHeight,hdximg(ibg_common),FALSE
 
-		SetDrawScreen hdximg(itmplayer)
-	}
-	SetDrawBlendMode DX_BLENDMODE_ALPHA,256
-	DrawExtendGraph 0,0,BufWidth,BufHeight,hdximg(ibg_common),FALSE
-	if decidecount*(1000.0/duio_GetFPS())<400 {
-		dim shapemovepos:shapemovepos=-(1000.0/duio_GetFPS()*SceneCount)/15
-		SetDrawBlendMode DX_BLENDMODE_PMA_ALPHA,256
-		DrawGraph shapemovepos\1920,20,hdximg(icommon_ironline),TRUE
-		DrawGraph shapemovepos\1920+1920,20,hdximg(icommon_ironline),TRUE
+	//シーン描画
+		if decidecount*(1000.0/duio_GetFPS())<1000 {
+			dim shapemovepos:shapemovepos=-(1000.0/duio_GetFPS()*SceneCount)/15
+			SetDrawBlendMode DX_BLENDMODE_PMA_ALPHA,256
+			DrawGraph shapemovepos\1920,20,hdximg(icommon_ironline),TRUE
+			DrawGraph shapemovepos\1920+1920,20,hdximg(icommon_ironline),TRUE
 
-		duio_Draw"#MusicSelect"
-		duio_Draw"#Common-Profile"
-		duio_Draw"#Dialog-KeywordSearch-Nomatch"
-	}
+			duio_Draw"#MusicSelect"
+			duio_Draw"#Common-Profile"
+			duio_Draw"#Dialog-KeywordSearch-Nomatch"
+		}
 
 	if decidecount==-1 {
 
-		//BGM
-		if curpreview_time!-1 {
-			setease 0,1,ease_linear
-			duio_SetVolume"main",geteasef(curpreview_time-9000,500)
-		} else {
-			duio_SetVolume"main",1.0
-		}
-
-		//ボタン判定
-		if insquare(cursorPosX,cursorPosY,662,0,BufWidth,BufHeight)&mapitem_max!0 {
-			mapitem_cursorwheel=cursorWheel
-			repeat mapitem_max
-				duio_SetButtonPositionY mapitem_uisetid(cnt),duio_GetButtonPositionY(mapitem_uisetid(cnt))+mapitem_cursorwheel
-			loop
-			if duio_GetButtonPositionY(mapitem_uisetid(0))>159&mapitem_cursorwheel>0 {
-				mapitem_scrollfix=duio_GetButtonPositionY(mapitem_uisetid(0))-159
-				repeat mapitem_max
-					duio_SetButtonPositionY mapitem_uisetid(cnt),duio_GetButtonPositionY(mapitem_uisetid(cnt))-mapitem_scrollfix
-				loop
+		//楽曲プレビュー >> BGMのフェード処理
+			if curpreview_time!-1 {
+				setease 0,1,ease_linear
+				duio_SetVolume"main",geteasef(curpreview_time-9000,500)
+			} else {
+				duio_SetVolume"main",1.0
 			}
-			if duio_GetButtonPositionY(mapitem_uisetid(mapitem_max-1))<BufHeight-64-386&mapitem_cursorwheel<0 {
-				mapitem_scrollfix=(BufHeight-64-386)-duio_GetButtonPositionY(mapitem_uisetid(mapitem_max-1))
-				repeat mapitem_max
-					duio_SetButtonPositionY mapitem_uisetid(cnt),duio_GetButtonPositionY(mapitem_uisetid(cnt))+mapitem_scrollfix
-				loop
-			}
-		}
 
-		if mapitem_max!0 {
-			SetDrawBlendMode DX_BLENDMODE_PMA_ALPHA,256
-			mapitem_scrollpos=duio_GetButtonPositionY(mapitem_uisetid(mapitem_max-1))-duio_GetButtonPositionY(mapitem_uisetid(0))-BufHeight+64+386+159
-		}
-	
-		if insquare(cursorPosX,cursorPosY,1885,140,1885+20,140+710)&(cursorStatus&MOUSE_INPUT_LEFT) :mapitem_scrollclickmode=TRUE
-		if mapitem_scrollclickmode {
-			cursorPosY=limit(cursorPosY,140,140+710)
-			repeat mapitem_max
-				duio_SetButtonPositionY mapitem_uisetid(cnt),159+406*(cnt/4)-int(double(mapitem_scrollpos)/700.0*double(cursorPosY-140))
-			loop
-			if (cursorStatus&MOUSE_INPUT_LEFT)==FALSE :mapitem_scrollclickmode=FALSE
-		}
-	
-		DrawGraph 1870,130+int(700.0*(-double(duio_GetButtonPositionY(mapitem_uisetid(0))-159)/double(mapitem_scrollpos))),hdximg(imusicselect_itemscroll_circle),TRUE
+		//スクロール処理
+			if insquare(cursorPosX,cursorPosY,662,0,BufWidth,BufHeight)&mapitem_max!0 {
+				mapitem_cursorwheel=cursorWheel
+				repeat mapitem_max
+					duio_SetButtonPositionY mapitem_uisetid(cnt),duio_GetButtonPositionY(mapitem_uisetid(cnt))+mapitem_cursorwheel
+				loop
+				if duio_GetButtonPositionY(mapitem_uisetid(0))>159&mapitem_cursorwheel>0 {
+					mapitem_scrollfix=duio_GetButtonPositionY(mapitem_uisetid(0))-159
+					repeat mapitem_max
+						duio_SetButtonPositionY mapitem_uisetid(cnt),duio_GetButtonPositionY(mapitem_uisetid(cnt))-mapitem_scrollfix
+					loop
+				}
+				if duio_GetButtonPositionY(mapitem_uisetid(mapitem_max-1))<BufHeight-64-386&mapitem_cursorwheel<0 {
+					mapitem_scrollfix=(BufHeight-64-386)-duio_GetButtonPositionY(mapitem_uisetid(mapitem_max-1))
+					repeat mapitem_max
+						duio_SetButtonPositionY mapitem_uisetid(cnt),duio_GetButtonPositionY(mapitem_uisetid(cnt))+mapitem_scrollfix
+					loop
+				}
+			}
+
+		//スクロール位置を特定
+			if mapitem_max!0 {
+				SetDrawBlendMode DX_BLENDMODE_PMA_ALPHA,256
+				mapitem_scrollpos=duio_GetButtonPositionY(mapitem_uisetid(mapitem_max-1))-duio_GetButtonPositionY(mapitem_uisetid(0))-BufHeight+64+386+159
+			}
+
+		//スクロールバー
+			if insquare(cursorPosX,cursorPosY,1885,140,1885+20,140+710)&(cursorStatus&MOUSE_INPUT_LEFT) :mapitem_scrollclickmode=TRUE
+			if mapitem_scrollclickmode {
+				cursorPosY=limit(cursorPosY,140,140+710)
+				repeat mapitem_max
+					duio_SetButtonPositionY mapitem_uisetid(cnt),159+406*(cnt/4)-int(double(mapitem_scrollpos)/700.0*double(cursorPosY-140))
+				loop
+				if (cursorStatus&MOUSE_INPUT_LEFT)==FALSE :mapitem_scrollclickmode=FALSE
+			}
+			DrawGraph 1870,130+int(700.0*(-double(duio_GetButtonPositionY(mapitem_uisetid(0))-159)/double(mapitem_scrollpos))),hdximg(imusicselect_itemscroll_circle),TRUE
 
 		//選択中の難易度を強調表示
-		if SceneTime>750 {
-			setease 1,1.2,ease_linear+ease_loop
-			EaseWidth=int(64.0*geteasef(SceneTime-750,250))
-			EaseHeight=int(33.0*geteasef(SceneTime-750,250))
-			EasePosY=330+33/2-EaseHeight/2
-			switch curselect_lv
-				case 0
-					EasePosX=114+64/2-EaseWidth/2
-					DrawExtendGraph EasePosX,EasePosY,EasePosX+EaseWidth,EasePosY+EaseHeight,hdximg(imusicselect_item_normal),TRUE
-				swbreak
-				case 1
-					EasePosX=274+64/2-EaseWidth/2
-					DrawExtendGraph EasePosX,EasePosY,EasePosX+EaseWidth,EasePosY+EaseHeight,hdximg(imusicselect_item_hard),TRUE
-				swbreak
-				case 2
-					EasePosX=434+64/2-EaseWidth/2
-					DrawExtendGraph EasePosX,EasePosY,EasePosX+EaseWidth,EasePosY+EaseHeight,hdximg(imusicselect_item_chaos),TRUE
-				swbreak
-			swend
-		}
+			if SceneTime>750 {
+				setease 1,1.2,ease_linear+ease_loop
+					EaseWidth=int(64.0*geteasef(SceneTime-750,250))
+					EaseHeight=int(33.0*geteasef(SceneTime-750,250))
+					EasePosX=114+160*curselect_lv+64/2-EaseWidth/2
+					EasePosY=330+33/2-EaseHeight/2
+
+				DrawExtendGraph EasePosX,EasePosY,EasePosX+EaseWidth,EasePosY+EaseHeight,hdximg(imusicselect_item_normal+curselect_lv),TRUE
+			}
 		
 		//IR表示
 			SetDrawScreen hdximg(imusicselect_ir)
 			ClearDrawScreen
+
+			//スクロール処理
+				if insquare(cursorPosX,cursorPosY,30,829,30+290,829+116) :irbuf_wheel+cursorWheel/3	//移動量が多すぎるので
+				if irbuf_wheel>0 :irbuf_wheel=0
+				if irbuf_wheel<-24*100+116 :irbuf_wheel=-24*100+116
+
+			//描画
+				dim tmpdrawpos
+				tmpdrawpos+irbuf_wheel
+				repeat 100
+		
+					//アイコン
+					SetDrawBlendMode DX_BLENDMODE_PMA_ALPHA,limit(SceneTime/2-300,0,255)
+					switch cnt
+						case 0:DrawGraph 0,tmpdrawpos,hdximg(imusicselect_ir_icon_1),TRUE:swbreak
+						case 1:DrawGraph 0,tmpdrawpos,hdximg(imusicselect_ir_icon_2),TRUE:swbreak
+						case 2:DrawGraph 0,tmpdrawpos,hdximg(imusicselect_ir_icon_3),TRUE:swbreak
+						default:DrawGraph 0,tmpdrawpos,hdximg(imusicselect_ir_icon_other),TRUE:swbreak
+					swend
+		
+					//各順位の名前とスコア
+					SetDrawBlendMode DX_BLENDMODE_PMA_ALPHA,256
+					DrawStringToHandle 30,tmpdrawpos+1,str(cnt+1),$FFFFFF,duio_GetFontHandle("ps16")
+					if mapdb_ir_name(curselect_item,curselect_lv,cnt)=="" {
+						DrawStringToHandle 55,tmpdrawpos+1,"----",$FFFFFF,duio_GetFontHandle("ps16")
+					} else {
+						DrawStringToHandle 55,tmpdrawpos+1,mapdb_ir_name(curselect_item,curselect_lv,cnt),$FFFFFF,duio_GetFontHandle("ps16")
+					}
+					DrawStringToHandle 190,tmpdrawpos+1,strf("%08d",mapdb_ir_score(curselect_item,curselect_lv,cnt)),$FFFFFF,duio_GetFontHandle("ps16")
+		
+					tmpdrawpos+24
+					if tmpdrawpos>116 :break
+				loop
 	
-			dim tmpdrawpos
-			if insquare(cursorPosX,cursorPosY,30,829,30+290,829+116) :irbuf_wheel+cursorWheel/3	//移動量が多すぎるので
-			if irbuf_wheel>0 :irbuf_wheel=0
-			if irbuf_wheel<-24*100+116 :irbuf_wheel=-24*100+116
-			tmpdrawpos+irbuf_wheel
-			repeat 100
-	
-				//アイコン
-				SetDrawBlendMode DX_BLENDMODE_PMA_ALPHA,limit(SceneTime/2-300,0,255)
-				switch cnt
-					case 0:DrawGraph 0,tmpdrawpos,hdximg(imusicselect_ir_icon_1),TRUE:swbreak
-					case 1:DrawGraph 0,tmpdrawpos,hdximg(imusicselect_ir_icon_2),TRUE:swbreak
-					case 2:DrawGraph 0,tmpdrawpos,hdximg(imusicselect_ir_icon_3),TRUE:swbreak
-					default:DrawGraph 0,tmpdrawpos,hdximg(imusicselect_ir_icon_other),TRUE:swbreak
-				swend
-	
-				//各順位の名前とスコア
-				SetDrawBlendMode DX_BLENDMODE_PMA_ALPHA,256
-				DrawStringToHandle 30,tmpdrawpos+1,str(cnt+1),$FFFFFF,duio_GetFontHandle("ps16")
-				if mapdb_ir_name(curselect_item,curselect_lv,cnt)=="" {
-					DrawStringToHandle 55,tmpdrawpos+1,"----",$FFFFFF,duio_GetFontHandle("ps16")
-				} else {
-					DrawStringToHandle 55,tmpdrawpos+1,mapdb_ir_name(curselect_item,curselect_lv,cnt),$FFFFFF,duio_GetFontHandle("ps16")
-				}
-				DrawStringToHandle 190,tmpdrawpos+1,strf("%08d",mapdb_ir_score(curselect_item,curselect_lv,cnt)),$FFFFFF,duio_GetFontHandle("ps16")
-	
-				tmpdrawpos+24
-				if tmpdrawpos>116 :break
-			loop
-	
-			SetDrawScreen hcommonLayer
-			SetDrawBlendMode DX_BLENDMODE_ALPHA,256
-			DrawGraph 30,829,hdximg(imusicselect_ir),TRUE
+			//IRウィンドウ >> 共通レイヤー
+				SetDrawScreen hcommonLayer
+				SetDrawBlendMode DX_BLENDMODE_ALPHA,256
+				DrawGraph 30,829,hdximg(imusicselect_ir),TRUE
 	
 		//自己ベスト
 			setease 0,350-1,ease_cubic_out
@@ -356,41 +385,45 @@
 	
 		//検索
 			if CheckKeyInput(SearchItem_hInput)==0 {
-				sdim curSearchWord
-				cfunc64v GetKeyInputString,varptr64(curSearchWord),SearchItem_hInput
-				curSearchWord=cnvatos(curSearchWord)
-				
-				SetKeyInputStringColor2 DX_KEYINPSTRCOLOR_IME_STR_BACK,$00E1E9
-				SetKeyInputStringColor2 DX_KEYINPSTRCOLOR_IME_SELECT_STR_BACK,$FFFFFF
-				SetKeyInputStringColor2 DX_KEYINPSTRCOLOR_IME_CONV_WIN_STR,$000000
-				SetKeyInputStringColor2 DX_KEYINPSTRCOLOR_IME_CONV_WIN_SELECT_STR,$222222
-				SetKeyInputStringColor2 DX_KEYINPSTRCOLOR_IME_CONV_WIN_SELECT_STR_BACK,$EEEEEE
-				SetKeyInputStringColor2 DX_KEYINPSTRCOLOR_IME_CONV_WIN_BACK,$FFFFFF
-				SetKeyInputStringColor2 DX_KEYINPSTRCOLOR_IME_CONV_WIN_EDGE,$00E1E9
-	
-				SetKeyInputStringFont duio_GetFontHandle("rom1cm16")
-	
-				if duio_GetImageCount(duio_ImageID2UIsetID("musicselect_search_bg"))>200 {
-					SetDrawBlendMode DX_BLENDMODE_ALPHA,256
-					DrawKeyInputString 1375,156,SearchItem_hInput
-				}
+				//検索文字列を取得
+					sdim curSearchWord
+					cfunc64v GetKeyInputString,varptr64(curSearchWord),SearchItem_hInput
+					curSearchWord=cnvatos(curSearchWord)
+
+				//IMEのUIを設定
+					SetKeyInputStringColor2 DX_KEYINPSTRCOLOR_IME_STR_BACK,$00E1E9
+					SetKeyInputStringColor2 DX_KEYINPSTRCOLOR_IME_SELECT_STR_BACK,$FFFFFF
+					SetKeyInputStringColor2 DX_KEYINPSTRCOLOR_IME_CONV_WIN_STR,$000000
+					SetKeyInputStringColor2 DX_KEYINPSTRCOLOR_IME_CONV_WIN_SELECT_STR,$222222
+					SetKeyInputStringColor2 DX_KEYINPSTRCOLOR_IME_CONV_WIN_SELECT_STR_BACK,$EEEEEE
+					SetKeyInputStringColor2 DX_KEYINPSTRCOLOR_IME_CONV_WIN_BACK,$FFFFFF
+					SetKeyInputStringColor2 DX_KEYINPSTRCOLOR_IME_CONV_WIN_EDGE,$00E1E9
+					SetKeyInputStringFont duio_GetFontHandle("rom1cm16")
+
+				//入力中の文字列を描画
+					if duio_GetImageCount(duio_ImageID2UIsetID("musicselect_search_bg"))>200 {
+						SetDrawBlendMode DX_BLENDMODE_ALPHA,256
+						DrawKeyInputString 1375,156,SearchItem_hInput
+					}
 
 				//改行コードを検出（ENTERで検索）
-				if checkLF(curSearchWord) {
-					delLF curSearchWord
-					duio_SetImageOutro duio_ImageID2UIsetID("musicselect_search_bg"),TRUE
-					DeleteKeyInput SearchItem_hInput
-	
-					CreateMapItem folder_mode,folder_dropdown_event(folder_cur),TRUE,curSearchWord
-				}
+					if checkLF(curSearchWord) {
+						delLF curSearchWord
+						duio_SetImageOutro duio_ImageID2UIsetID("musicselect_search_bg"),TRUE
+						DeleteKeyInput SearchItem_hInput
+		
+						CreateMapItem folder_mode,folder_dropdown_event(folder_cur),TRUE,curSearchWord
+					}
 	
 				//カーソル点滅
-				if SceneCount/8\2==0 :SetKeyInputStringColor2 DX_KEYINPSTRCOLOR_NORMAL_CURSOR,$000000:else:SetKeyInputStringColor2 DX_KEYINPSTRCOLOR_NORMAL_CURSOR,$FFFFFF
+					if SceneCount/8\2==0 :SetKeyInputStringColor2 DX_KEYINPSTRCOLOR_NORMAL_CURSOR,$000000:else:SetKeyInputStringColor2 DX_KEYINPSTRCOLOR_NORMAL_CURSOR,$FFFFFF
 			} else {
+				//入力終了
 				if duio_GetImageOutroFlag(duio_ImageID2UIsetID("musicselect_search_bg"))==FALSE&CheckKeyInput(SearchItem_hInput)!-1 {
 					duio_SetImageOutro duio_ImageID2UIsetID("musicselect_search_bg"),TRUE
 					DeleteKeyInput SearchItem_hInput
 	
+					//フィルタ処理開始
 					CreateMapItem folder_mode,folder_dropdown_event(folder_cur),TRUE,curSearchWord
 				}
 			}
@@ -400,11 +433,11 @@
 		//オプション設定
 		if optionwindowflag {
 
-			duio_ChangeTextBody duio_TextID2UIsetID("playoption_val_objspeed"),strf("x%.2f",pfreg_AddSpeed)
-			duio_ChangeTextBody duio_TextID2UIsetID("playoption_val_judgeoffset"),str(pfreg_JudgeOffset)+" ms"
-			duio_ChangeTextBody duio_TextID2UIsetID("playoption_val_volbgm"),str(volume_BGM)+" %"
-			duio_ChangeTextBody duio_TextID2UIsetID("playoption_val_volse"),str(volume_SE)+" %"
-			duio_ChangeTextBody duio_TextID2UIsetID("playoption_val_volplay"),str(volume_PLAY)+" %"
+			duio_ChangeTextBody duio_TextID2UIsetID("playoption_val_objspeed"),strf("x%.2f",pfreg_AddSpeed)		//オブジェクトの速さ
+			duio_ChangeTextBody duio_TextID2UIsetID("playoption_val_judgeoffset"),str(pfreg_JudgeOffset)+" ms"		//判定調整
+			duio_ChangeTextBody duio_TextID2UIsetID("playoption_val_volbgm"),str(volume_BGM)+" %"				//BGM音量
+			duio_ChangeTextBody duio_TextID2UIsetID("playoption_val_volse"),str(volume_SE)+" %"					//SE音量
+			duio_ChangeTextBody duio_TextID2UIsetID("playoption_val_volplay"),str(volume_PLAY)+" %"				//PLAY音量
 
 			//ボタン押し続け判定
 				//objspeed
@@ -464,26 +497,46 @@
 		if helpscene!"" :duio_Draw helpscene
 	} else {
 
-		SetDrawScreen hcommonLayer
+		switch DecideJumpScene
 
-		dim EaseWidth:dim EaseHeight:dim EasePosX:dim EasePosY
-		setease 1,1.2,ease_cubic_out
-		EaseWidth=int(double(geteasef(decidecount*(1000.0/duio_GetFPS()),400))*double(BufWidth))
-		EaseHeight=int(double(geteasef(decidecount*(1000.0/duio_GetFPS()),400))*double(BufHeight))
-		EasePosX=BufWidth/2-EaseWidth/2
-		EasePosY=BufHeight/2-EaseHeight/2
+			//プレイ開始
+			case"play"
+				SetDrawScreen hcommonLayer
 
-		setease 256,0,ease_cubic_out
-		SetDrawBlendMode DX_BLENDMODE_PMA_ALPHA,getease(decidecount*(1000.0/duio_GetFPS()),400)
-		DrawExtendGraph EasePosX,EasePosY,EasePosX+EaseWidth,EasePosY+EaseHeight,hdximg(itmplayer),TRUE
+				dim EaseWidth:dim EaseHeight:dim EasePosX:dim EasePosY
+				setease 1,1.2,ease_cubic_out
+				EaseWidth=int(double(geteasef(decidecount*(1000.0/duio_GetFPS()),400))*double(BufWidth))
+				EaseHeight=int(double(geteasef(decidecount*(1000.0/duio_GetFPS()),400))*double(BufHeight))
+				EasePosX=BufWidth/2-EaseWidth/2
+				EasePosY=BufHeight/2-EaseHeight/2
 
-		duio_Draw"#MusicSelect-Decide"
+				setease 256,0,ease_cubic_out
+				SetDrawBlendMode DX_BLENDMODE_PMA_ALPHA,getease(decidecount*(1000.0/duio_GetFPS()),400)
+				DrawExtendGraph EasePosX,EasePosY,EasePosX+EaseWidth,EasePosY+EaseHeight,hdximg(itmplayer),TRUE
 
-		if (decidecount*(1000.0/duio_GetFPS()))>1500 {
-			gosub*scene_MusicSelect_free
-			gosub*scene_Gameplay_Init
-			curSceneTag="#Gameplay"
-		}
+				duio_Draw"#MusicSelect-Decide"
+
+				if (decidecount*(1000.0/duio_GetFPS()))>1500 {
+					gosub*scene_MusicSelect_free
+					gosub*scene_Gameplay_Init
+					curSceneTag="#Gameplay"
+				}
+			swbreak
+
+			//ロビーへ戻る
+			case"backscene"
+				duio_Draw"#Shutter"
+
+				if decidecount*FrameTime>1000 {
+					gosub*scene_MusicSelect_PauseAllPreview
+					PauseMovieToGraph hdximg(ibg_common)
+					gosub*scene_Lobby_Init
+					curSceneTag="#Lobby"
+					return
+				}
+			swbreak
+
+		swend
 
 		decidecount++
 	}
@@ -498,14 +551,18 @@
 
 	return
 
+//イベントのスタックを取得・処理
 *scene_MusicSelect_eventstack
 
+	//フォルダ選択
 	if duio_GetButtonEventStack()=="folder_dropdown"&duio_GetButtonVisible(duio_ButtonID2UIsetID(folder_dropdown_id(0)))==FALSE {
+		//開く
 		repeat 22
 			duio_SetButtonVisible duio_ButtonID2UIsetID(folder_dropdown_id(cnt)),TRUE
 			duio_SetButtonOutro duio_ButtonID2UIsetID(folder_dropdown_id(cnt)),FALSE
 		loop
 	} else {
+		//閉じる
 		repeat 22
 			if folder_dropdown_event(cnt)==duio_GetButtonEventStack() {
 				duio_ChangeButtonImage duio_ButtonID2UIsetID("musicselect_button_folder"),hdximg(imusicselect_folder_all+cnt)
@@ -514,12 +571,15 @@
 		loop
 	}
 
+	//ソート選択
 	if duio_GetButtonEventStack()=="sort_dropdown"&duio_GetButtonVisible(duio_ButtonID2UIsetID(sort_dropdown_id(0)))==FALSE {
+		//開く
 		repeat 6
 			duio_SetButtonVisible duio_ButtonID2UIsetID(sort_dropdown_id(cnt)),TRUE
 			duio_SetButtonOutro duio_ButtonID2UIsetID(sort_dropdown_id(cnt)),FALSE
 		loop
 	} else {
+		//閉じる
 		repeat 6
 			if sort_dropdown_event(cnt)==duio_GetButtonEventStack() {
 				duio_ChangeButtonImage duio_ButtonID2UIsetID("musicselect_button_sort"),hdximg(imusicselect_sort_default+cnt)
@@ -530,63 +590,36 @@
 
 	switch duio_GetButtonEventStack()
 
-		//すべての楽曲
-		case"folder_dropdown_all":CreateMapItem MAPITEM_TYPE_GROUP,"folder_dropdown_all",TRUE:swbreak
-		//すべてのレベル
-		case"folder_dropdown_alllv":CreateMapItem MAPITEM_TYPE_SINGLE,"folder_dropdown_alllv",TRUE:swbreak
-		//レベル１～４の楽曲
-		case"folder_dropdown_lv1_4":CreateMapItem MAPITEM_TYPE_SINGLE,"folder_dropdown_lv1_4",TRUE:swbreak
-		//レベル５～８の楽曲
-		case"folder_dropdown_lv5_8":CreateMapItem MAPITEM_TYPE_SINGLE,"folder_dropdown_lv5_8",TRUE:swbreak
-		//レベル９～１１の楽曲
-		case"folder_dropdown_lv9_11":CreateMapItem MAPITEM_TYPE_SINGLE,"folder_dropdown_lv9_11",TRUE:swbreak
-		//レベル１２の楽曲
-		case"folder_dropdown_lv12":CreateMapItem MAPITEM_TYPE_SINGLE,"folder_dropdown_lv12",TRUE:swbreak
-		//EXランクでクリアした楽曲
-		case"folder_dropdown_ex":CreateMapItem MAPITEM_TYPE_SINGLE,"folder_dropdown_ex",TRUE:swbreak
-		//Sランクでクリアした楽曲
-		case"folder_dropdown_s":CreateMapItem MAPITEM_TYPE_SINGLE,"folder_dropdown_s",TRUE:swbreak
-		//AAAランクでクリアした楽曲
-		case"folder_dropdown_aaa":CreateMapItem MAPITEM_TYPE_SINGLE,"folder_dropdown_aaa",TRUE:swbreak
-		//AAランクでクリアした楽曲
-		case"folder_dropdown_aa":CreateMapItem MAPITEM_TYPE_SINGLE,"folder_dropdown_aa",TRUE:swbreak
-		//Aランクでクリアした楽曲
-		case"folder_dropdown_a":CreateMapItem MAPITEM_TYPE_SINGLE,"folder_dropdown_a",TRUE:swbreak
-		//クリアできなかった楽曲
-		case"folder_dropdown_failed":CreateMapItem MAPITEM_TYPE_SINGLE,"folder_dropdown_failed",TRUE:swbreak
-		//アシスト付きでクリアした楽曲
-		case"folder_dropdown_assist":CreateMapItem MAPITEM_TYPE_SINGLE,"folder_dropdown_assist",TRUE:swbreak
-		//クリアした楽曲
-		case"folder_dropdown_clear":CreateMapItem MAPITEM_TYPE_SINGLE,"folder_dropdown_clear",TRUE:swbreak
-		//EXPERTゲージでクリアした楽曲
-		case"folder_dropdown_expert":CreateMapItem MAPITEM_TYPE_SINGLE,"folder_dropdown_expert",TRUE:swbreak
-		//MADNESSゲージでクリアした楽曲
-		case"folder_dropdown_madness":CreateMapItem MAPITEM_TYPE_SINGLE,"folder_dropdown_madness",TRUE:swbreak
-		//フルコンボクリアした楽曲
-		case"folder_dropdown_fc":CreateMapItem MAPITEM_TYPE_SINGLE,"folder_dropdown_fc",TRUE:swbreak
-		//ALL EXCELLENTでクリアした楽曲
-		case"folder_dropdown_allex":CreateMapItem MAPITEM_TYPE_SINGLE,"folder_dropdown_allex",TRUE:swbreak
-		//NORMAL難易度
-		case"folder_dropdown_normal":CreateMapItem MAPITEM_TYPE_SINGLE,"folder_dropdown_normal",TRUE:swbreak
-		//HARD難易度
-		case"folder_dropdown_hard":CreateMapItem MAPITEM_TYPE_SINGLE,"folder_dropdown_hard",TRUE:swbreak
-		//CHAOS難易度
-		case"folder_dropdown_chaos":CreateMapItem MAPITEM_TYPE_SINGLE,"folder_dropdown_chaos",TRUE:swbreak
-		//シーズン１の楽曲
-		case"folder_dropdown_s1":CreateMapItem MAPITEM_TYPE_GROUP,"folder_dropdown_s1",TRUE:swbreak
+		
+		case"folder_dropdown_all":CreateMapItem MAPITEM_TYPE_GROUP,"folder_dropdown_all",TRUE:swbreak			//すべての楽曲
+		case"folder_dropdown_alllv":CreateMapItem MAPITEM_TYPE_SINGLE,"folder_dropdown_alllv",TRUE:swbreak		//すべてのレベル
+		case"folder_dropdown_lv1_4":CreateMapItem MAPITEM_TYPE_SINGLE,"folder_dropdown_lv1_4",TRUE:swbreak		//レベル１～４の楽曲
+		case"folder_dropdown_lv5_8":CreateMapItem MAPITEM_TYPE_SINGLE,"folder_dropdown_lv5_8",TRUE:swbreak		//レベル５～８の楽曲
+		case"folder_dropdown_lv9_11":CreateMapItem MAPITEM_TYPE_SINGLE,"folder_dropdown_lv9_11",TRUE:swbreak	//レベル９～１１の楽曲
+		case"folder_dropdown_lv12":CreateMapItem MAPITEM_TYPE_SINGLE,"folder_dropdown_lv12",TRUE:swbreak		//レベル１２の楽曲
+		case"folder_dropdown_ex":CreateMapItem MAPITEM_TYPE_SINGLE,"folder_dropdown_ex",TRUE:swbreak			//EXランクでクリアした楽曲
+		case"folder_dropdown_s":CreateMapItem MAPITEM_TYPE_SINGLE,"folder_dropdown_s",TRUE:swbreak			//Sランクでクリアした楽曲
+		case"folder_dropdown_aaa":CreateMapItem MAPITEM_TYPE_SINGLE,"folder_dropdown_aaa",TRUE:swbreak			//AAAランクでクリアした楽曲
+		case"folder_dropdown_aa":CreateMapItem MAPITEM_TYPE_SINGLE,"folder_dropdown_aa",TRUE:swbreak			//AAランクでクリアした楽曲
+		case"folder_dropdown_a":CreateMapItem MAPITEM_TYPE_SINGLE,"folder_dropdown_a",TRUE:swbreak			//Aランクでクリアした楽曲
+		case"folder_dropdown_failed":CreateMapItem MAPITEM_TYPE_SINGLE,"folder_dropdown_failed",TRUE:swbreak	//クリアできなかった楽曲
+		case"folder_dropdown_assist":CreateMapItem MAPITEM_TYPE_SINGLE,"folder_dropdown_assist",TRUE:swbreak	//アシスト付きでクリアした楽曲
+		case"folder_dropdown_clear":CreateMapItem MAPITEM_TYPE_SINGLE,"folder_dropdown_clear",TRUE:swbreak		//クリアした楽曲
+		case"folder_dropdown_expert":CreateMapItem MAPITEM_TYPE_SINGLE,"folder_dropdown_expert",TRUE:swbreak	//EXPERTゲージでクリアした楽曲
+		case"folder_dropdown_madness":CreateMapItem MAPITEM_TYPE_SINGLE,"folder_dropdown_madness",TRUE:swbreak	//MADNESSゲージでクリアした楽曲
+		case"folder_dropdown_fc":CreateMapItem MAPITEM_TYPE_SINGLE,"folder_dropdown_fc",TRUE:swbreak			//フルコンボクリアした楽曲
+		case"folder_dropdown_allex":CreateMapItem MAPITEM_TYPE_SINGLE,"folder_dropdown_allex",TRUE:swbreak		//ALL EXCELLENTでクリアした楽曲
+		case"folder_dropdown_normal":CreateMapItem MAPITEM_TYPE_SINGLE,"folder_dropdown_normal",TRUE:swbreak	//NORMAL難易度
+		case"folder_dropdown_hard":CreateMapItem MAPITEM_TYPE_SINGLE,"folder_dropdown_hard",TRUE:swbreak		//HARD難易度
+		case"folder_dropdown_chaos":CreateMapItem MAPITEM_TYPE_SINGLE,"folder_dropdown_chaos",TRUE:swbreak		//CHAOS難易度
+		case"folder_dropdown_s1":CreateMapItem MAPITEM_TYPE_GROUP,"folder_dropdown_s1",TRUE:swbreak			//シーズン１の楽曲
 
-		//デフォルトでソート
-		case"sort_dropdown_default":SortMapItem MAPITEM_SORT_DEFAULT:swbreak
-		//曲名でソート
-		case"sort_dropdown_name":SortMapItem MAPITEM_SORT_NAME:swbreak
-		//難易度でソート
-		case"sort_dropdown_level":SortMapItem MAPITEM_SORT_LEVEL:swbreak
-		//自己ベストスコアでソート
-		case"sort_dropdown_score":SortMapItem MAPITEM_SORT_SCORE:swbreak
-		//BPMでソート
-		case"sort_dropdown_bpm":SortMapItem MAPITEM_SORT_BPM:swbreak
-		//自己ベストのクリアの種類でソート
-		case"sort_dropdown_cleartype":SortMapItem MAPITEM_SORT_CLEARTYPE:swbreak
+		case"sort_dropdown_default":SortMapItem MAPITEM_SORT_DEFAULT:swbreak		//デフォルトでソート
+		case"sort_dropdown_name":SortMapItem MAPITEM_SORT_NAME:swbreak			//曲名でソート
+		case"sort_dropdown_level":SortMapItem MAPITEM_SORT_LEVEL:swbreak			//難易度でソート
+		case"sort_dropdown_score":SortMapItem MAPITEM_SORT_SCORE:swbreak			//自己ベストスコアでソート
+		case"sort_dropdown_bpm":SortMapItem MAPITEM_SORT_BPM:swbreak			//BPMでソート
+		case"sort_dropdown_cleartype":SortMapItem MAPITEM_SORT_CLEARTYPE:swbreak	//自己ベストのクリアの種類でソート
 
 		//難易度選択を閉じる
 		case"levelselect_close"
@@ -652,152 +685,34 @@
 			gosub*scene_MusicSelect_Decide
 		swbreak
 
-		//速度-
-		case"playoption_objspeed_left"
-			pfreg_AddSpeed-0.05
-			if pfreg_AddSpeed<0.1 :pfreg_AddSpeed=0.1
-		swbreak
+		case"playoption_objspeed_left":pfreg_AddSpeed=limitf(pfreg_AddSpeed-0.05,0.1,10.0):swbreak	//オブジェクトの速さ -
+		case"playoption_objspeed_right":pfreg_AddSpeed=limitf(pfreg_AddSpeed+0.05,0.1,10.0):swbreak	//オブジェクトの速さ +
+		case"playoption_judgeoffset_left":pfreg_JudgeOffset=limit(pfreg_JudgeOffset-1,-1000,1000):swbreak	//判定調整 -
+		case"playoption_judgeoffset_right":pfreg_JudgeOffset=limit(pfreg_JudgeOffset+1,-1000,1000):swbreak	//判定調整 +
+		case"playoption_volbgm_left":volume_BGM=limit(volume_BGM-5,0,100):swbreak		//BGM音量 -
+		case"playoption_volbgm_right":volume_BGM=limit(volume_BGM+5,0,100):swbreak		//BGM音量 +
+		case"playoption_volse_left":volume_SE=limit(volume_SE-5,0,100):swbreak		//SE音量 -
+		case"playoption_volse_right":volume_SE=limit(volume_SE+5,0,100):swbreak		//SE音量 +
+		case"playoption_volplay_left":volume_PLAY=limit(volume_PLAY-5,0,100):swbreak	//PLAY音量 -
+		case"playoption_volplay_right":volume_PLAY=limit(volume_PLAY+5,0,100):swbreak	//PLAY音量 +
 
-		//速度+
-		case"playoption_objspeed_right"
-			pfreg_AddSpeed+0.05
-			if pfreg_AddSpeed>10.0 :pfreg_AddSpeed=10.0
-		swbreak
+		case"help_objspeed_open":OpenHelpDialog"#Help-ObjSpeed":swbreak		//"オブジェクトの速度" ヘルプを開く
+		case"help_objspeed_close":CloseHelpDialog"#Help-ObjSpeed":swbreak	//"オブジェクトの速度" ヘルプを閉じる
+		case"help_judgeoffset_open":OpenHelpDialog"#Help-JudgeOffset":swbreak		//"判定調整" ヘルプを開く
+		case"help_judgeoffset_close":CloseHelpDialog"#Help-JudgeOffset":swbreak	//"判定調整" ヘルプを閉じる
+		case"help_objplace_open":OpenHelpDialog"#Help-ObjPlace":swbreak		//"オブジェクトの配置" ヘルプを開く
+		case"help_objplace_close":CloseHelpDialog"#Help-ObjPlace":swbreak	//"オブジェクトの配置" ヘルプを閉じる
+		case"help_gauge_open":OpenHelpDialog"#Help-Gauge":swbreak		//"ゲージの難易度" ヘルプを開く
+		case"help_gauge_close":CloseHelpDialog"#Help-Gauge":swbreak		//"ゲージの難易度" ヘルプを閉じる
+		case"help_window_open":OpenHelpDialog"#Help-Window":swbreak		//"ウィンドウレイアウト" ヘルプを開く
+		case"help_window_close":CloseHelpDialog"#Help-Window":swbreak	//"ウィンドウレイアウト" ヘルプを閉じる
 
-		//判定オフセット-
-		case"playoption_judgeoffset_left"
-			pfreg_JudgeOffset-1
-		swbreak
-
-		//判定オフセット+
-		case"playoption_judgeoffset_right"
-			pfreg_JudgeOffset+1
-		swbreak
-
-		//BGM音量-
-		case"playoption_volbgm_left"
-			volume_BGM-5
-			if volume_BGM<0 :volume_BGM=0
-		swbreak
-
-		//BGM音量+
-		case"playoption_volbgm_right"
-			volume_BGM+5
-			if volume_BGM>100 :volume_BGM=100
-		swbreak
-
-		//SE音量-
-		case"playoption_volse_left"
-			volume_SE-5
-			if volume_SE<0 :volume_SE=0
-		swbreak
-
-		//SE音量+
-		case"playoption_volse_right"
-			volume_SE+5
-			if volume_SE>100 :volume_SE=100
-		swbreak
-
-		//PLAY音量-
-		case"playoption_volplay_left"
-			volume_PLAY-5
-			if volume_PLAY<0 :volume_PLAY=0
-		swbreak
-
-		//PLAY音量+
-		case"playoption_volplay_right"
-			volume_PLAY+5
-			if volume_PLAY>100 :volume_PLAY=100
-		swbreak
-
-		//"オブジェクトの速度" ヘルプを開く
-		case"help_objspeed_open"
-			duio_SetActiveScene"#PlayOption",FALSE
-			duio_SetActiveScene"#Help-ObjSpeed",TRUE
-			duio_SetAllButtonVisible"#Help-ObjSpeed",TRUE
-			duio_SetAllImageVisible"#Help-ObjSpeed",TRUE
-			duio_InitAllCount"#Help-ObjSpeed"
-			helpscene="#Help-ObjSpeed"
-		swbreak
-		//"オブジェクトの速度" ヘルプを閉じる
-		case"help_objspeed_close"
-			duio_SetActiveScene"#PlayOption",TRUE
-			duio_SetActiveScene"#Help-ObjSpeed",FALSE
-			duio_SetAllImageOutro"#Help-ObjSpeed"
-			duio_SetAllButtonOutro"#Help-ObjSpeed"
-			helpscene="#Help-ObjSpeed"
-		swbreak
-
-		//"判定調整" ヘルプを開く
-		case"help_judgeoffset_open"
-			duio_SetActiveScene"#PlayOption",FALSE
-			duio_SetActiveScene"#Help-JudgeOffset",TRUE
-			duio_SetAllButtonVisible"#Help-JudgeOffset",TRUE
-			duio_SetAllImageVisible"#Help-JudgeOffset",TRUE
-			duio_InitAllCount"#Help-JudgeOffset"
-			helpscene="#Help-JudgeOffset"
-		swbreak
-		//"判定調整" ヘルプを閉じる
-		case"help_judgeoffset_close"
-			duio_SetActiveScene"#PlayOption",TRUE
-			duio_SetActiveScene"#Help-JudgeOffset",FALSE
-			duio_SetAllImageOutro"#Help-JudgeOffset"
-			duio_SetAllButtonOutro"#Help-JudgeOffset"
-			helpscene="#Help-JudgeOffset"
-		swbreak
-
-		//"オブジェクトの配置" ヘルプを開く
-		case"help_objplace_open"
-			duio_SetActiveScene"#PlayOption",FALSE
-			duio_SetActiveScene"#Help-ObjPlace",TRUE
-			duio_SetAllButtonVisible"#Help-ObjPlace",TRUE
-			duio_SetAllImageVisible"#Help-ObjPlace",TRUE
-			duio_InitAllCount"#Help-ObjPlace"
-			helpscene="#Help-ObjPlace"
-		swbreak
-		//"オブジェクトの配置" ヘルプを閉じる
-		case"help_objplace_close"
-			duio_SetActiveScene"#PlayOption",TRUE
-			duio_SetActiveScene"#Help-ObjPlace",FALSE
-			duio_SetAllImageOutro"#Help-ObjPlace"
-			duio_SetAllButtonOutro"#Help-ObjPlace"
-			helpscene="#Help-ObjPlace"
-		swbreak
-
-		//"ゲージの難易度" ヘルプを開く
-		case"help_gauge_open"
-			duio_SetActiveScene"#PlayOption",FALSE
-			duio_SetActiveScene"#Help-Gauge",TRUE
-			duio_SetAllButtonVisible"#Help-Gauge",TRUE
-			duio_SetAllImageVisible"#Help-Gauge",TRUE
-			duio_InitAllCount"#Help-Gauge"
-			helpscene="#Help-Gauge"
-		swbreak
-		//"ゲージの難易度" ヘルプを閉じる
-		case"help_gauge_close"
-			duio_SetActiveScene"#PlayOption",TRUE
-			duio_SetActiveScene"#Help-Gauge",FALSE
-			duio_SetAllImageOutro"#Help-Gauge"
-			duio_SetAllButtonOutro"#Help-Gauge"
-			helpscene="#Help-Gauge"
-		swbreak
-
-		//"ウィンドウレイアウト" ヘルプを開く
-		case"help_window_open"
-			duio_SetActiveScene"#PlayOption",FALSE
-			duio_SetActiveScene"#Help-Window",TRUE
-			duio_SetAllButtonVisible"#Help-Window",TRUE
-			duio_SetAllImageVisible"#Help-Window",TRUE
-			duio_InitAllCount"#Help-Window"
-			helpscene="#Help-Window"
-		swbreak
-		//"ウィンドウレイアウト" ヘルプを閉じる
-		case"help_window_close"
-			duio_SetActiveScene"#PlayOption",TRUE
-			duio_SetActiveScene"#Help-Window",FALSE
-			duio_SetAllImageOutro"#Help-Window"
-			duio_SetAllButtonOutro"#Help-Window"
-			helpscene="#Help-Window"
+		//戻る
+		case"backscene"
+			decidecount=0
+			duio_SetActiveScene"#MusicSelect",FALSE
+			DecideJumpScene="backscene"
+			gosub*onshutter
 		swbreak
 
 		//ゲーム終了
@@ -849,46 +764,47 @@
 		curselect_count=0
 		
 		//カウンタ設定
-		duio_SetTextCount duio_TextID2UIsetID("musicselect_activeitem_title"),100
-		duio_SetTextCount duio_TextID2UIsetID("musicselect_activeitem_artist"),100
-		duio_SetTextCount duio_TextID2UIsetID("musicselect_activeitem_lvnormal"),100
-		duio_SetTextCount duio_TextID2UIsetID("musicselect_activeitem_lvhard"),100
-		duio_SetTextCount duio_TextID2UIsetID("musicselect_activeitem_lvchaos"),100
-		duio_SetTextCount duio_TextID2UIsetID("musicselect_activeitem_totalnotes"),100
-		duio_SetTextCount duio_TextID2UIsetID("musicselect_activeitem_bpm"),100
-		duio_SetTextCount duio_TextID2UIsetID("musicselect_activeitem_mapdesigner"),100
-		duio_SetImageCount duio_ImageID2UIsetID("musicselect_artwork"),100
-		duio_SetTextCount duio_TextID2UIsetID("musicselect_mybest_score"),150
-		duio_SetTextCount duio_TextID2UIsetID("musicselect_mybest_pfpoint"),150
-		duio_SetTextCount duio_TextID2UIsetID("musicselect_mybest_numexcellent"),150
-		duio_SetTextCount duio_TextID2UIsetID("musicselect_mybest_numgreat"),150
-		duio_SetTextCount duio_TextID2UIsetID("musicselect_mybest_numgood"),150
-		duio_SetTextCount duio_TextID2UIsetID("musicselect_mybest_numbad"),150
-		duio_SetTextCount duio_TextID2UIsetID("musicselect_mybest_nummiss"),150
-		duio_SetTextCount duio_TextID2UIsetID("musicselect_mybest_numexcellent_rate"),150
-		duio_SetTextCount duio_TextID2UIsetID("musicselect_mybest_numgreat_rate"),150
-		duio_SetTextCount duio_TextID2UIsetID("musicselect_mybest_numgood_rate"),150
-		duio_SetTextCount duio_TextID2UIsetID("musicselect_mybest_numbad_rate"),150
-		duio_SetTextCount duio_TextID2UIsetID("musicselect_mybest_nummiss_rate"),150
-		duio_SetTextCount duio_TextID2UIsetID("musicselect_mybest_rank"),150
-		duio_SetTextCount duio_TextID2UIsetID("musicselect_mybest_maxcombo"),150
-		duio_SetTextCount duio_TextID2UIsetID("musicselect_mybest_cleartype"),150
-		duio_SetTextCount duio_TextID2UIsetID("musicselect_mybest_regdate"),150
-		duio_SetTextCount duio_TextID2UIsetID("musicselect_mybest_earlylate"),150
-		duio_SetTextCount duio_TextID2UIsetID("musicselect_ir_myrank"),150
-		duio_SetTextCount duio_TextID2UIsetID("musicselect_ir_myscore"),150
+			duio_SetTextCount duio_TextID2UIsetID("musicselect_activeitem_title"),100
+			duio_SetTextCount duio_TextID2UIsetID("musicselect_activeitem_artist"),100
+			duio_SetTextCount duio_TextID2UIsetID("musicselect_activeitem_lvnormal"),100
+			duio_SetTextCount duio_TextID2UIsetID("musicselect_activeitem_lvhard"),100
+			duio_SetTextCount duio_TextID2UIsetID("musicselect_activeitem_lvchaos"),100
+			duio_SetTextCount duio_TextID2UIsetID("musicselect_activeitem_totalnotes"),100
+			duio_SetTextCount duio_TextID2UIsetID("musicselect_activeitem_bpm"),100
+			duio_SetTextCount duio_TextID2UIsetID("musicselect_activeitem_mapdesigner"),100
+			duio_SetImageCount duio_ImageID2UIsetID("musicselect_artwork"),100
+			duio_SetTextCount duio_TextID2UIsetID("musicselect_mybest_score"),150
+			duio_SetTextCount duio_TextID2UIsetID("musicselect_mybest_pfpoint"),150
+			duio_SetTextCount duio_TextID2UIsetID("musicselect_mybest_numexcellent"),150
+			duio_SetTextCount duio_TextID2UIsetID("musicselect_mybest_numgreat"),150
+			duio_SetTextCount duio_TextID2UIsetID("musicselect_mybest_numgood"),150
+			duio_SetTextCount duio_TextID2UIsetID("musicselect_mybest_numbad"),150
+			duio_SetTextCount duio_TextID2UIsetID("musicselect_mybest_nummiss"),150
+			duio_SetTextCount duio_TextID2UIsetID("musicselect_mybest_numexcellent_rate"),150
+			duio_SetTextCount duio_TextID2UIsetID("musicselect_mybest_numgreat_rate"),150
+			duio_SetTextCount duio_TextID2UIsetID("musicselect_mybest_numgood_rate"),150
+			duio_SetTextCount duio_TextID2UIsetID("musicselect_mybest_numbad_rate"),150
+			duio_SetTextCount duio_TextID2UIsetID("musicselect_mybest_nummiss_rate"),150
+			duio_SetTextCount duio_TextID2UIsetID("musicselect_mybest_rank"),150
+			duio_SetTextCount duio_TextID2UIsetID("musicselect_mybest_maxcombo"),150
+			duio_SetTextCount duio_TextID2UIsetID("musicselect_mybest_cleartype"),150
+			duio_SetTextCount duio_TextID2UIsetID("musicselect_mybest_regdate"),150
+			duio_SetTextCount duio_TextID2UIsetID("musicselect_mybest_earlylate"),150
+			duio_SetTextCount duio_TextID2UIsetID("musicselect_ir_myrank"),150
+			duio_SetTextCount duio_TextID2UIsetID("musicselect_ir_myscore"),150
 
 		//UI文字列変更
-		gosub*scene_MusicSelect_UpdateMetadataString
-		gosub*scene_MusicSelect_CloseLevelSelect
+			gosub*scene_MusicSelect_UpdateMetadataString
+			gosub*scene_MusicSelect_CloseLevelSelect
 	}
 
-	repeat 16
-		if duio_GetButtonEventStack()==folder_dropdown_event(cnt) {
-			folder_cur=cnt
-			if sort_mode!0 :SortMapItem sort_mode
-		}
-	loop
+	//フォルダ選択を行ったときのデフォルトのソート処理
+		repeat 16
+			if duio_GetButtonEventStack()==folder_dropdown_event(cnt) {
+				folder_cur=cnt
+				if sort_mode!0 :SortMapItem sort_mode
+			}
+		loop
 
 	//押されたボタンが楽曲アイテムかどうか判別
 		sdim tmpstr:sdim tmpdiv
@@ -896,46 +812,53 @@
 		split tmpstr,",",tmpdiv
 		if length(tmpdiv)==3 {
 			//難易度選択
+			SearchDBfromUUID tmpdiv(0),item,lv
+			dim AllLevelLockedFlag:AllLevelLockedFlag=TRUE
 			if tmpdiv(0)!"*" {	//NORMAL
 				tmpdiv(3)=tmpdiv(0)
-				duio_SetButtonVisible duio_ButtonID2UIsetID("musicselect_levelselect_normal"),TRUE
+				if IsUnlocked(item,lv) :AllLevelLockedFlag=FALSE
+				duio_SetButtonVisible duio_ButtonID2UIsetID("musicselect_levelselect_normal"),IsUnlocked(item,lv)
 				duio_SetButtonEvent duio_ButtonID2UIsetID("musicselect_levelselect_normal"),"decide:"+tmpdiv(3)
 
 				SetDrawScreen hdximg(imusicselect_levelsel_normal)
 				ClearDrawScreen
+
 				SetDrawBlendMode DX_BLENDMODE_PMA_ALPHA,256
 				DrawGraph 0,0,hdximg(imusicselect_levelsel_normalorg),TRUE
-				SearchDBfromUUID tmpdiv(3),item,lv
 				SetDrawBlendMode DX_BLENDMODE_ALPHA,256
 				DrawStringToHandle 146,8,str(mapdb_level(item,lv)),$FFFFFF,duio_GetFontHandle("ps40")
 
 				duio_ChangeButtonImage duio_ButtonID2UIsetID("musicselect_levelselect_normal"),hdximg(imusicselect_levelsel_normal)
 			}
+			SearchDBfromUUID tmpdiv(1),item,lv
 			if tmpdiv(1)!"*" {	//HARD
 				tmpdiv(3)=tmpdiv(1)
-				duio_SetButtonVisible duio_ButtonID2UIsetID("musicselect_levelselect_hard"),TRUE
+				if IsUnlocked(item,lv) :AllLevelLockedFlag=FALSE
+				duio_SetButtonVisible duio_ButtonID2UIsetID("musicselect_levelselect_hard"),IsUnlocked(item,lv)
 				duio_SetButtonEvent duio_ButtonID2UIsetID("musicselect_levelselect_hard"),"decide:"+tmpdiv(3)
 
 				SetDrawScreen hdximg(imusicselect_levelsel_hard)
 				ClearDrawScreen
+
 				SetDrawBlendMode DX_BLENDMODE_PMA_ALPHA,256
 				DrawGraph 0,0,hdximg(imusicselect_levelsel_hardorg),TRUE
-				SearchDBfromUUID tmpdiv(3),item,lv
 				SetDrawBlendMode DX_BLENDMODE_ALPHA,256
 				DrawStringToHandle 146,8,str(mapdb_level(item,lv)),$FFFFFF,duio_GetFontHandle("ps40")
 
 				duio_ChangeButtonImage duio_ButtonID2UIsetID("musicselect_levelselect_hard"),hdximg(imusicselect_levelsel_hard)
 			}
+			SearchDBfromUUID tmpdiv(2),item,lv
 			if tmpdiv(2)!"*" {	//CHAOS
 				tmpdiv(3)=tmpdiv(2)
-				duio_SetButtonVisible duio_ButtonID2UIsetID("musicselect_levelselect_chaos"),TRUE
+				if IsUnlocked(item,lv) :AllLevelLockedFlag=FALSE
+				duio_SetButtonVisible duio_ButtonID2UIsetID("musicselect_levelselect_chaos"),IsUnlocked(item,lv)
 				duio_SetButtonEvent duio_ButtonID2UIsetID("musicselect_levelselect_chaos"),"decide:"+tmpdiv(3)
 
 				SetDrawScreen hdximg(imusicselect_levelsel_chaos)
 				ClearDrawScreen
+
 				SetDrawBlendMode DX_BLENDMODE_PMA_ALPHA,256
 				DrawGraph 0,0,hdximg(imusicselect_levelsel_chaosorg),TRUE
-				SearchDBfromUUID tmpdiv(3),item,lv
 				SetDrawBlendMode DX_BLENDMODE_ALPHA,256
 				DrawStringToHandle 146,8,str(mapdb_level(item,lv)),$FFFFFF,duio_GetFontHandle("ps40")
 
@@ -945,8 +868,8 @@
 			SearchDBfromUUID tmpdiv(3),item,lv
 			duio_AddInImageAnimation_Move duio_ImageID2UIsetID("musicselect_panel_levelselect"),0,200,cursorPosX-661*2,cursorPosY-283*2,ease_cubic_out
 
-			duio_ChangeTextBody duio_TextID2UIsetID("musicselect_text_levelselect_title"),mapdb_title(item,lv)
-			duio_ChangeTextBody duio_TextID2UIsetID("musicselect_text_levelselect_artist"),mapdb_artist(item,lv)
+			duio_ChangeTextBody duio_TextID2UIsetID("musicselect_text_levelselect_title"),mapdb_title(item,lv)		//タイトル
+			duio_ChangeTextBody duio_TextID2UIsetID("musicselect_text_levelselect_artist"),mapdb_artist(item,lv)	//アーティスト名
 
 			duio_SetImageVisible duio_ImageID2UIsetID("musicselect_panel_levelselect"),TRUE:duio_SetImageCount duio_ImageID2UIsetID("musicselect_panel_levelselect"),0
 			duio_SetImageVisible duio_ImageID2UIsetID("musicselect_levelselect_artwork"),TRUE:duio_SetImageCount duio_ImageID2UIsetID("musicselect_levelselect_artwork"),0
@@ -966,11 +889,16 @@
 				duio_SetButtonEnable mapitem_uisetid(cnt),FALSE
 			loop
 
+			if AllLevelLockedFlag {
+				duio_SetImageVisible duio_ImageID2UIsetID("musicselect_levelselect_alllocked"),TRUE:duio_SetImageCount duio_ImageID2UIsetID("musicselect_levelselect_alllocked"),0
+			}
+
 			gosub*scene_MusicSelect_PauseAllPreview
 
 			curpreview_time=0
 			cfunc64v BASS_ChannelSetPosition,mapdb_hpreview(item,lv),0,0
 			cfunc64v BASS_ChannelPlay,mapdb_hpreview(item,lv)
+			curPlayhPreview=mapdb_hpreview(item,lv)
 		}
 
 	SetDrawScreen hcommonLayer
@@ -980,6 +908,7 @@
 *scene_MusicSelect_CloseLevelSelect
 	duio_SetImageOutro duio_ImageID2UIsetID("musicselect_panel_levelselect"),TRUE
 	duio_SetImageOutro duio_ImageID2UIsetID("musicselect_levelselect_artwork"),TRUE
+	duio_SetImageOutro duio_ImageID2UIsetID("musicselect_levelselect_alllocked"),TRUE
 
 	duio_SetTextOutro duio_TextID2UIsetID("musicselect_text_levelselect"),TRUE
 	duio_SetTextOutro duio_TextID2UIsetID("musicselect_text_levelselect_title"),TRUE
@@ -1113,6 +1042,9 @@
 
 *scene_MusicSelect_Decide
 	decidecount=0
+	DecideJumpScene="play"
+
+	PauseMovieToGraph hdximg(ibg_common)
 
 	if curpreview_time>9000|curpreview_time==-1 {
 		gosub*scene_MusicSelect_PauseAllPreview
@@ -1191,24 +1123,25 @@
 
 				//難易度
 				SetDrawBlendMode DX_BLENDMODE_ALPHA,256
-				if map_uuid(cnt,0)!"*" {
+				if map_uuid(cnt,0)!"*"&IsUnlocked(cnt,0) {
+					DrawGraph 39+72*0,312,hdximg(imusicselect_item_normal),TRUE
 					DrawStringXCenterToHandle 63,283,str(mapdb_level(cnt,0)),16,$000000,duio_GetFontHandle("ps32")
+					DrawStringXCenterToHandle 53+72*0,349,ConvClearType2ShortStyle(mapdb_mybest_cleartype(cnt,0)),36,$000000,duio_GetFontHandle("ps10")
 				}
-				if map_uuid(cnt,1)!"*" {
+				if map_uuid(cnt,1)!"*"&IsUnlocked(cnt,1) {
+					DrawGraph 39+72*1,312,hdximg(imusicselect_item_hard),TRUE
 					DrawStringXCenterToHandle 133,283,str(mapdb_level(cnt,1)),20,$000000,duio_GetFontHandle("ps32")
+					DrawStringXCenterToHandle 53+72*1,349,ConvClearType2ShortStyle(mapdb_mybest_cleartype(cnt,1)),36,$000000,duio_GetFontHandle("ps10")
+
 				}
-				if map_uuid(cnt,2)!"*" {
+				if map_uuid(cnt,2)!"*"&IsUnlocked(cnt,2) {
+					DrawGraph 39+72*2,312,hdximg(imusicselect_item_chaos),TRUE
 					DrawStringXCenterToHandle 202,283,str(mapdb_level(cnt,2)),26,$000000,duio_GetFontHandle("ps32")
+					DrawStringXCenterToHandle 53+72*2,349,ConvClearType2ShortStyle(mapdb_mybest_cleartype(cnt,2)),36,$000000,duio_GetFontHandle("ps10")
 				}
 
-				if map_uuid(cnt,0)!"*" {
-					DrawGraph 39+72*0,312,hdximg(imusicselect_item_normal),TRUE
-				}
-				if map_uuid(cnt,1)!"*" {
-					DrawGraph 39+72*1,312,hdximg(imusicselect_item_hard),TRUE
-				}
-				if map_uuid(cnt,2)!"*" {
-					DrawGraph 39+72*2,312,hdximg(imusicselect_item_chaos),TRUE
+				if IsUnlocked(cnt,0)==FALSE&IsUnlocked(cnt,1)==FALSE&IsUnlocked(cnt,2)==FALSE {
+					DrawGraph 8,8,hdximg(imusicselect_item_locked),TRUE
 				}
 			
 			//duioに登録
@@ -1325,24 +1258,15 @@
 
 				//難易度
 				SetDrawBlendMode DX_BLENDMODE_ALPHA,256
-				if lv==0 {
-					DrawStringXCenterToHandle 133,283,str(mapdb_level(item,0)),20,$000000,duio_GetFontHandle("ps32")
-				}
-				if lv==1 {
-					DrawStringXCenterToHandle 133,283,str(mapdb_level(item,1)),20,$000000,duio_GetFontHandle("ps32")
-				}
-				if lv==2 {
-					DrawStringXCenterToHandle 133,283,str(mapdb_level(item,2)),20,$000000,duio_GetFontHandle("ps32")
+				if IsUnlocked(item,lv) {
+					DrawStringXCenterToHandle 133,283,str(mapdb_level(item,lv)),20,$000000,duio_GetFontHandle("ps32")
+					DrawGraph 39+72*1,312,hdximg(imusicselect_item_normal+lv),TRUE
+					DrawStringXCenterToHandle 53+72*1,349,ConvClearType2ShortStyle(mapdb_mybest_cleartype(item,lv)),36,$000000,duio_GetFontHandle("ps10")
 				}
 
-				if lv==0 {
-					DrawGraph 39+72*1,312,hdximg(imusicselect_item_normal),TRUE
-				}
-				if lv==1 {
-					DrawGraph 39+72*1,312,hdximg(imusicselect_item_hard),TRUE
-				}
-				if lv==2 {
-					DrawGraph 39+72*1,312,hdximg(imusicselect_item_chaos),TRUE
+			//ロック済み
+				if IsUnlocked(item,lv)==FALSE {
+					DrawGraph 8,8,hdximg(imusicselect_item_locked),TRUE
 				}
 			
 			//duioに登録
@@ -1366,6 +1290,21 @@
 		duio_SetActiveScene"#Dialog-KeywordSearch-Nomatch",TRUE
 	}
 
+	return
+
+#deffunc OpenHelpDialog str x
+	helpscene=x
+	duio_SetActiveScene"#PlayOption",FALSE
+	duio_SetActiveScene x,TRUE
+	duio_SetAllButtonVisible x,TRUE
+	duio_SetAllImageVisible x,TRUE
+	duio_InitAllCount x
+	return
+#deffunc CloseHelpDialog str x
+	duio_SetActiveScene"#PlayOption",TRUE
+	duio_SetActiveScene x,FALSE
+	duio_SetAllImageOutro x
+	duio_SetAllButtonOutro x
 	return
 
 #deffunc ClearMapItem
@@ -1459,3 +1398,7 @@
 	loop
 
 	return
+
+#defcfunc IsUnlocked int x,int y
+	if duio_idsGet("_MapUnlock."+map_uuid(x,y))!"TRUE"&mapdb_unlocklepus(x,y)!0 :return FALSE
+	return TRUE

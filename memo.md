@@ -71,3 +71,7 @@ run命令で実行することで本体更新が不要になりました。
 
 - HALF-HALF
 - SINGLE
+
+## 素材
+
+https://icons8.jp/license

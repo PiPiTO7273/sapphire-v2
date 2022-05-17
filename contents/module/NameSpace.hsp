@@ -75,6 +75,9 @@
 #enum imusicselect_levelsel_hard
 #enum imusicselect_levelsel_chaosorg
 #enum imusicselect_levelsel_chaos
+#enum imusicselect_levelsel_locked
+
+#enum imusicselect_item_locked
 
 #enum iplayoption_enabled_120
 #enum iplayoption_enabled_180

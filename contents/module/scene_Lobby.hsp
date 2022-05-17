@@ -1,0 +1,103 @@
+
+*scene_Lobby_Init
+
+	dim SceneCount
+	dim SceneTime
+	sdim DecideJumpScene
+	dim DecideTime
+	DecideTime=-1
+
+	duio_InitAllCount"#Lobby"
+	duio_InitAllCount"#Common-Profile"
+
+	duio_SetAllButtonVisible"#Lobby",TRUE
+	duio_SetAllImageVisible"#Lobby",TRUE
+	duio_SetAllTextVisible"#Lobby",TRUE
+
+	duio_SetAllImageOutro"#Shutter"
+	duio_PlaySound"shutter_out"
+
+	UpdateProfileDisp
+
+	if BASS_ChannelIsActive(duio_GetHandle("main"))!BASS_ACTIVE_PLAYING {
+		duio_PlaySound"main"
+	}
+	duio_SetVolume"main",1.0
+
+	return
+
+*scene_Lobby
+
+	DrawCommonBackground FrameCount
+
+	SetDrawBlendMode DX_BLENDMODE_PMA_ALPHA,256
+	DrawGraph 0,0,hdximg(icommon_bglayer),TRUE
+
+	//“Sœƒ‰ƒCƒ“
+		dim shapemovepos:shapemovepos=-(1000.0/duio_GetFPS()*SceneCount)/15
+		SetDrawBlendMode DX_BLENDMODE_PMA_ALPHA,256
+		DrawGraph shapemovepos\1920,20,hdximg(icommon_ironline),TRUE
+		DrawGraph shapemovepos\1920+1920,20,hdximg(icommon_ironline),TRUE
+
+	duio_Draw"#Lobby"
+	duio_Draw"#Common-Profile"
+	duio_Draw"#Shutter"
+	duio_Draw"#Dialog-Common-InvalidAction"
+
+	if duio_GetButtonEventStack()!"" :gosub*scene_Lobby_eventstack
+
+	DecideTime+FrameTime
+
+	if DecideTime>1000 {
+		switch DecideJumpScene
+			case"freeplay"
+				gosub*scene_MusicSelect_Init
+				curSceneTag="#MusicSelect"
+			swbreak
+		swend
+	}
+
+	return
+
+*scene_Lobby_eventstack
+
+	switch duio_GetButtonEventStack()
+
+		case"freeplay"
+			gosub*onshutter
+			DecideTime=0
+
+			duio_SetAllButtonOutro"#Lobby"
+			duio_SetAllImageOutro"#Lobby"
+			duio_SetAllTextOutro"#Lobby"
+
+			DecideJumpScene="freeplay"
+		swbreak
+
+		case"openweb"
+			exec"http://"+duio_idsGet("Server"),16
+		swbreak
+
+		case"game.exit"
+			goto*Exit
+		swbreak
+
+		case"dialog_common_invalidaction_close"
+			duio_SetImageOutro duio_ImageID2UIsetID("dialog_common_invalidaction"),TRUE
+			duio_SetButtonOutro duio_ButtonID2UIsetID("dialog_common_invalidaction_ok"),TRUE
+			duio_SetButtonEnable duio_ButtonID2UIsetID("dialog_common_invalidaction_ok"),FALSE
+			duio_SetActiveScene"#Lobby",TRUE
+			duio_SetActiveScene"#Dialog-Common-InvalidAction",FALSE
+		swbreak
+
+		default
+			duio_SetImageVisible duio_ImageID2UIsetID("dialog_common_invalidaction"),TRUE
+			duio_SetButtonVisible duio_ButtonID2UIsetID("dialog_common_invalidaction_ok"),TRUE
+			duio_SetButtonEnable duio_ButtonID2UIsetID("dialog_common_invalidaction_ok"),TRUE
+			duio_SetActiveScene"#Lobby",FALSE
+			duio_SetActiveScene"#Dialog-Common-InvalidAction",TRUE
+		swbreak
+
+	swend
+
+	return

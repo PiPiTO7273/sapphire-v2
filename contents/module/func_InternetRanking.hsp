@@ -14,6 +14,9 @@
 	return webapi_get("http://"+duio_idsGet("Server")+"/apiv2/API-GetRecord.php?key="+duio_idsGet("_keymac_APIkey_GetRecord")+"&name="+_id)
 
 #deffunc PortalWebSvc_UploadRecord str _mapuuid,str _playerid,int _score,array _judge,int _maxcombo,str _cleartype,array _gaugecapture,str _scorecapture,double _ability
+
+	logmes GetTimeStamp()+" [portal-websvc] Uploading Records..."
+
 	sdim HTTPrequestData
 	HTTPrequestData=""
 	HTTPrequestData+"key="+duio_idsGet("_keymac_APIkey_SendNewRecord")+"&"
@@ -50,6 +53,7 @@
 	return webapi_post("http://"+duio_idsGet("Server")+"/apiv2/API-SendNewRecord.php",HTTPrequestData)
 
 #deffunc PortalWebSvc_UploadIR str _id,str _name,int _score
+	logmes GetTimeStamp()+" [portal-websvc] Uploading IR..."
 	return webapi_get("http://"+duio_idsGet("Server")+"/apiv2/API-SendGlobalRanking.php?key="+duio_idsGet("_keymac_APIkey_SendGlobalRanking")+"&id="+_id+"&name="+_name+"&score="+str(_score))
 
 //プロフィールをまとめて保存（初期化）
@@ -66,6 +70,7 @@
 
 //プロフィールをまとめて保存（送信）
 #deffunc PortalWebSvc_SendProfile_Send str _id,str _password
+	logmes GetTimeStamp()+" [portal-websvc] Uploading Profile..."
 	return webapi_post("http://"+duio_idsGet("Server")+"/apiv2/API-SendProfile-Multiple.php?key="+duio_idsGet("_keymac_APIkey_SendProfile")+"&id="+_id+"&password="+_password+"&decode="+duio_idsGet("_keymac_SSL_Decode_0")+duio_idsGet("_keymac_SSL_Decode_1")+duio_idsGet("_keymac_SSL_Decode_2")+duio_idsGet("_keymac_SSL_Decode_3"),tmpsendcue)
 
 #global

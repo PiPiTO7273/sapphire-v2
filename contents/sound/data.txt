@@ -11,4 +11,4 @@ warning;se_warning.wav;1.0;0
 opchange;se_optionchange.wav;1.0;0
 
 //BGM
-main;bgm_main.ogg;0.7;1
+main;bgm_main.ogg;0.4;1

@@ -197,4 +197,17 @@
 		loop
 		return
 
+	//短いスタイルに変更
+	#defcfunc ConvClearType2ShortStyle str x
+		switch x
+			case"EXPERT-CLEAR":return"EXPERT\nCLEAR":swbreak
+			case"MADNESS-CLEAR":return"MADNESS\nCLEAR":swbreak
+			case"FULLCOMBO":return"FULL\nCOMBO":swbreak
+			case"ALL-EXCELLENT":return"ALL\nEXCELLENT":swbreak
+			default
+				return x
+			swbreak
+		swend
+		return
+
 #global

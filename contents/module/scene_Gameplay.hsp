@@ -626,14 +626,15 @@
 		SetDrawBlendMode DX_BLENDMODE_ALPHA,getease(SceneTime,500)
 		DrawBox 0,0,BufWidth,BufHeight,0,TRUE
 
-		setease 0.7,0,ease_linear
-		cfunc64v BASS_ChannelSetAttribute,mapdb_hpreview(curselect_item,curselect_lv),BASS_ATTRIB_VOL,d2f(geteasef(SceneTime,500))
+		setease 0.5,0,ease_linear
+		cfunc64v BASS_ChannelSetAttribute,curPlayhPreview,BASS_ATTRIB_VOL,d2f(geteasef(SceneTime,500))
 
 		return
 	}
-	if SceneTime>500&BASS_ChannelIsActive(mapdb_hpreview(curselect_item,curselect_lv))==BASS_ACTIVE_PLAYING {
-		cfunc64v BASS_ChannelPause,mapdb_hpreview(curselect_item,curselect_lv)
-		cfunc64v BASS_ChannelSetAttribute,mapdb_hpreview(curselect_item,curselect_lv),BASS_ATTRIB_VOL,d2f(0.7)	//元に戻しておく
+	if SceneTime>500&BASS_ChannelIsActive(curPlayhPreview)==BASS_ACTIVE_PLAYING {
+		cfunc64v BASS_ChannelPause,curPlayhPreview
+		cfunc64v BASS_ChannelSetAttribute,curPlayhPreview,BASS_ATTRIB_VOL,d2f(0.7)	//元に戻しておく
+		gosub*scene_MusicSelect_PauseAllPreview
 	}
 
 	if CurFPS*double(SubThreadCount)>MaxSubThreadFPS {
@@ -705,14 +706,17 @@
 				if bpmevent_timing(cnt)<=sysclock_cur&bpmevent_timing(cnt+1)>=sysclock_cur {
 					LaneScroll+double((sysclock_cur-bpmevent_timing(cnt)))*(double(bpmevent_value(cnt))/double(objbpm(0)))
 					curBPMvalue=bpmevent_value(cnt)
+					continue
 				}
 				// BPM変更点x1 ... BPM変更点x2 ... ＜現在位置＞
 				if bpmevent_timing(cnt)<=sysclock_cur&bpmevent_timing(cnt+1)<=sysclock_cur {
 					LaneScroll+double(bpmevent_timing(cnt+1)-bpmevent_timing(cnt))*(double(bpmevent_value(cnt))/double(objbpm(0)))
+					continue
 				}
 				// 最後のBPM変更点 ... ＜現在位置＞
 				if bpmevent_timing(cnt+1)<=sysclock_cur&cnt==bpmevent_max-2 {
 					LaneScroll+double(sysclock_cur-bpmevent_timing(cnt+1))*(double(bpmevent_value(cnt+1))/double(objbpm(0)))
+					continue
 				}
 			loop
 
@@ -963,7 +967,7 @@
 			}
 
 	//プレイ終了
-		if mapconfig_finishtime!-1 {
+		if CheckAllJudged() {
 			if mapconfig_compefftime<300 {
 				//暗転in
 				setease 0,200,ease_linear
@@ -1055,9 +1059,15 @@
 		//リソース解放
 		gosub*scene_Gameplay_free
 
-		//リザルト画面に移動
-		gosub*scene_Result_Init
-		curSceneTag="#Result"
+		if AutoPlayFlag {
+			gosub*syncIR
+			gosub*scene_MusicSelect_Init
+			curSceneTag="#MusicSelect"
+		} else {
+			//リザルト画面に移動
+			gosub*scene_Result_Init
+			curSceneTag="#Result"
+		}
 		return
 	}
 
@@ -1076,6 +1086,7 @@
 		case"gameplay_event_retire"
 			mapconfig_finishflag=TRUE:duio_SetActiveScene"#Gameplay",FALSE
 			mapconfig_finishtime=2000:mapconfig_compeff_shutterflag=TRUE
+			curGauge=0.0
 			gosub*onshutter
 		swbreak
 
@@ -1113,6 +1124,8 @@
 			}
 		loop
 	} else {
+
+		if mapconfig_finishflag :return
 
 		//判定処理
 			KeybtJudge(1,0)=CheckHitKey(KEY_INPUT_S)

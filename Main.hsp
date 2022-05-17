@@ -29,6 +29,7 @@ goto*Startup
 
 #include"contents/module/duioparse.hsp"				//Dynamic UI Language (Input-Output Module)
 #include"contents/module/scene_CommonLayer.hsp"		//共通レイヤー
+#include"contents/module/scene_Lobby.hsp"			//ロビー
 #include"contents/module/scene_MusicSelect.hsp"		//楽曲選択画面
 #include"contents/module/scene_Gameplay.hsp"			//ゲームプレイ
 #include"contents/module/scene_Result.hsp"			//リザルト
@@ -38,6 +39,8 @@ goto*Startup
 #packopt hide 1
 
 *Startup
+
+	gsel 0,-1
 
 	onexit*Exit
 	;onerror*SystemError
@@ -94,12 +97,12 @@ goto*Startup
 		logmes GetTimeStamp()+" Initializing DirectX..."
 		SetOutApplicationLogValidFlag FALSE
 		SetAlwaysRunFlag TRUE
-		ChangeWindowMode TRUE
+		;ChangeWindowMode TRUE
 		SetGraphMode DispWidth,DispHeight
-		;SetWindowVisibleFlag FALSE
+		SetWindowVisibleFlag FALSE
 		;SetWaitVSyncFlag FALSE
-		;SetWindowStyleMode 7
-		;SetWindowSizeChangeEnableFlag TRUE,TRUE
+		SetWindowStyleMode 7
+		SetWindowSizeChangeEnableFlag TRUE,TRUE
 		DxLib_Init
 		if MSAAflag :SetDrawMode DX_DRAWMODE_BILINEAR
 		SetUsePremulAlphaConvertLoad TRUE
@@ -108,8 +111,6 @@ goto*Startup
 		//DirectXバージョン出力
 		sdim dxversionarr:dxversionarr="[ERROR]","9","9 EX","11"
 		logmes GetTimeStamp()+" - DirectX API version : "+dxversionarr(GetUseDirect3DVersion())
-
-		DrawString 0,0,"Now Loading...",$FFFFFF
 
 		SetUseLighting FALSE
 		SetCameraNearFar d2f(100),d2f(4000)
@@ -217,6 +218,9 @@ goto*Startup
 		hdximg(imusicselect_levelsel_chaosorg)=LoadGraph("contents/graphic/musicselect_levelselect_chaos.png")
 		hdximg(imusicselect_levelsel_chaos)=MakeScreen(200,66,TRUE)
 
+		hdximg(imusicselect_item_locked)=LoadGraph("contents/graphic/musicselect_songitem_locked.png")
+		hdximg(imusicselect_levelsel_locked)=LoadGraph("contents/graphic/musicselect_levellocked.png")
+
 		hdximg(iplayoption_enabled_120)=LoadGraph("contents/graphic/playoption_button_enabled_120.png")
 		hdximg(iplayoption_enabled_180)=LoadGraph("contents/graphic/playoption_button_enabled_180.png")
 
@@ -316,8 +320,6 @@ goto*Startup
 		hdximg(iresult_ratio_bad)=LoadGraph("contents/graphic/result_ratio_bad.png")
 		hdximg(iresult_ratio_miss)=LoadGraph("contents/graphic/result_ratio_miss.png")
 
-		PlayMovieToGraph hdximg(ibg_common),DX_PLAYTYPE_LOOP
-
 		dim hdximgarr_gameplay_particle,8
 		repeat 8
 			hdximgarr_gameplay_particle(cnt)=LoadGraph("contents/package/res_effect_particle/effect_Particle_"+cnt+".png")
@@ -381,6 +383,7 @@ goto*Startup
 		sdim mapdb_mapdesign,64,mapgroup_max,3		//譜面製作者
 		dim mapdb_hpreview_smp,mapgroup_max,3		//プレビュー音声のハンドル（サンプル）
 		dim mapdb_hpreview,mapgroup_max,3			//プレビュー音声のハンドル
+		dim mapdb_unlocklepus,mapgroup_max,3		//アンロックに必要なLepus（0=アンロック済み、1以上=Lepusでアンロック、-1=ミッションのみでアンロック）
 
 		//IRデータ
 		dim mapdb_ir_score,mapgroup_max,3,100		//IRスコア
@@ -516,7 +519,11 @@ goto*Startup
 							case ID_BGVIDEO_COMMON:binpos+2:swbreak
 							case ID_BGVIDEO_PATH:binpos+2+peek(tmpmapbuf,binpos+1):swbreak
 							case ID_BGAUDIO:binpos+2+peek(tmpmapbuf,binpos+1):swbreak
-							case ID_UNLOCKINFO:binpos+6:swbreak
+							case ID_UNLOCKINFO
+								if peek(tmpmapbuf,binpos+1)==1 :mapdb_unlocklepus(item,lv)=lpeek(tmpmapbuf,binpos+2)
+								if peek(tmpmapbuf,binpos+1)==2 :mapdb_unlocklepus(item,lv)=-1
+								binpos+6
+							swbreak
 							case ID_TOTALOFFSET:binpos+3:swbreak
 							case ID_EVENTOFFSET:binpos+3:swbreak
 							case ID_BGVIDEO_OFFSET:binpos+3:swbreak
@@ -574,7 +581,7 @@ goto*Startup
 					mapdb_hpreview_smp(item,lv)=cfunc64i(BASS_SampleLoad,FALSE,"contents/maps/"+mapdb_resource(item,lv)+"/preview.wav",0,0,16,0)
 					if mapdb_hpreview_smp(item,lv)==0 :mapdb_hpreview_smp(item,lv)=cfunc64i(BASS_SampleLoad,FALSE,"contents/maps/"+mapdb_resource(item,lv)+"/preview.ogg",0,0,16,0)
 					mapdb_hpreview(item,lv)=cfunc64i(BASS_SampleGetChannel,mapdb_hpreview_smp(item,lv),0)
-					cfunc64v BASS_ChannelSetAttribute,mapdb_hpreview(item,lv),BASS_ATTRIB_VOL,d2f(0.7)
+					cfunc64v BASS_ChannelSetAttribute,mapdb_hpreview(item,lv),BASS_ATTRIB_VOL,d2f(0.5)
 				}
 			loop
 		loop
@@ -658,6 +665,14 @@ goto*Startup
 					case"XODAV2.SELECT.ITEM":curselect_item=int(INIvalue):swbreak
 					case"XODAV2.SELECT.LV":curselect_lv=int(INIvalue):swbreak
 				swend
+
+				if strmid(INIkey,0,strlen("XODA.MAP.UNLOCK"))=="XODA.MAP.UNLOCK" {
+					if int(INIvalue) {
+						sdim tmpunlockinfo
+						split INIkey,".",tmpunlockinfo
+						duio_idsWrite"_MapUnlock."+tmpunlockinfo(3),"TRUE"
+					}
+				}
 			loop
 
 			if pfreg_dispname=="" :pfreg_dispname=PlayerID	//表示名が未設定の場合、IDをそのまま反映
@@ -666,7 +681,7 @@ goto*Startup
 			gosub*syncRecords
 
 	//初期状態
-	;SetWindowVisibleFlag TRUE
+	SetWindowVisibleFlag TRUE
 
 	//オプション画面のボタン配置
 		dim playoption_objplace_hbuttonimg,6,2
@@ -690,13 +705,13 @@ goto*Startup
 			playoption_target_hbuttonimg(cnt,1)=hdximg(iplayoption_target_ex_enabled+cnt)
 		loop
 
-	gsel 0,-1
+	//FPS測定初期化
+		duio_Draw""
 
-	duio_Draw""
-
-	curSceneTag="#MusicSelect"
+	curSceneTag="#Lobby"
+	gosub*scene_Lobby_Init
 	;gosub*scene_Result_Init
-	gosub*scene_MusicSelect_Init
+	;gosub*scene_MusicSelect_Init
 	;gosub*scene_Gameplay_Init
 
 *MainLoop
@@ -711,61 +726,71 @@ goto*Startup
 	FrameTime=1000/duio_GetFPS()
 
 	//カーソル座標
-	cfunc64v GetMousePoint,varptr64(cursorPosX),varptr64(cursorPosY)
-	cursorStatus=GetMouseInput()
+		cfunc64v GetMousePoint,varptr64(cursorPosX),varptr64(cursorPosY)
+		cursorStatus=GetMouseInput()
 
-	cursorPosX=int(double(cursorPosX)*(double(BufWidth)/double(DispWidth)))
-	cursorPosY=int(double(cursorPosY)*(double(BufHeight)/double(DispHeight)))
-	cursorWheelraw=(cfunc64f(GetMouseWheelRotVolF))
-	;cursorWheelEase=0
-	if cursorWheelraw<0&bfcursorWheelraw<0&cursorWheelraw!bfcursorWheelraw :cursorWheelEase=int((cursorWheelraw-bfcursorWheelraw)*40.0):cursorWheelCount=0
-	if cursorWheelraw>0&bfcursorWheelraw>0&cursorWheelraw!bfcursorWheelraw :cursorWheelEase=int((cursorWheelraw-bfcursorWheelraw)*40.0):cursorWheelCount=0
-	if (cursorWheelraw>0&bfcursorWheelraw<0)|(cursorWheelraw<0&bfcursorWheelraw>0) :cursorWheelEase=int(cursorWheelraw*40.0):cursorWheelCount=0
-	setease cursorWheelEase,0,ease_cubic_out
-	cursorWheel=getease(cursorWheelCount,320)
-	cursorWheelCount+(1000/limitf(CurFPS,1.0))
+		cursorPosX=int(double(cursorPosX)*(double(BufWidth)/double(DispWidth)))
+		cursorPosY=int(double(cursorPosY)*(double(BufHeight)/double(DispHeight)))
+		cursorWheelraw=(cfunc64f(GetMouseWheelRotVolF))
+		if cursorWheelraw<0&bfcursorWheelraw<0&cursorWheelraw!bfcursorWheelraw :cursorWheelEase=int((cursorWheelraw-bfcursorWheelraw)*40.0):cursorWheelCount=0
+		if cursorWheelraw>0&bfcursorWheelraw>0&cursorWheelraw!bfcursorWheelraw :cursorWheelEase=int((cursorWheelraw-bfcursorWheelraw)*40.0):cursorWheelCount=0
+		if (cursorWheelraw>0&bfcursorWheelraw<0)|(cursorWheelraw<0&bfcursorWheelraw>0) :cursorWheelEase=int(cursorWheelraw*40.0):cursorWheelCount=0
+		setease cursorWheelEase,0,ease_cubic_out
+		cursorWheel=getease(cursorWheelCount,320)
+		cursorWheelCount+(1000/limitf(CurFPS,1.0))
 
 	//画面の描画先の設定と初期化
-	SetDrawScreen hcommonLayer
-	ClearDrawScreen
+		SetDrawScreen hcommonLayer
+		ClearDrawScreen
 
-	dim VECTORpos:dim VECTORtarget
-	VECTORpos=d2f(0),d2f(-1000),d2f(1200)
-	VECTORtarget=d2f(0),d2f(1400),d2f(0)
-	cfunc64v SetCameraPositionAndTarget_UpVecY,varptr64(VECTORpos),varptr64(VECTORtarget)
-	SetupCamera_Perspective deg2rad(50.0)
+		dim VECTORpos:dim VECTORtarget
+		VECTORpos=d2f(0),d2f(-1000),d2f(1200)
+		VECTORtarget=d2f(0),d2f(1400),d2f(0)
+		cfunc64v SetCameraPositionAndTarget_UpVecY,varptr64(VECTORpos),varptr64(VECTORtarget)
+		SetupCamera_Perspective deg2rad(50.0)
 
 	//シーン別
-	switch curSceneTag
-		case"#MusicSelect"
-			gosub*scene_MusicSelect
-		swbreak
-		case"#Gameplay"
-			gosub*scene_Gameplay
-		swbreak
-		case"#Result"
-			gosub*scene_Result
-		swbreak
-	swend
+		switch curSceneTag
+			case"#Lobby"
+				gosub*scene_Lobby
+			swbreak
+			case"#MusicSelect"
+				gosub*scene_MusicSelect
+			swbreak
+			case"#Gameplay"
+				gosub*scene_Gameplay
+			swbreak
+			case"#Result"
+				gosub*scene_Result
+			swbreak
+		swend
 
-	SetDrawBlendMode DX_BLENDMODE_PMA_ALPHA,256
-	DrawGraph cursorPosX,cursorPosY,hdximg(icommon_cursor),TRUE
+	//マウスカーソル
+		SetDrawBlendMode DX_BLENDMODE_PMA_ALPHA,256
+		DrawGraph cursorPosX,cursorPosY,hdximg(icommon_cursor),TRUE
 
-	SetDrawScreen DX_SCREEN_BACK
-	ClearDrawScreen
+	//スケーリング
+		SetDrawScreen DX_SCREEN_BACK
+		ClearDrawScreen
 
-	DrawExtendGraph 0,0,DispWidth,DispHeight,hcommonLayer,TRUE
+		DrawExtendGraph 0,0,DispWidth,DispHeight,hcommonLayer,TRUE
 
 	//デバッグ
-	CurFPS=double(cfunc64f(GetFPS))
-	SumFPS+CurFPS
-	if FrameCount\60==0 :AvgFPS=SumFPS/60.0:SumFPS=0.0
-	/*DrawOverlayString 0,0,"MainThread FPS="+strf("%.2f",CurFPS)
-	DrawOverlayString 0,20,"MainThread Average-FPS="+strf("%.2f",AvgFPS)
-	DrawOverlayString 0,40,"SubThread FPS="+strf("%.2f",CurFPS*double(SubThreadCount))
-	DrawOverlayString 0,60,"Draw "+DrawThreadTime+"ms , SubThread "+SubThreadTime+" ms"
-	DrawOverlayString 0,80,"Cursor ("+cursorPosX+","+cursorPosY+") w="+cursorWheel
-	DrawOverlayString 0,100,"Scene="+curSceneTag*/
+		CurFPS=double(cfunc64f(GetFPS))
+		SumFPS+CurFPS
+		if FrameCount\60==0 :AvgFPS=SumFPS/60.0:SumFPS=0.0
+		/*DrawOverlayString 0,0,"MainThread FPS="+strf("%.2f",CurFPS)
+		DrawOverlayString 0,20,"MainThread Average-FPS="+strf("%.2f",AvgFPS)
+		DrawOverlayString 0,40,"SubThread FPS="+strf("%.2f",CurFPS*double(SubThreadCount))
+		DrawOverlayString 0,60,"Draw "+DrawThreadTime+"ms , SubThread "+SubThreadTime+" ms"
+		DrawOverlayString 0,80,"Cursor ("+cursorPosX+","+cursorPosY+") w="+cursorWheel
+		DrawOverlayString 0,100,"Scene="+curSceneTag*/
+
+	if CheckHitKey(KEY_INPUT_HOME) {
+		repeat UIset_Button_max:UIset_Button_count(cnt)=0:loop
+		repeat UIset_Text_max:UIset_Text_count(cnt)=0:loop
+		repeat UIset_Image_max:UIset_Image_count(cnt)=0:loop
+	}
 
 	bfcursorStatus=cursorStatus
 	bfCursorWheelraw=cursorWheelraw
@@ -774,23 +799,23 @@ goto*Startup
 	FrameCount++
 
 	//サブスレッド
-	SubThreadCount=0
-	DrawThreadTime=GetNowCount()-FPSkeepCount_std
-	repeat abs(SubThreadLimit)
+		SubThreadCount=0
+		DrawThreadTime=GetNowCount()-FPSkeepCount_std
+		repeat abs(SubThreadLimit)
 
-		if ((GetNowCount()-FPSkeepCount_std)>(1000/duio_GetFPS()-SubThreadTime-1))&SubThreadLimit>0&cnt!0 :break
+			if ((GetNowCount()-FPSkeepCount_std)>(1000/duio_GetFPS()-SubThreadTime-1))&SubThreadLimit>0&cnt!0 :break
 
-		switch curSceneTag
-			case"#Gameplay"
-				gosub*scene_Gameplay_subThread
-			swbreak
-		swend
+			switch curSceneTag
+				case"#Gameplay"
+					gosub*scene_Gameplay_subThread
+				swbreak
+			swend
 
-		if cnt==0 :SubThreadTime=GetNowCount()-FPSkeepCount_std-DrawThreadTime
+			if cnt==0 :SubThreadTime=GetNowCount()-FPSkeepCount_std-DrawThreadTime
 
-		SubThreadCount++
-		await 1
-	loop
+			SubThreadCount++
+			await 1
+		loop
 
 	ScreenFlip
 
@@ -798,12 +823,14 @@ goto*Startup
 
 *onshutter
 
-	duio_PlaySound"shutter_in"
+	//トランジションエフェクト (in)
+		duio_PlaySound"shutter_in"
 
-	duio_SetImageVisible duio_ImageID2UIsetID("shutter_10"),TRUE
-	duio_SetImageVisible duio_ImageID2UIsetID("shutter_11"),TRUE
-	duio_SetImageVisible duio_ImageID2UIsetID("shutter_00"),TRUE
-	duio_SetImageVisible duio_ImageID2UIsetID("shutter_01"),TRUE
+		duio_SetImageVisible duio_ImageID2UIsetID("shutter_10"),TRUE
+		duio_SetImageVisible duio_ImageID2UIsetID("shutter_11"),TRUE
+		duio_SetImageVisible duio_ImageID2UIsetID("shutter_00"),TRUE
+		duio_SetImageVisible duio_ImageID2UIsetID("shutter_01"),TRUE
+
 	return
 
 *SystemError
@@ -812,32 +839,33 @@ goto*Startup
 
 *Exit
 
+	//プロフィール保存
 	PortalWebSvc_mSendProfile_Init
-	PortalWebSvc_mSendProfile_Reg"DISP.NAME",pfreg_dispname
-	PortalWebSvc_mSendProfile_Reg"REG.DATE",pfreg_RegDate
-	PortalWebSvc_mSendProfile_Reg"EMAIL.ADDRESS",pfreg_EmailAddress
-	PortalWebSvc_mSendProfile_Reg"INVITATION",pfreg_InvitationCode
-	PortalWebSvc_mSendProfile_Reg"XODA.NEWDATA",str(pfreg_NewdataFlag)
-	PortalWebSvc_mSendProfile_Reg"XODA.NUMLILLY",str(pfreg_NumLilly)
-	PortalWebSvc_mSendProfile_Reg"XODA.NUMLEPUS",str(pfreg_NumLepus)
-	PortalWebSvc_mSendProfile_Reg"XODA.NUMFRAGMENTS",str(pfreg_NumFragments)
-	PortalWebSvc_mSendProfile_Reg"XODA.LEVEL",str(pfreg_Level)
-	PortalWebSvc_mSendProfile_Reg"XODA.EXP",str(pfreg_EXPvalue)
-	PortalWebSvc_mSendProfile_Reg"XODA.RATE",str(pfreg_PFpoint)
-	PortalWebSvc_mSendProfile_Reg"XODA.BADGE",pfreg_Badge
-	PortalWebSvc_mSendProfile_Reg"XODA.NUMTICKETS",str(pfreg_NumTickets)
-	PortalWebSvc_mSendProfile_Reg"XODA.OPTION.ADDSPEED",str(pfreg_AddSpeed)
-	PortalWebSvc_mSendProfile_Reg"XODA.OPTION.GAUGE",str(pfreg_GaugeType)
-	PortalWebSvc_mSendProfile_Reg"XODA.OPTION.PLACEMENT",str(pfreg_Placement)
-	PortalWebSvc_mSendProfile_Reg"XODA.OPTION.TARGET",str(pfreg_Target)
-	PortalWebSvc_mSendProfile_Reg"XODA.OPTION.JUDGEOFFSET",str(pfreg_JudgeOffset)
-	PortalWebSvc_mSendProfile_Reg"XODA.OPTION.DISPOFFSET",str(pfreg_DispOffset)
-	PortalWebSvc_mSendProfile_Reg"XODA.OPTION.LAYOUT",str(pfreg_WindowLayout)
-	PortalWebSvc_mSendProfile_Reg"XODA.VOLUME.BGM",str(volume_BGM)
-	PortalWebSvc_mSendProfile_Reg"XODA.VOLUME.SE",str(volume_SE)
-	PortalWebSvc_mSendProfile_Reg"XODA.VOLUME.PLAY",str(volume_PLAY)
-	PortalWebSvc_mSendProfile_Reg"XODAV2.SELECT.ITEM",str(curselect_item)
-	PortalWebSvc_mSendProfile_Reg"XODAV2.SELECT.LV",str(curselect_lv)
+		PortalWebSvc_mSendProfile_Reg"DISP.NAME",pfreg_dispname
+		PortalWebSvc_mSendProfile_Reg"REG.DATE",pfreg_RegDate
+		PortalWebSvc_mSendProfile_Reg"EMAIL.ADDRESS",pfreg_EmailAddress
+		PortalWebSvc_mSendProfile_Reg"INVITATION",pfreg_InvitationCode
+		PortalWebSvc_mSendProfile_Reg"XODA.NEWDATA",str(pfreg_NewdataFlag)
+		PortalWebSvc_mSendProfile_Reg"XODA.NUMLILLY",str(pfreg_NumLilly)
+		PortalWebSvc_mSendProfile_Reg"XODA.NUMLEPUS",str(pfreg_NumLepus)
+		PortalWebSvc_mSendProfile_Reg"XODA.NUMFRAGMENTS",str(pfreg_NumFragments)
+		PortalWebSvc_mSendProfile_Reg"XODA.LEVEL",str(pfreg_Level)
+		PortalWebSvc_mSendProfile_Reg"XODA.EXP",str(pfreg_EXPvalue)
+		PortalWebSvc_mSendProfile_Reg"XODA.RATE",str(pfreg_PFpoint)
+		PortalWebSvc_mSendProfile_Reg"XODA.BADGE",pfreg_Badge
+		PortalWebSvc_mSendProfile_Reg"XODA.NUMTICKETS",str(pfreg_NumTickets)
+		PortalWebSvc_mSendProfile_Reg"XODA.OPTION.ADDSPEED",str(pfreg_AddSpeed)
+		PortalWebSvc_mSendProfile_Reg"XODA.OPTION.GAUGE",str(pfreg_GaugeType)
+		PortalWebSvc_mSendProfile_Reg"XODA.OPTION.PLACEMENT",str(pfreg_Placement)
+		PortalWebSvc_mSendProfile_Reg"XODA.OPTION.TARGET",str(pfreg_Target)
+		PortalWebSvc_mSendProfile_Reg"XODA.OPTION.JUDGEOFFSET",str(pfreg_JudgeOffset)
+		PortalWebSvc_mSendProfile_Reg"XODA.OPTION.DISPOFFSET",str(pfreg_DispOffset)
+		PortalWebSvc_mSendProfile_Reg"XODA.OPTION.LAYOUT",str(pfreg_WindowLayout)
+		PortalWebSvc_mSendProfile_Reg"XODA.VOLUME.BGM",str(volume_BGM)
+		PortalWebSvc_mSendProfile_Reg"XODA.VOLUME.SE",str(volume_SE)
+		PortalWebSvc_mSendProfile_Reg"XODA.VOLUME.PLAY",str(volume_PLAY)
+		PortalWebSvc_mSendProfile_Reg"XODAV2.SELECT.ITEM",str(curselect_item)
+		PortalWebSvc_mSendProfile_Reg"XODAV2.SELECT.LV",str(curselect_lv)
 	PortalWebSvc_SendProfile_Send PlayerID,PlayerPassword
 
 	DxLib_End

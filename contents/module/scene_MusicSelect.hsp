@@ -1044,6 +1044,8 @@
 	decidecount=0
 	DecideJumpScene="play"
 
+	duio_SetActiveScene"#MusicSelect",FALSE
+
 	PauseMovieToGraph hdximg(ibg_common)
 
 	if curpreview_time>9000|curpreview_time==-1 {
@@ -1051,6 +1053,7 @@
 		duio_SetVolume"main",0.0
 		cfunc64v BASS_ChannelSetPosition,mapdb_hpreview(curselect_item,curselect_lv),0,0
 		cfunc64v BASS_ChannelPlay,mapdb_hpreview(curselect_item,curselect_lv)
+		curPlayhPreview=mapdb_hpreview(curselect_item,curselect_lv)
 	}
 
 	duio_ChangeImage duio_ImageID2UIsetID("musicdecide_artwork"),mapdb_hartwork(curselect_item,curselect_lv)

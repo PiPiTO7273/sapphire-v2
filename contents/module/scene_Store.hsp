@@ -1,0 +1,32 @@
+
+*scene_Store_Init
+
+	duio_SetAllImageOutro"#Shutter"
+	duio_PlaySound"shutter_out"
+
+	UpdateProfileDisp
+
+	if BASS_ChannelIsActive(duio_GetHandle("main"))!BASS_ACTIVE_PLAYING {
+		duio_PlaySound"main"
+	}
+	duio_SetVolume"main",1.0
+
+	return
+
+*scene_Store
+
+	DrawCommonBackground FrameCount
+
+	SetDrawBlendMode DX_BLENDMODE_PMA_ALPHA,256
+	DrawGraph 0,0,hdximg(icommon_bglayer),TRUE
+
+	//ìSçúÉâÉCÉì
+		dim shapemovepos:shapemovepos=-(1000.0/duio_GetFPS()*SceneCount)/15
+		SetDrawBlendMode DX_BLENDMODE_PMA_ALPHA,256
+		DrawGraph shapemovepos\1920,20,hdximg(icommon_ironline),TRUE
+		DrawGraph shapemovepos\1920+1920,20,hdximg(icommon_ironline),TRUE
+
+	duio_Draw"#Store"
+	duio_Draw"#Common-Profile"
+	duio_Draw"#Shutter"
+	return

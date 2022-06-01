@@ -33,6 +33,7 @@ goto*Startup
 #include"contents/module/scene_MusicSelect.hsp"		//楽曲選択画面
 #include"contents/module/scene_Gameplay.hsp"			//ゲームプレイ
 #include"contents/module/scene_Result.hsp"			//リザルト
+#include"contents/module/scene_Store.hsp"			//ストア
 #include"contents/module/scene_ErrorDialog.hsp"		//エラーダイアログ
 
 #epack"start.ax"
@@ -762,6 +763,9 @@ goto*Startup
 			swbreak
 			case"#Result"
 				gosub*scene_Result
+			swbreak
+			case"#Store"
+				gosub*scene_Store
 			swbreak
 		swend
 

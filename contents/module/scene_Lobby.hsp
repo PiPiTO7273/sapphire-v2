@@ -54,6 +54,10 @@
 				gosub*scene_MusicSelect_Init
 				curSceneTag="#MusicSelect"
 			swbreak
+			case"store"
+				gosub*scene_Store_Init
+				curSceneTag="#Store"
+			swbreak
 		swend
 	}
 
@@ -72,6 +76,17 @@
 			duio_SetAllTextOutro"#Lobby"
 
 			DecideJumpScene="freeplay"
+		swbreak
+
+		case"store"
+			gosub*onshutter
+			DecideTime=0
+
+			duio_SetAllButtonOutro"#Lobby"
+			duio_SetAllImageOutro"#Lobby"
+			duio_SetAllTextOutro"#Lobby"
+
+			DecideJumpScene="store"
 		swbreak
 
 		case"openweb"

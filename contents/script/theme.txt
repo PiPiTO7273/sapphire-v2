@@ -47,7 +47,7 @@
 
 		#MusicSelect @button musicselect_button_startplay graphic/musicselect_button_startplay.png 1695 860 259 259 &animation-in=fade,450,300,CUBIC_OUT &animation-in=zoom,450,300,0.8,CUBIC_OUT &animation-in=move,200,300,128,64,CUBIC_OUT &layerlv=1 &event=musicselect_decide &pushsound=decide
 
-		#MusicSelect @button musicselect_button_back graphic/musicselect_button_back.png 0 1020 240 60 &animation-in=fade,200,300,CUBIC_OUT &animation-in=move,200,300,-128,0,CUBIC_OUT &pushsound=pushbutton &event=backscene
+		#MusicSelect @button musicselect_button_back graphic/common_button_back.png 0 1020 240 60 &animation-in=fade,200,300,CUBIC_OUT &animation-in=move,200,300,-128,0,CUBIC_OUT &pushsound=pushbutton &event=backscene
 
 		#MusicSelect @image musicselect_itemscroll_bg graphic/musicselect_itemscroll_bg.png 1891 150 &animation-in=fade,350,300,CUBIC_OUT &animation-in=move,350,300,64,0,CUBIC_OUT
 
@@ -464,3 +464,25 @@
 		#Lobby @button lobby_link_signout graphic/lobby_link_signout.png 1400 249+34*5 256+14 24 &animation-in=move,675,250,64,0,CUBIC_OUT &animation-in=fade,675,250,CUBIC_OUT &event=signout &pushsound=pushbutton &disable
 
 		#Lobby @button lobby_gift graphic/lobby_item_gift.png 1455 630 180 150 &animation-in=zoom,700,300,0,CUBIC_OUT &event=gift &pushsound=pushbutton &disable
+
+//----- Store -----//
+	////// base //////
+		#Store @image store_bg graphic/store_bg.png 0 0 &animation-in=zoom,0,350,1.2,CUBIC_OUT &animation-in=fade,0,350,CUBIC_OUT
+		
+		#Store @image store_title graphic/store_title.png 0 0 &animation-in=fade,0,350,CUBIC_OUT &animation-in=move,0,350,-128,0,CUBIC_OUT &layerlv=2
+		#Store @text store_text_guide アイテムや譜面の難易度を購入できマス！ 112 152 rom1cm16 &animation-in=fade,50,350,CUBIC_OUT &animation-in=move,50,350,-128,0,CUBIC_OUT &animation-in=random.text,50,1000 &color=255,255,255 &layerlv=2
+		
+		#Store @button store_button_back graphic/common_button_back.png 0 1020 240 60 &animation-in=fade,200,300,CUBIC_OUT &animation-in=move,200,300,-128,0,CUBIC_OUT &pushsound=pushbutton &event=backscene
+
+	////// action //////
+		#Store @image store_layer_category graphic/store_layer_category.png 284 220 &animation-in=fade,200,300,CUBIC_OUT &animation-in=move,200,350,-64,0,CUBIC_OUT
+		#Store @image store_layer_exchange graphic/store_layer_exchange.png 284 522 &animation-in=fade,300,300,CUBIC_OUT &animation-in=move,300,350,-64,0,CUBIC_OUT
+		#Store @image store_layer_filter graphic/store_layer_filter.png 284 784 &animation-in=fade,400,300,CUBIC_OUT &animation-in=move,400,300,-64,0,CUBIC_OUT
+
+		#Store @button store_category_song graphic/store_category_song.png 284 290 284 54 &animation-in=fade,250,300,CUBIC_OUT &animation-in=zoom,250,350,0.5,CUBIC_OUT &event=category_song &pushsound=change
+		#Store @button store_category_item graphic/store_category_item.png 284 354 284 54 &animation-in=fade,300,300,CUBIC_OUT &animation-in=zoom,300,350,0.5,CUBIC_OUT &event=category_item &pushsound=change
+		#Store @button store_category_customize graphic/store_category_customize.png 284 418 284 54 &animation-in=fade,350,300,CUBIC_OUT &animation-in=zoom,350,350,0.5,CUBIC_OUT &event=category_customize &pushsound=change
+
+		#Store @button store_exchange graphic/store_exchange.png 284 592 284 54 &animation-in=fade,350,300,CUBIC_OUT &animation-in=zoom,350,350,0.5,CUBIC_OUT &event=exchange &pushsound=pushbutton
+
+		#Store @button store_purchased graphic/store_purchased_off.png 284 851 222 30 &animation-in=fade,450,300,CUBIC_OUT &animation-in=zoom,450,300,0.5,CUBIC_OUT &event=purchased_onoff &pushsound=change

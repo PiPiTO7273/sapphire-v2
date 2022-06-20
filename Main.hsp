@@ -98,7 +98,7 @@ goto*Startup
 		logmes GetTimeStamp()+" Initializing DirectX..."
 		SetOutApplicationLogValidFlag FALSE
 		SetAlwaysRunFlag TRUE
-		;ChangeWindowMode TRUE
+		ChangeWindowMode TRUE
 		SetGraphMode DispWidth,DispHeight
 		SetWindowVisibleFlag FALSE
 		;SetWaitVSyncFlag FALSE
@@ -224,6 +224,16 @@ goto*Startup
 
 		hdximg(iplayoption_enabled_120)=LoadGraph("contents/graphic/playoption_button_enabled_120.png")
 		hdximg(iplayoption_enabled_180)=LoadGraph("contents/graphic/playoption_button_enabled_180.png")
+
+		hdximg(istore_item_map)=LoadGraph("contents/graphic/store_item_song.png")
+		hdximg(istore_item_customize_note)=LoadGraph("contents/graphic/store_item_customize_note.png")
+		hdximg(istore_ticket1)=LoadGraph("contents/graphic/store_item_ticket_x1.png")
+		hdximg(istore_ticket10)=LoadGraph("contents/graphic/store_item_ticket_x10.png")
+		hdximg(istore_fragment1)=LoadGraph("contents/graphic/store_item_fragment_x1.png")
+		hdximg(istore_fragment5)=LoadGraph("contents/graphic/store_item_fragment_x5.png")
+		hdximg(istore_fragment10)=LoadGraph("contents/graphic/store_item_fragment_x10.png")
+		hdximg(istore_show_purchased_on)=LoadGraph("contents/graphic/store_purchased_on.png")
+		hdximg(istore_show_purchased_off)=LoadGraph("contents/graphic/store_purchased_off.png")
 
 		//オブジェクトの配置
 			repeat 6
@@ -680,6 +690,30 @@ goto*Startup
 
 		//自己ベスト記録
 			gosub*syncRecords
+
+	//カスタマイズスキン読み込み
+
+		sdim customize_idstmp
+		sdim customize_pricetmp
+		sdim customize_tmppath
+
+		//ノーツ
+		sdim customize_note_name		//カスタマイズ名
+		dim customize_note_hsingle	//シングルノーツの画像ハンドル
+		dim customize_note_hhold		//ホールドノーツの画像ハンドル
+		dim customize_note_price		//値段
+		dim customize_note_unlockflag	//アンロックフラグ
+		dim customize_note_max		//登録数
+		repeat
+			customize_idstmp=duio_idsGet("cpart.note@"+cnt)
+			if customize_idstmp=="" :break
+			split customize_idstmp,",",customize_note_name(cnt),customize_tmppath(0),customize_tmppath(1),customize_pricetmp
+			customize_note_hsingle(cnt)=LoadGraph("contents/graphic/"+customize_tmppath(0))
+			customize_note_hhold(cnt)=LoadGraph("contents/graphic/"+customize_tmppath(1))
+			customize_note_price(cnt)=int(customize_pricetmp)
+			customize_note_unlockflag(cnt)=FALSE
+			customize_note_max++
+		loop
 
 	//初期状態
 	SetWindowVisibleFlag TRUE

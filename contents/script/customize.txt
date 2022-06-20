@@ -1,0 +1,3 @@
+//cpart.note@[ID]>>[CUSTOMIZE NAME],[SINGLE NOTE IMGPATH],[HOLD NOTE IMGPATH],[PRICE (lepus)]
+ids<>:cpart.note@0>>デフォルト,gameplay_note_single_0.png,gameplay_note_hold_0.png,0
+ids<>:cpart.note@1>>てすと,gameplay_note_single_0.png,gameplay_note_hold_0.png,1000

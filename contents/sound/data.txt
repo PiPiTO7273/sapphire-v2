@@ -4,7 +4,7 @@
 decide;se_decide.wav;1.0;0
 cancel;se_cancel.wav;1.0;0
 change;se_change.wav;1.0;0
-pushbutton;se_pushbutton.wav;1.0;0
+pushbutton;se_pushbutton.wav;0.7;0
 shutter_in;se_shutter_in.wav;1.0;0
 shutter_out;se_shutter_out.wav;1.0;0
 warning;se_warning.wav;1.0;0

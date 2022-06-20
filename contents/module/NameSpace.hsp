@@ -159,6 +159,16 @@
 #enum iresult_ratio_bad
 #enum iresult_ratio_miss
 
+#enum istore_item_map
+#enum istore_item_customize_note
+#enum istore_ticket1
+#enum istore_ticket10
+#enum istore_fragment1
+#enum istore_fragment5
+#enum istore_fragment10
+#enum istore_show_purchased_on
+#enum istore_show_purchased_off
+
 #const MAPITEM_TYPE_GROUP		0
 #const MAPITEM_TYPE_SINGLE		1
 

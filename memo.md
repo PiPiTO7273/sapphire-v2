@@ -75,3 +75,9 @@ run命令で実行することで本体更新が不要になりました。
 ## 素材
 
 https://icons8.jp/license
+
+https://icons8.com/icon/V9u2S9AhOCBt/combi-ticket
+
+https://icons8.com/icon/EHyUO6ZGSRkX/lock
+
+https://icons8.com/icon/17333/diamond

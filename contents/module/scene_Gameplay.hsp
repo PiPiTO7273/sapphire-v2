@@ -781,40 +781,42 @@
 			SetDrawBlendMode DX_BLENDMODE_PMA_ALPHA,255
 
 			//オブジェクト描画
-			repeat objmax
-				i=cnt
+			if CheckAllJudged()==FALSE {
+				repeat objmax
+					i=cnt
 
-				if objType!ID_OBJTYPE_HOLDSTART&objJudgeFlag(i)==TRUE :continue
+					if objType!ID_OBJTYPE_HOLDSTART&objJudgeFlag(i)==TRUE :continue
 
-				ObjPosition(i)-playtheme_noteheight
+					ObjPosition(i)-playtheme_noteheight
 
-				ProgLaneID=objChannel(i)
+					ProgLaneID=objChannel(i)
 
-				if ObjPosition(i)>LaneHeight&ObjPosition(i)<0 :continue
+					if ObjPosition(i)>LaneHeight&ObjPosition(i)<0 :continue
 
-				if objType(i)==ID_OBJTYPE_HOLDSTART {
-					obj_holdstartid=i
-				}
-
-				DrawExtendGraph LaneWidth*objChannel(i),LaneHeight+ObjPosition(i),LaneWidth*(objChannel(i)+1),LaneHeight+ObjPosition(i)+playtheme_noteheight,hdximg(igameplay_note_single_0),TRUE
-
-				if objType(i)==ID_OBJTYPE_HOLDEND {
-					obj_holddrawheight=ObjPosition(i-1)-ObjPosition(i)
-
-					if obj_holddrawheight>LaneHeight {
-						dim obj_holddrawmatheight
-						repeat obj_holddrawheight/LaneHeight
-							DrawRectGraph LaneWidth*objChannel(i),LaneHeight+ObjPosition(i)+LaneHeight*cnt,0,0,LaneWidth,LaneHeight,hdximg(igameplay_note_hold_long),TRUE
-							obj_holddrawmatheight+LaneHeight
-						loop
-
-						DrawRectGraph LaneWidth*objChannel(i),LaneHeight+ObjPosition(i)+obj_holddrawmatheight,0,0,LaneWidth,obj_holddrawheight\LaneHeight,hdximg(igameplay_note_hold_long),TRUE
-					} else {
-						DrawRectGraph LaneWidth*objChannel(i),LaneHeight+ObjPosition(i),0,0,LaneWidth,obj_holddrawheight,hdximg(igameplay_note_hold_long),TRUE
+					if objType(i)==ID_OBJTYPE_HOLDSTART {
+						obj_holdstartid=i
 					}
-				}
 
-			loop
+					DrawExtendGraph LaneWidth*objChannel(i),LaneHeight+ObjPosition(i),LaneWidth*(objChannel(i)+1),LaneHeight+ObjPosition(i)+playtheme_noteheight,hdximg(igameplay_note_single_0),TRUE
+
+					if objType(i)==ID_OBJTYPE_HOLDEND {
+						obj_holddrawheight=ObjPosition(i-1)-ObjPosition(i)
+
+						if obj_holddrawheight>LaneHeight {
+							dim obj_holddrawmatheight
+							repeat obj_holddrawheight/LaneHeight
+								DrawRectGraph LaneWidth*objChannel(i),LaneHeight+ObjPosition(i)+LaneHeight*cnt,0,0,LaneWidth,LaneHeight,hdximg(igameplay_note_hold_long),TRUE
+								obj_holddrawmatheight+LaneHeight
+							loop
+
+							DrawRectGraph LaneWidth*objChannel(i),LaneHeight+ObjPosition(i)+obj_holddrawmatheight,0,0,LaneWidth,obj_holddrawheight\LaneHeight,hdximg(igameplay_note_hold_long),TRUE
+						} else {
+							DrawRectGraph LaneWidth*objChannel(i),LaneHeight+ObjPosition(i),0,0,LaneWidth,obj_holddrawheight,hdximg(igameplay_note_hold_long),TRUE
+						}
+					}
+
+				loop
+			}
 
 		SetDrawBlendMode DX_BLENDMODE_PMA_ALPHA,256
 		SetDrawScreen hdximg(igameplay_sidelane_l)

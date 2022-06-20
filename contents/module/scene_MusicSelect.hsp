@@ -1169,8 +1169,6 @@
 			item=cnt/3:lv=cnt\3
 
 			if map_uuid(item,lv)=="*" :continue
-			if map_uuid(item,lv)=="*" :continue
-			if map_uuid(item,lv)=="*" :continue
 
 			//フォルダー分け条件分岐
 				if _folder=="folder_dropdown_lv1_4" {

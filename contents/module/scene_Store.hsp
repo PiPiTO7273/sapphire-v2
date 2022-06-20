@@ -1,8 +1,9 @@
-
+ 
 *scene_Store_Init
 
 	duio_SetAllImageOutro"#Shutter"
 	duio_PlaySound"shutter_out"
+	duio_InitAllCount"#Store"
 
 	UpdateProfileDisp
 
@@ -11,9 +12,36 @@
 	}
 	duio_SetVolume"main",1.0
 
+	dim decidecount
+	dim show_purchased
+	dim curcategory
+	decidecount=-1
+
+	InitStoreItem 0
+
 	return
 
 *scene_Store
+
+	//スクロール処理
+	if insquare(cursorPosX,cursorPosY,662,0,BufWidth,BufHeight)&mapitem_max!0 {
+		mapitem_cursorwheel=cursorWheel
+		repeat mapitem_max
+			duio_SetButtonPositionY mapitem_uisetid(cnt),duio_GetButtonPositionY(mapitem_uisetid(cnt))+mapitem_cursorwheel
+		loop
+		if duio_GetButtonPositionY(mapitem_uisetid(0))>159&mapitem_cursorwheel>0 {
+			mapitem_scrollfix=duio_GetButtonPositionY(mapitem_uisetid(0))-159
+			repeat mapitem_max
+				duio_SetButtonPositionY mapitem_uisetid(cnt),duio_GetButtonPositionY(mapitem_uisetid(cnt))-mapitem_scrollfix
+			loop
+		}
+		if duio_GetButtonPositionY(mapitem_uisetid(mapitem_max-1))<BufHeight-64-192&mapitem_cursorwheel<0 {
+			mapitem_scrollfix=(BufHeight-64-192)-duio_GetButtonPositionY(mapitem_uisetid(mapitem_max-1))
+			repeat mapitem_max
+				duio_SetButtonPositionY mapitem_uisetid(cnt),duio_GetButtonPositionY(mapitem_uisetid(cnt))+mapitem_scrollfix
+			loop
+		}
+	}
 
 	DrawCommonBackground FrameCount
 
@@ -29,4 +57,188 @@
 	duio_Draw"#Store"
 	duio_Draw"#Common-Profile"
 	duio_Draw"#Shutter"
+
+	if duio_GetButtonEventStack()!"" :gosub*scene_Store_eventstack
+	if decidecount!-1 :decidecount+FrameTime
+	if decidecount>1000 {
+		gosub*scene_Lobby_Init
+		curSceneTag="#Lobby"
+		return
+	}
+
+	return
+
+*scene_Store_eventstack
+
+	switch duio_GetButtonEventStack()
+
+		//譜面カテゴリ
+		case"category_song":InitStoreItem 0:swbreak
+
+		//アイテムカテゴリ
+		case"category_item":InitStoreItem 1:swbreak
+
+		//カスタマイズパーツカテゴリ
+		case"category_customize":InitStoreItem 2:swbreak
+
+		//購入済み表示スイッチon,off
+		case"purchased_onoff"
+			if show_purchased {
+				show_purchased=0
+				duio_ChangeButtonImage duio_ButtonID2UIsetID("store_purchased"),hdximg(istore_show_purchased_off)
+			} else {
+				show_purchased=1
+				duio_ChangeButtonImage duio_ButtonID2UIsetID("store_purchased"),hdximg(istore_show_purchased_on)
+			}
+			InitStoreItem curcategory
+		swbreak
+
+		//戻る
+		case"backscene"
+			decidecount=0
+			gosub*onshutter
+		swbreak
+
+		//ゲーム終了
+		case"game.exit":goto*Exit:swbreak
+
+	swend
+
+	return
+
+#deffunc InitStoreItem int _category
+
+	curcategory=_category
+
+	ClearMapItem
+
+	//ボタン作成
+	dim mapitem_max
+	dim mapitem_himg
+	dim mapitem_uisetid
+	dim mapitem_cursorwheel
+	dim mapitem_scrollfix
+	dim mapitem_scrollpos
+	dim mapitem_scrollclickmode
+
+	switch _category
+
+		case 0
+			//未解禁の楽曲
+			dim item:dim lv
+
+			repeat mapgroup_max*3
+
+				item=cnt/3:lv=cnt\3
+
+				if map_uuid(item,lv)=="*" :continue
+				if mapdb_unlocklepus(item,lv)>0 {
+					if IsUnlocked(item,lv)==FALSE|show_purchased {
+						//ボタン画像作成
+							mapitem_himg(mapitem_max)=MakeScreen(478,192,TRUE)
+							SetDrawScreen mapitem_himg(mapitem_max)
+
+							//背景・ジャケット画像
+							SetDrawBlendMode DX_BLENDMODE_PMA_ALPHA,256
+							DrawGraph 0,0,hdximg(istore_item_map),TRUE
+							DrawExtendGraph 28,26,28+100,26+100,mapdb_hartwork(item,lv),FALSE
+
+							//曲名
+							SetDrawBlendMode DX_BLENDMODE_ALPHA,256
+							DrawStringToHandle 904-760,53,mapdb_title(item,lv),$000000,duio_GetFontHandle("rom1cm20")
+							DrawStringToHandle 904-760,85,mapdb_artist(item,lv),$000000,duio_GetFontHandle("rom1cm14")
+
+							//難易度
+							DrawStringToHandle 866-760,145,"Lv. "+str(mapdb_level(item,lv)),$000000,duio_GetFontHandle("ps16")
+							DrawGraph 788-760,131,hdximg(imusicselect_item_normal+lv),TRUE
+
+							//値段
+							DrawStringToHandle 1115-760,145,str(mapdb_unlocklepus(item,lv))+" Lepus",$000000,duio_GetFontHandle("ps16")
+						
+						//duioに登録
+							duio_CreateButton"#Store","map@"+map_uuid(item,lv),mapitem_himg(mapitem_max),760+500*(mapitem_max\2),100+210*(mapitem_max/2),478,192
+							mapitem_uisetid(mapitem_max)=stat
+							duio_AddInButtonAnimation_Zoom mapitem_uisetid(mapitem_max),300+35*mapitem_max,350,0,ease_cubic_out
+							if lv==0 :duio_SetButtonEvent mapitem_uisetid(mapitem_max),map_uuid(item,0)+",*,*"
+							if lv==1 :duio_SetButtonEvent mapitem_uisetid(mapitem_max),"*,"+map_uuid(item,1)+",*"
+							if lv==2 :duio_SetButtonEvent mapitem_uisetid(mapitem_max),"*,*,"+map_uuid(item,2)
+							duio_SetButtonPushSound mapitem_uisetid(mapitem_max),"pushbutton"
+
+						mapitem_max++
+					}
+				}
+			loop
+		swbreak
+
+		case 1
+			//アイテム
+			CreateStoreItem"ticket1",hdximg(istore_ticket1)
+			CreateStoreItem"ticket10",hdximg(istore_ticket10)
+			CreateStoreItem"fragment1",hdximg(istore_fragment1)
+			CreateStoreItem"fragment5",hdximg(istore_fragment5)
+			CreateStoreItem"fragment10",hdximg(istore_fragment10)
+		swbreak
+
+		case 2
+			//カスタマイズパーツ
+			repeat customize_note_max
+
+				if customize_note_price(cnt)>0 {
+					if customize_note_unlockflag(cnt)==FALSE|show_purchased {
+						//ボタン画像作成
+						mapitem_himg(mapitem_max)=MakeScreen(478,192,TRUE)
+						SetDrawScreen mapitem_himg(mapitem_max)
+
+						//背景・ジャケット画像
+						SetDrawBlendMode DX_BLENDMODE_PMA_ALPHA,256
+						DrawGraph 0,0,hdximg(istore_item_customize_note),TRUE
+						DrawExtendGraph 806-760,354-318,806-760+64,354-318+64,customize_note_hhold(cnt),TRUE
+						DrawExtendGraph 806-760,354-318+64,806-760+64,354-318+64+16,customize_note_hsingle(cnt),TRUE
+
+						//曲名
+						SetDrawBlendMode DX_BLENDMODE_ALPHA,256
+						DrawStringToHandle 904-760,53,customize_note_name(cnt),$000000,duio_GetFontHandle("rom1cm20")
+
+						//値段
+						DrawStringToHandle 1115-760,145,str(customize_note_price(cnt))+" Lepus",$000000,duio_GetFontHandle("ps16")
+
+						//duioに登録
+						duio_CreateButton"#Store","customize_note@"+cnt,mapitem_himg(mapitem_max),760+500*(mapitem_max\2),100+210*(mapitem_max/2),478,192
+						mapitem_uisetid(mapitem_max)=stat
+						duio_AddInButtonAnimation_Zoom mapitem_uisetid(mapitem_max),300+35*mapitem_max,350,0,ease_cubic_out
+						if lv==0 :duio_SetButtonEvent mapitem_uisetid(mapitem_max),map_uuid(item,0)+",*,*"
+						if lv==1 :duio_SetButtonEvent mapitem_uisetid(mapitem_max),"*,"+map_uuid(item,1)+",*"
+						if lv==2 :duio_SetButtonEvent mapitem_uisetid(mapitem_max),"*,*,"+map_uuid(item,2)
+						duio_SetButtonPushSound mapitem_uisetid(mapitem_max),"pushbutton"
+
+						mapitem_max++
+					}
+				}
+
+			loop
+		swbreak
+
+	swend
+	return
+
+#deffunc CreateStoreItem str _event,int _himg
+	//ボタン画像作成
+	mapitem_himg(mapitem_max)=MakeScreen(478,192,TRUE)
+	SetDrawScreen mapitem_himg(mapitem_max)
+
+	//背景・ジャケット画像
+	SetDrawBlendMode DX_BLENDMODE_PMA_ALPHA,256
+	DrawGraph 0,0,_himg,TRUE
+
+	//duioに登録
+	duio_CreateButton"#Store",_event,mapitem_himg(mapitem_max),760+500*(mapitem_max\2),100+210*(mapitem_max/2),478,192
+	mapitem_uisetid(mapitem_max)=stat
+	duio_AddInButtonAnimation_Zoom mapitem_uisetid(mapitem_max),300+35*mapitem_max,350,0,ease_cubic_out
+	if lv==0 :duio_SetButtonEvent mapitem_uisetid(mapitem_max),map_uuid(item,0)+",*,*"
+	if lv==1 :duio_SetButtonEvent mapitem_uisetid(mapitem_max),"*,"+map_uuid(item,1)+",*"
+	if lv==2 :duio_SetButtonEvent mapitem_uisetid(mapitem_max),"*,*,"+map_uuid(item,2)
+	duio_SetButtonPushSound mapitem_uisetid(mapitem_max),"pushbutton"
+
+	mapitem_max++
+
 	return

@@ -3,9 +3,9 @@
 
 	dim SceneCount
 	dim SceneTime
-	dim DecideTime
+	dim decidecount
 	sdim DecideJumpScene
-	DecideTime=-1
+	decidecount=-1
 
 	UpdateProfileDisp
 
@@ -318,9 +318,9 @@
 
 	if duio_GetButtonEventStack()!"" :gosub*scene_Result_eventStack
 
-	DecideTime+FrameTime
+	if decidecount!-1 :decidecount+FrameTime
 
-	if DecideTime>1000 {
+	if decidecount>1000 {
 		switch DecideJumpScene
 			case"next"
 				curSceneTag="#MusicSelect"
@@ -337,7 +337,7 @@
 
 		//ŽŸ‚Ö
 		case"next"
-			DecideTime=0:DecideJumpScene="next"
+			decidecount=0:DecideJumpScene="next"
 			gosub*onshutter
 		swbreak
 

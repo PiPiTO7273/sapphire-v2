@@ -474,6 +474,8 @@
 		
 		#Store @button store_button_back graphic/common_button_back.png 0 1020 240 60 &animation-in=fade,200,300,CUBIC_OUT &animation-in=move,200,300,-128,0,CUBIC_OUT &pushsound=pushbutton &event=backscene
 
+		#Store @image musicselect_itemscroll_bg graphic/musicselect_itemscroll_bg.png 1891 150 &animation-in=fade,350,300,CUBIC_OUT &animation-in=move,350,300,64,0,CUBIC_OUT
+
 	////// action //////
 		#Store @image store_layer_category graphic/store_layer_category.png 284 220 &animation-in=fade,200,300,CUBIC_OUT &animation-in=move,200,350,-64,0,CUBIC_OUT
 		#Store @image store_layer_exchange graphic/store_layer_exchange.png 284 522 &animation-in=fade,300,300,CUBIC_OUT &animation-in=move,300,350,-64,0,CUBIC_OUT

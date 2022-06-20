@@ -23,6 +23,20 @@
 
 *scene_Store
 
+	DrawCommonBackground FrameCount
+
+	SetDrawBlendMode DX_BLENDMODE_PMA_ALPHA,256
+	DrawGraph 0,0,hdximg(icommon_bglayer),TRUE
+
+	//鉄骨ライン
+		dim shapemovepos:shapemovepos=-(1000.0/duio_GetFPS()*SceneCount)/15
+		SetDrawBlendMode DX_BLENDMODE_PMA_ALPHA,256
+		DrawGraph shapemovepos\1920,20,hdximg(icommon_ironline),TRUE
+		DrawGraph shapemovepos\1920+1920,20,hdximg(icommon_ironline),TRUE
+
+	duio_Draw"#Store"
+	duio_Draw"#Common-Profile"
+
 	//スクロール処理
 	if insquare(cursorPosX,cursorPosY,662,0,BufWidth,BufHeight)&mapitem_max!0 {
 		mapitem_cursorwheel=cursorWheel
@@ -42,20 +56,24 @@
 			loop
 		}
 	}
+	
+	//スクロール位置を特定
+		if mapitem_max!0 {
+			SetDrawBlendMode DX_BLENDMODE_PMA_ALPHA,256
+			mapitem_scrollpos=duio_GetButtonPositionY(mapitem_uisetid(mapitem_max-1))-duio_GetButtonPositionY(mapitem_uisetid(0))-BufHeight+64+192+159
+		}
 
-	DrawCommonBackground FrameCount
+	//スクロールバー
+		if insquare(cursorPosX,cursorPosY,1885,140,1885+20,140+710)&(cursorStatus&MOUSE_INPUT_LEFT) :mapitem_scrollclickmode=TRUE
+		if mapitem_scrollclickmode {
+			cursorPosY=limit(cursorPosY,140,140+710)
+			repeat mapitem_max
+				duio_SetButtonPositionY mapitem_uisetid(cnt),159+210*(cnt/2)-int(double(mapitem_scrollpos)/700.0*double(cursorPosY-140))
+			loop
+			if (cursorStatus&MOUSE_INPUT_LEFT)==FALSE :mapitem_scrollclickmode=FALSE
+		}
+		DrawGraph 1870,130+int(700.0*(-double(duio_GetButtonPositionY(mapitem_uisetid(0))-159)/double(mapitem_scrollpos))),hdximg(imusicselect_itemscroll_circle),TRUE
 
-	SetDrawBlendMode DX_BLENDMODE_PMA_ALPHA,256
-	DrawGraph 0,0,hdximg(icommon_bglayer),TRUE
-
-	//鉄骨ライン
-		dim shapemovepos:shapemovepos=-(1000.0/duio_GetFPS()*SceneCount)/15
-		SetDrawBlendMode DX_BLENDMODE_PMA_ALPHA,256
-		DrawGraph shapemovepos\1920,20,hdximg(icommon_ironline),TRUE
-		DrawGraph shapemovepos\1920+1920,20,hdximg(icommon_ironline),TRUE
-
-	duio_Draw"#Store"
-	duio_Draw"#Common-Profile"
 	duio_Draw"#Shutter"
 
 	if duio_GetButtonEventStack()!"" :gosub*scene_Store_eventstack

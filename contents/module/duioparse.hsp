@@ -25,6 +25,7 @@
 		dim UIset_Button_drawOffsetY
 		dim UIset_Button_drawLevel
 		dim UIset_Button_count
+		dim UIset_Button_startpushID
 
 		dim UIset_Button_Alpha
 		dim UIset_Button_Enabled
@@ -838,6 +839,7 @@
 	loop
 	if UIset_tagactiveflag {
 		UIset_Button_hoverFlag=FALSE
+
 		repeat UIset_maxdrawLev
 			UIset_curdrawLev=(UIset_maxdrawLev-1)-cnt
 			repeat UIset_Button_max
@@ -845,21 +847,28 @@
 				if UIset_curdrawLev!UIset_Button_drawLevel(i) :continue
 				if _scenetag!UIset_Button_Tag(i) :continue
 				//ÉJÉEÉìÉ^èàóù
-				if insquare(cursorPosX,cursorPosY,UIset_Button_X(i),UIset_Button_Y(i),UIset_Button_X(i)+UIset_Button_Width(i),UIset_Button_Y(i)+UIset_Button_Height(i))&UIset_Button_Enabled(i)&UIset_Button_DrawFlag(i)&UIset_Button_hoverFlag==FALSE {
+				if insquare(cursorPosX,cursorPosY,UIset_Button_X(i),UIset_Button_Y(i),UIset_Button_X(i)+UIset_Button_Width(i),UIset_Button_Y(i)+UIset_Button_Height(i))&UIset_Button_Enabled(i)&UIset_Button_DrawFlag(i)&UIset_Button_hoverFlag==FALSE&UIset_Button_Outroflag(i)==FALSE {
 					UIset_Button_hoverFlag=TRUE
+
+					if (cursorStatus&MOUSE_INPUT_LEFT)==TRUE&(bfcursorStatus&MOUSE_INPUT_LEFT)==FALSE {
+						UIset_Button_startpushID=i
+					}
+
 					if cursorStatus&MOUSE_INPUT_LEFT {
 						UIset_Button_pushCount(i)+(1000/int(CurDUIObasedFPS))*2
 						UIset_Button_rawpushCount(i)+1000/int(CurDUIObasedFPS)
 					} else {
 						UIset_Button_rawpushCount(i)=0
 					}
-					if (cursorStatus&MOUSE_INPUT_LEFT)==FALSE&(bfcursorStatus&MOUSE_INPUT_LEFT)==TRUE&UIset_Button_Outroflag(i)==FALSE {
+					if (cursorStatus&MOUSE_INPUT_LEFT)==FALSE&(bfcursorStatus&MOUSE_INPUT_LEFT)==TRUE&UIset_Button_startpushID==i {
 						UIset_Button_onEventStack=UIset_Button_PushEvent(i)
 
 						if UIset_Button_hPushSound(i)!-1 {
 							cfunc64v BASS_ChannelSetPosition,UIset_Button_hPushSound(i),0,0
 							cfunc64v BASS_ChannelPlay,UIset_Button_hPushSound(i)
 						}
+
+						UIset_Button_startpushID=0
 
 						logmes GetTimeStamp()+" [duio-scenesvc] @button event (id="+UIset_Button_ID(i)+" , event="+UIset_Button_onEventStack+")"
 					}

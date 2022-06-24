@@ -168,6 +168,16 @@
 #enum istore_fragment10
 #enum istore_show_purchased_on
 #enum istore_show_purchased_off
+#enum istore_category
+#enum istore_item_purchased
+#enum istore_icon_ticket
+#enum istore_icon_fragment_0
+#enum istore_icon_fragment_1
+#enum istore_icon_tmp
+
+#enum imission_item
+#enum imission_forced_bg
+#enum imission_forced_gauge
 
 #const MAPITEM_TYPE_GROUP		0
 #const MAPITEM_TYPE_SINGLE		1

@@ -4,6 +4,7 @@ rp:@text>>0-001-**
 rp:@image>>0-002-**
 rp:@3dsquare>>0-003-**
 rp:@3dcamera>>0-004-**
+rp:@counter-delay>>0-005-**
 
 //extra options
 rp:&alpha>>0x0000

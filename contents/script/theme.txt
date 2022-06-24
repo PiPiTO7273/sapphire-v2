@@ -84,6 +84,8 @@
 		#MusicSelect @text musicselect_ir_myrank */* 60 980 ps16 &animation-in=fade,150,250,CUBIC_OUT
 		#MusicSelect @text musicselect_ir_myscore * 220 980 ps16 &animation-in=fade,150,250,CUBIC_OUT &animation-in=increase.text,0,780,8
 
+		#MusicSelect @counter-delay 200
+
 	////// dropdown menu //////
 
 		rp:folder_dropdown_animation>>&animation-in=fade,0,200,CUBIC_OUT &hide &layerlv=1 &pushsound=change
@@ -465,9 +467,18 @@
 
 		#Lobby @button lobby_gift graphic/lobby_item_gift.png 1455 630 180 150 &animation-in=zoom,700,300,0,CUBIC_OUT &event=gift &pushsound=pushbutton &disable
 
+	////// gift code //////
+		#Accept-GiftCode @image giftcode_window graphic/giftcode_window.png 610 390 &animation-in=zoom,0,300,0.6,CUBIC_OUT &animation-in=fade,0,250,CUBIC_OUT &hide &disable-imgalpha
+		#Accept-GiftCode @button giftcode_button_cancel graphic/giftcode_button_cancel.png 798 590 150 50 &animation-in=zoom,100,250,0,CUBIC_OUT &animation-in=fade,100,250,CUBIC_OUT &hide &event=giftcode_cancel &pushsound=cancel
+		#Accept-GiftCode @button giftcode_button_ok graphic/giftcode_button_ok.png 973 590 150 50 &animation-in=zoom,120,250,0,CUBIC_OUT &animation-in=fade,120,250,CUBIC_OUT &hide &event=giftcode_ok &pushsound=decide
+
+		#Response-GiftCode @image giftcode_window_base graphic/giftcode_window_base.png 610 390 &animation-in=zoom,0,300,0.6,CUBIC_OUT &animation-in=fade,0,250,CUBIC_OUT &hide &disable-imgalpha
+		#Response-GiftCode @text giftcode_res_text * 770 480 rom1cm20 &animation-in=fade,200,250,CUBIC_OUT &animation-in=move,200,250,0,16,CUBIC_OUT &hide &color=0,0,0 &align-center-size=380
+		#Response-GiftCode @button giftcode_res_ok graphic/giftcode_button_ok.png 885 590 150 50 &animation-in=zoom,100,250,0,CUBIC_OUT &animation-in=fade,100,250,CUBIC_OUT &hide &event=giftcode_res_ok &pushsound=decide
+
 //----- Store -----//
 	////// base //////
-		#Store @image store_bg graphic/store_bg.png 0 0 &animation-in=zoom,0,350,1.2,CUBIC_OUT &animation-in=fade,0,350,CUBIC_OUT
+		#Store @image store_bg graphic/common_bg.png 0 0 &animation-in=zoom,0,350,1.2,CUBIC_OUT &animation-in=fade,0,350,CUBIC_OUT
 		
 		#Store @image store_title graphic/store_title.png 0 0 &animation-in=fade,0,350,CUBIC_OUT &animation-in=move,0,350,-128,0,CUBIC_OUT &layerlv=2
 		#Store @text store_text_guide アイテムや譜面の難易度を購入できマス！ 112 152 rom1cm16 &animation-in=fade,50,350,CUBIC_OUT &animation-in=move,50,350,-128,0,CUBIC_OUT &animation-in=random.text,50,1000 &color=255,255,255 &layerlv=2
@@ -487,4 +498,35 @@
 
 		#Store @button store_exchange graphic/store_exchange.png 284 592 284 54 &animation-in=fade,350,300,CUBIC_OUT &animation-in=zoom,350,350,0.5,CUBIC_OUT &event=exchange &pushsound=pushbutton
 
-		#Store @button store_purchased graphic/store_purchased_off.png 284 851 222 30 &animation-in=fade,450,300,CUBIC_OUT &animation-in=zoom,450,300,0.5,CUBIC_OUT &event=purchased_onoff &pushsound=change
+		#Store @button store_purchased graphic/store_purchased_on.png 284 851 222 30 &animation-in=fade,450,300,CUBIC_OUT &animation-in=zoom,450,300,0.5,CUBIC_OUT &event=purchased_onoff &pushsound=change
+
+	////// Dialog //////
+		#Store-Confirm @image store_dialog_confirm graphic/store_dialog_confirm.png 0 302 &animation-in=zoom,0,250,1.2,CUBIC_OUT &animation-in=fade,0,200,CUBIC_OUT &hide
+		#Store-Confirm @image store_confirm_img * 550 410 &animation-in=zoom,100,250,0,CUBIC_OUT &animation-in=fade,100,150,CUBIC_OUT &hide &imgwidth=150 &imgheight=150 &disable-imgalpha
+		#Store-Confirm @text store_confirm_type * 740 430 rom1cm14 &animation-in=fade,200,250,CUBIC_OUT &animation-in=move,200,250,-64,0,CUBIC_OUT &hide &color=248,61,148
+		#Store-Confirm @text store_confirm_prm0 * 740 461 rom1cm20 &animation-in=fade,250,250,CUBIC_OUT &animation-in=move,250,250,-64,0,CUBIC_OUT &hide &color=255,255,255
+		#Store-Confirm @text store_confirm_prm1 * 740 497 rom1cm16 &animation-in=fade,300,250,CUBIC_OUT &animation-in=move,300,250,-64,0,CUBIC_OUT &hide &color=200,200,200
+		#Store-Confirm @text store_confirm_prm2 * 1180 470 ps20 &animation-in=fade,250,250,CUBIC_OUT &animation-in=move,250,250,-64,0,CUBIC_OUT &hide &color=255,255,255
+		#Store-Confirm @text store_confirm_price * 1226 538 ps20 &animation-in=fade,250,250,CUBIC_OUT &animation-in=move,250,250,32,0,CUBIC_OUT &animation-in=increase.text,250,500,-1 &hide &color=255,255,255 &extratext={*sp}Lepus
+		#Store-Confirm @button store_button_purchase graphic/store_button_purchase.png 970 600 180 50 &animation-in=zoom,400,250,0,CUBIC_OUT &animation-in=fade,400,200,CUBIC_OUT &event=store_purchase_ok &pushsound=decide
+		#Store-Confirm @button store_button_cancel graphic/store_button_cancel.png 770 600 180 50 &animation-in=zoom,370,250,0,CUBIC_OUT &animation-in=fade,370,200,CUBIC_OUT &event=store_purchase_cancel &pushsound=cancel
+
+		#Store-LepusError @image store_dialog_error graphic/store_dialog_error.png 0 302 &animation-in=zoom,0,250,1.2,CUBIC_OUT &animation-in=fade,0,200,CUBIC_OUT &hide
+		#Store-LepusError @button store_error_ok graphic/store_button_ok.png 870 600 180 50 &animation-in=zoom,370,250,0,CUBIC_OUT &animation-in=fade,370,200,CUBIC_OUT &event=store_error_ok &pushsound=cancel &hide
+		#Store-LepusError @text store_error_requiredlepus * 980 464 ps16 &animation-in=fade,150,250,CUBIC_OUT &animation-in=move,150,250,-32,0,CUBIC_OUT &animation-in=increase.text,150,300,-1 &hide &color=255,255,255 &extratext={*sp}Lepus
+		#Store-LepusError @text store_error_shortfalllepus * 980 497 ps16 &animation-in=fade,200,250,CUBIC_OUT &animation-in=move,200,250,-32,0,CUBIC_OUT &animation-in=increase.text,200,300,-1 &hide &color=255,0,119 &extratext={*sp}Lepus
+
+//----- Mission -----//
+	////// base //////
+		#Mission @image mission_bg graphic/common_bg.png 0 0 &animation-in=zoom,0,350,1.2,CUBIC_OUT &animation-in=fade,0,350,CUBIC_OUT
+
+		#Mission @image mission_title graphic/mission_title.png 0 0 &animation-in=fade,0,350,CUBIC_OUT &animation-in=move,0,350,-128,0,CUBIC_OUT &layerlv=2
+		#Mission @text mission_text_guide ミッションを攻略して楽曲やアイテムを獲得しましょう！ 112 152 rom1cm16 &animation-in=fade,50,350,CUBIC_OUT &animation-in=move,50,350,-128,0,CUBIC_OUT &animation-in=random.text,50,1000 &color=255,255,255 &layerlv=2
+
+		#Mission @button mission_button_back graphic/common_button_back.png 0 1020 240 60 &animation-in=fade,200,300,CUBIC_OUT &animation-in=move,200,300,-128,0,CUBIC_OUT &pushsound=pushbutton &event=backscene
+
+		#Mission @image mission_guide graphic/mission_guide.png 60 200 &animation-in=fade,250,300,CUBIC_OUT &animation-in=move,250,350,-128,0,CUBIC_OUT
+		#Mission @text mission_guide_tx0_0 右のリストから挑戦したいミッションを 230 275 rom1cm20 &animation-in=fade,400,250,CUBIC_OUT &animation-in=move,400,300,-32,0,CUBIC_OUT &animation-in=random.text,400,400 &color=255,255,255
+		#Mission @text mission_guide_tx0_0 選択してくだサイ！ 230 305 rom1cm20 &animation-in=fade,550,250,CUBIC_OUT &animation-in=move,550,300,-32,0,CUBIC_OUT &animation-in=random.text,550,400 &color=255,255,255
+		#Mission @text mission_guide_tx0_0 ミッションに挑戦するには、 230 350 rom1cm16 &animation-in=fade,600,250,CUBIC_OUT &animation-in=move,600,300,-32,0,CUBIC_OUT &animation-in=random.text,600,400 &color=14,255,222
+		#Mission @text mission_guide_tx0_0 チャレンジチケットが一枚必要デス！ 230 374 rom1cm16 &animation-in=fade,700,250,CUBIC_OUT &animation-in=move,700,300,-32,0,CUBIC_OUT &animation-in=random.text,700,400 &color=14,255,222

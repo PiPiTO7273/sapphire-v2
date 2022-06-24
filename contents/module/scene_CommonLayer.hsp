@@ -10,3 +10,61 @@
 	duio_ChangeTextBody duio_TextID2UIsetID("common_profile_numlepus"),str(pfreg_NumLepus)+" Lepus"
 
 	return
+
+//キーの押下を取得
+#defcfunc IsPushed int _key
+	if (bfKeyInputFlag(_key)==FALSE)&(KeyInputFlag(_key)==TRUE) :return TRUE
+	return FALSE
+
+//ギフトコードを有効化
+#deffunc ExecGiftCode str _key
+
+	sdim giftres:dim debugcmdflag
+
+	//使用済みかどうか確認
+	if duio_idsGet("_GiftCodeUsed."+_key)=="TRUE" :return 1
+
+	switch _key
+
+		case"EXDB1000L"
+			debugcmdflag=TRUE
+			pfreg_NumLepus+1000
+			giftres="1000 Lepus"
+		swbreak
+
+		case"0LEPUS"
+			pfreg_NumLepus=0
+			giftres="{debug-code:0 lepus}"
+		swbreak
+
+		case"EXDBGEN1"
+			debugcmdflag=TRUE
+			DebugMode=TRUE
+			giftres="{debug-code:デバッグモードを有効にしました。}"
+		swbreak
+
+		case"EXDBGEN0"
+			debugcmdflag=TRUE
+			DebugMode=FALSE
+			giftres="{debug-code:デバッグモードを無効にしました。}"
+		swbreak
+
+		default
+			//存在しないコード
+			return 2
+		swbreak
+	swend
+
+	//使用済みにしておく
+	if debugcmdflag==FALSE {
+		duio_idsWrite"_GiftCodeUsed."+_key,"TRUE"
+		PortalWebSvc_SendProfile PlayerID,PlayerPassword,"XODA.GIFTCODE.USED."+_key,"1"
+	}
+
+	sdim tmprefstr
+	mref tmprefstr,65
+	tmprefstr=giftres
+
+	UpdateProfileDisp
+
+	return 0

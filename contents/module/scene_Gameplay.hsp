@@ -903,7 +903,7 @@
 					EasePosY=540
 				swbreak
 				default
-					EasePosX=350+150*(cnt-1)
+					EasePosX=400+150*(cnt-1)
 					EasePosY=590
 				swbreak
 			swend
@@ -1127,7 +1127,12 @@
 		loop
 	} else {
 
-		if mapconfig_finishflag :return
+		if mapconfig_finishflag {
+			repeat 6
+				LaneEffectCount(cnt)=0
+			loop
+			return
+		}
 
 		//”»’èˆ—
 			KeybtJudge(1,0)=CheckHitKey(KEY_INPUT_S)

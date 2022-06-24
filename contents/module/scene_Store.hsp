@@ -1,9 +1,18 @@
  
 *scene_Store_Init
 
-	duio_SetAllImageOutro"#Shutter"
-	duio_PlaySound"shutter_out"
+	//duio_SetAllImageOutro"#Shutter"
 	duio_InitAllCount"#Store"
+	duio_SetAllButtonVisible"#Store",TRUE
+	duio_SetAllImageVisible"#Store",TRUE
+	duio_SetAllTextVisible"#Store",TRUE
+	duio_SetActiveScene"#Store",TRUE
+
+	duio_InitAllCount"#Store-Confirm"
+	duio_SetActiveScene"#Store-Confirm",FALSE
+	duio_SetAllButtonVisible"#Store-Confirm",FALSE
+	duio_SetAllImageVisible"#Store-Confirm",FALSE
+	duio_SetAllTextVisible"#Store-Confirm",FALSE
 
 	UpdateProfileDisp
 
@@ -15,6 +24,9 @@
 	dim decidecount
 	dim show_purchased
 	dim curcategory
+	dim mapitem_max
+	dim SceneCount
+	show_purchased=TRUE
 	decidecount=-1
 
 	InitStoreItem 0
@@ -29,7 +41,7 @@
 	DrawGraph 0,0,hdximg(icommon_bglayer),TRUE
 
 	//鉄骨ライン
-		dim shapemovepos:shapemovepos=-(1000.0/duio_GetFPS()*SceneCount)/15
+		dim shapemovepos:shapemovepos=-(1000.0/duio_GetFPS()*FrameCount)/15
 		SetDrawBlendMode DX_BLENDMODE_PMA_ALPHA,256
 		DrawGraph shapemovepos\1920,20,hdximg(icommon_ironline),TRUE
 		DrawGraph shapemovepos\1920+1920,20,hdximg(icommon_ironline),TRUE
@@ -38,47 +50,59 @@
 	duio_Draw"#Common-Profile"
 
 	//スクロール処理
-	if insquare(cursorPosX,cursorPosY,662,0,BufWidth,BufHeight)&mapitem_max!0 {
-		mapitem_cursorwheel=cursorWheel
-		repeat mapitem_max
-			duio_SetButtonPositionY mapitem_uisetid(cnt),duio_GetButtonPositionY(mapitem_uisetid(cnt))+mapitem_cursorwheel
-		loop
-		if duio_GetButtonPositionY(mapitem_uisetid(0))>159&mapitem_cursorwheel>0 {
-			mapitem_scrollfix=duio_GetButtonPositionY(mapitem_uisetid(0))-159
+	if (159+210*(mapitem_max/2))>BufHeight-64-192 {
+		if insquare(cursorPosX,cursorPosY,760,0,BufWidth,BufHeight)&mapitem_max!0 {
+			mapitem_cursorwheel=cursorWheel
 			repeat mapitem_max
-				duio_SetButtonPositionY mapitem_uisetid(cnt),duio_GetButtonPositionY(mapitem_uisetid(cnt))-mapitem_scrollfix
+				duio_SetButtonPositionY mapitem_uisetid(cnt),duio_GetButtonPositionY(mapitem_uisetid(cnt))+mapitem_cursorwheel
 			loop
+			if duio_GetButtonPositionY(mapitem_uisetid(0))>159&mapitem_cursorwheel>0 {
+				mapitem_scrollfix=duio_GetButtonPositionY(mapitem_uisetid(0))-159
+				repeat mapitem_max
+					duio_SetButtonPositionY mapitem_uisetid(cnt),duio_GetButtonPositionY(mapitem_uisetid(cnt))-mapitem_scrollfix
+				loop
+			}
+			if duio_GetButtonPositionY(mapitem_uisetid(mapitem_max-1))<BufHeight-64-192&mapitem_cursorwheel<0 {
+				mapitem_scrollfix=(BufHeight-64-192)-duio_GetButtonPositionY(mapitem_uisetid(mapitem_max-1))
+				repeat mapitem_max
+					duio_SetButtonPositionY mapitem_uisetid(cnt),duio_GetButtonPositionY(mapitem_uisetid(cnt))+mapitem_scrollfix
+				loop
+			}
 		}
-		if duio_GetButtonPositionY(mapitem_uisetid(mapitem_max-1))<BufHeight-64-192&mapitem_cursorwheel<0 {
-			mapitem_scrollfix=(BufHeight-64-192)-duio_GetButtonPositionY(mapitem_uisetid(mapitem_max-1))
-			repeat mapitem_max
-				duio_SetButtonPositionY mapitem_uisetid(cnt),duio_GetButtonPositionY(mapitem_uisetid(cnt))+mapitem_scrollfix
-			loop
-		}
+		
+		//スクロール位置を特定
+			if mapitem_max!0 {
+				SetDrawBlendMode DX_BLENDMODE_PMA_ALPHA,256
+				mapitem_scrollpos=duio_GetButtonPositionY(mapitem_uisetid(mapitem_max-1))-duio_GetButtonPositionY(mapitem_uisetid(0))-BufHeight+64+192+159
+			}
+
+		//スクロールバー
+			if insquare(cursorPosX,cursorPosY,1885,140,1885+20,140+710)&(cursorStatus&MOUSE_INPUT_LEFT) :mapitem_scrollclickmode=TRUE
+			if mapitem_scrollclickmode {
+				cursorPosY=limit(cursorPosY,140,140+710)
+				repeat mapitem_max
+					duio_SetButtonPositionY mapitem_uisetid(cnt),159+210*(cnt/2)-int(double(mapitem_scrollpos)/700.0*double(cursorPosY-140))
+				loop
+				if (cursorStatus&MOUSE_INPUT_LEFT)==FALSE :mapitem_scrollclickmode=FALSE
+			}
+			DrawGraph 1870,130+int(700.0*(-double(duio_GetButtonPositionY(mapitem_uisetid(0))-159)/double(mapitem_scrollpos))),hdximg(imusicselect_itemscroll_circle),TRUE
 	}
-	
-	//スクロール位置を特定
-		if mapitem_max!0 {
-			SetDrawBlendMode DX_BLENDMODE_PMA_ALPHA,256
-			mapitem_scrollpos=duio_GetButtonPositionY(mapitem_uisetid(mapitem_max-1))-duio_GetButtonPositionY(mapitem_uisetid(0))-BufHeight+64+192+159
-		}
 
-	//スクロールバー
-		if insquare(cursorPosX,cursorPosY,1885,140,1885+20,140+710)&(cursorStatus&MOUSE_INPUT_LEFT) :mapitem_scrollclickmode=TRUE
-		if mapitem_scrollclickmode {
-			cursorPosY=limit(cursorPosY,140,140+710)
-			repeat mapitem_max
-				duio_SetButtonPositionY mapitem_uisetid(cnt),159+210*(cnt/2)-int(double(mapitem_scrollpos)/700.0*double(cursorPosY-140))
-			loop
-			if (cursorStatus&MOUSE_INPUT_LEFT)==FALSE :mapitem_scrollclickmode=FALSE
-		}
-		DrawGraph 1870,130+int(700.0*(-double(duio_GetButtonPositionY(mapitem_uisetid(0))-159)/double(mapitem_scrollpos))),hdximg(imusicselect_itemscroll_circle),TRUE
+	//現在のカテゴリ選択
+	if decidecount==-1&SceneTime>400 {
+		setease 0,256,ease_linear+ease_loop
+		SetDrawBlendMode DX_BLENDMODE_PMA_ALPHA,getease(SceneTime-400,200)
+		DrawGraph 260,309+64*curcategory,hdximg(istore_category),TRUE
+	}
 
-	duio_Draw"#Shutter"
+	duio_Draw"#Store-Confirm"
+	duio_Draw"#Store-LepusError"
+	;duio_Draw"#Shutter"
 
 	if duio_GetButtonEventStack()!"" :gosub*scene_Store_eventstack
 	if decidecount!-1 :decidecount+FrameTime
-	if decidecount>1000 {
+	if decidecount>300 {
+		ClearMapItem
 		gosub*scene_Lobby_Init
 		curSceneTag="#Lobby"
 		return
@@ -114,11 +138,230 @@
 		//戻る
 		case"backscene"
 			decidecount=0
-			gosub*onshutter
+			duio_SetAllButtonOutro"#Store"
+			duio_SetAllImageOutro"#Store"
+			duio_SetAllTextOutro"#Store"
+			;gosub*onshutter
+		swbreak
+
+		//購入確認 OK
+		case"store_purchase_ok"
+			duio_SetActiveScene"#Store",TRUE
+			switch int(strmid(itempush_event,0,1))
+				case 0
+					//譜面
+					strrep itempush_event,"0@",""
+					SearchDBfromUUID itempush_event,item,lv
+
+					if pfreg_NumLepus<mapdb_unlocklepus(item,lv) {
+						//lepus不足
+						ShowLepusError mapdb_unlocklepus(item,lv)
+					} else {
+						//購入処理
+						pfreg_NumLepus-mapdb_unlocklepus(item,lv)
+						duio_idsWrite"_MapUnlock."+itempush_event,"TRUE"
+						PortalWebSvc_SendProfile PlayerID,PlayerPassword,"XODA.MAP.UNLOCK."+itempush_event,"1"
+
+						duio_SetActiveScene"#Store",TRUE
+					}
+				swbreak
+				case 1
+					//アイテム
+					strrep itempush_event,"1@",""
+
+					switch itempush_event
+						case"ticket1"
+							if pfreg_NumLepus<1000 {		//lepus不足
+								ShowLepusError 1000
+							} else {
+								pfreg_NumLepus-1000:pfreg_NumTickets+1
+							}
+						swbreak
+						case"ticket10"
+							if pfreg_NumLepus<9000 {		//lepus不足
+								ShowLepusError 9000
+							} else {
+								pfreg_NumLepus-9000:pfreg_NumTickets+10
+							}
+						swbreak
+						case"fragment1"
+							if pfreg_NumLepus<300 {		//lepus不足
+								ShowLepusError 300
+							} else {
+								pfreg_NumLepus-300:pfreg_NumFragments+1
+							}
+						swbreak
+						case"fragment5"
+							if pfreg_NumLepus<1400 {		//lepus不足
+								ShowLepusError 1400
+							} else {
+								pfreg_NumLepus-1400:pfreg_NumFragments+5
+							}
+						swbreak
+						case"fragment10"
+							if pfreg_NumLepus<2700 {		//lepus不足
+								ShowLepusError 2700
+							} else {
+								pfreg_NumLepus-2700:pfreg_NumFragments+10
+							}
+						swbreak
+					swend
+				swbreak
+				case 2
+					//アイテム
+					strrep itempush_event,"2@",""
+
+					switch strmid(itempush_event,0,1)
+						case"n"
+							strrep itempush_event,"n",""
+							if pfreg_NumLepus<customize_note_price(int(itempush_event)) {
+								ShowLepusError customize_note_price(int(itempush_event))
+							} else {
+								pfreg_NumLepus-customize_note_price(int(itempush_event))
+								customize_note_unlockflag(int(itempush_event))=TRUE
+								duio_idsWrite"_Customize.n"+itempush_event,"TRUE"
+								PortalWebSvc_SendProfile PlayerID,PlayerPassword,"XODA.CUSTOMIZE.UNLOCK.n"+itempush_event,"1"
+							}
+						swbreak
+					swend
+				swbreak
+			swend
+
+			//確認画面を閉じる
+			duio_SetActiveScene"#Store-Confirm",FALSE
+			duio_SetAllButtonOutro"#Store-Confirm"
+			duio_SetAllImageOutro"#Store-Confirm"
+			duio_SetAllTextOutro"#Store-Confirm"
+
+			//更新
+			UpdateProfileDisp
+			InitStoreItem curcategory
+		swbreak
+		//購入確認 キャンセル
+		case"store_purchase_cancel"
+			duio_SetActiveScene"#Store-Confirm",FALSE
+			duio_SetActiveScene"#Store",TRUE
+			duio_SetAllButtonOutro"#Store-Confirm"
+			duio_SetAllImageOutro"#Store-Confirm"
+			duio_SetAllTextOutro"#Store-Confirm"
+		swbreak
+
+		//Lepus不足 OK
+		case"store_error_ok"
+			duio_SetActiveScene"#Store-LepusError",FALSE
+			duio_SetActiveScene"#Store",TRUE
+			duio_SetAllButtonOutro"#Store-LepusError"
+			duio_SetAllImageOutro"#Store-LepusError"
+			duio_SetAllTextOutro"#Store-LepusError"
 		swbreak
 
 		//ゲーム終了
 		case"game.exit":goto*Exit:swbreak
+
+		default
+			//項目選択
+			sdim itempush_event
+			itempush_event=duio_GetButtonEventStack()
+
+			switch int(strmid(itempush_event,0,1))
+				case 0
+					//譜面
+					strrep itempush_event,"0@",""
+					SearchDBfromUUID itempush_event,item,lv
+
+					if IsUnlocked(item,lv) :return
+
+					duio_ChangeTextBody duio_TextID2UIsetID("store_confirm_type"),"楽曲 / 譜面難易度"
+					duio_ChangeImage duio_ImageID2UIsetID("store_confirm_img"),mapdb_hartwork(item,lv)
+					duio_ChangeTextBody duio_TextID2UIsetID("store_confirm_prm0"),mapdb_title(item,lv)
+					duio_ChangeTextBody duio_TextID2UIsetID("store_confirm_prm1"),mapdb_artist(item,lv)
+					duio_ChangeTextBody duio_TextID2UIsetID("store_confirm_prm2"),difid2difstr(lv)+" Lv."+mapdb_level(item,lv)
+
+					if lv==0 :duio_SetTextColor duio_TextID2UIsetID("store_confirm_prm2"),$33FFC7
+					if lv==1 :duio_SetTextColor duio_TextID2UIsetID("store_confirm_prm2"),$FFA033
+					if lv==2 :duio_SetTextColor duio_TextID2UIsetID("store_confirm_prm2"),$FF3385
+
+					duio_ChangeTextBody duio_TextID2UIsetID("store_confirm_price"),str(mapdb_unlocklepus(item,lv))
+				swbreak
+				case 1
+					//アイテム
+					strrep itempush_event,"1@",""
+
+					duio_ChangeTextBody duio_TextID2UIsetID("store_confirm_type"),"アイテム"
+					duio_ChangeTextBody duio_TextID2UIsetID("store_confirm_prm2"),""
+
+					switch itempush_event
+						case"ticket1"
+							duio_ChangeImage duio_ImageID2UIsetID("store_confirm_img"),hdximg(istore_icon_ticket)
+							duio_ChangeTextBody duio_TextID2UIsetID("store_confirm_prm0"),"チャレンジチケット"
+							duio_ChangeTextBody duio_TextID2UIsetID("store_confirm_prm1"),"1枚"
+							duio_ChangeTextBody duio_TextID2UIsetID("store_confirm_price"),"1000"
+						swbreak
+						case"ticket10"
+							duio_ChangeImage duio_ImageID2UIsetID("store_confirm_img"),hdximg(istore_icon_ticket)
+							duio_ChangeTextBody duio_TextID2UIsetID("store_confirm_prm0"),"チャレンジチケット"
+							duio_ChangeTextBody duio_TextID2UIsetID("store_confirm_prm1"),"10枚"
+							duio_ChangeTextBody duio_TextID2UIsetID("store_confirm_price"),"9000"
+						swbreak
+						case"fragment1"
+							duio_ChangeImage duio_ImageID2UIsetID("store_confirm_img"),hdximg(istore_icon_fragment_0)
+							duio_ChangeTextBody duio_TextID2UIsetID("store_confirm_prm0"),"音色のかけら"
+							duio_ChangeTextBody duio_TextID2UIsetID("store_confirm_prm1"),"1個"
+							duio_ChangeTextBody duio_TextID2UIsetID("store_confirm_price"),"300"
+						swbreak
+						case"fragment5"
+							duio_ChangeImage duio_ImageID2UIsetID("store_confirm_img"),hdximg(istore_icon_fragment_1)
+							duio_ChangeTextBody duio_TextID2UIsetID("store_confirm_prm0"),"音色のかけら"
+							duio_ChangeTextBody duio_TextID2UIsetID("store_confirm_prm1"),"5個"
+							duio_ChangeTextBody duio_TextID2UIsetID("store_confirm_price"),"1400"
+						swbreak
+						case"fragment10"
+							duio_ChangeImage duio_ImageID2UIsetID("store_confirm_img"),hdximg(istore_icon_fragment_1)
+							duio_ChangeTextBody duio_TextID2UIsetID("store_confirm_prm0"),"音色のかけら"
+							duio_ChangeTextBody duio_TextID2UIsetID("store_confirm_prm1"),"10個"
+							duio_ChangeTextBody duio_TextID2UIsetID("store_confirm_price"),"2700"
+						swbreak
+					swend
+				swbreak
+				case 2
+					//カスタマイズパーツ
+					strrep itempush_event,"2@",""
+
+					switch strmid(itempush_event,0,1)
+
+						case"n"
+							strrep itempush_event,"n",""
+							if customize_note_unlockflag(int(itempush_event)) :return
+
+							//アイコン生成
+							SetDrawScreen hdximg(istore_icon_tmp)
+							ClearDrawScreen
+								SetDrawBlendMode DX_BLENDMODE_PMA_ALPHA,256
+								DrawExtendGraph 43,35,43+64,35+64,customize_note_hhold(int(itempush_event)),TRUE
+								DrawExtendGraph 43,35+64,43+64,35+64+16,customize_note_hsingle(int(itempush_event)),TRUE
+		
+							duio_ChangeTextBody duio_TextID2UIsetID("store_confirm_type"),"カスタマイズパーツ"
+							duio_ChangeImage duio_ImageID2UIsetID("store_confirm_img"),hdximg(istore_icon_tmp)
+							duio_ChangeTextBody duio_TextID2UIsetID("store_confirm_prm0"),customize_note_name(int(itempush_event))
+							duio_ChangeTextBody duio_TextID2UIsetID("store_confirm_prm1"),"音符"
+							duio_ChangeTextBody duio_TextID2UIsetID("store_confirm_prm2"),""
+		
+							duio_ChangeTextBody duio_TextID2UIsetID("store_confirm_price"),str(customize_note_price(int(itempush_event)))
+						swbreak
+
+					swend
+				swbreak
+			swend
+
+			itempush_event=duio_GetButtonEventStack()
+
+			duio_InitAllCount"#Store-Confirm"
+			duio_SetActiveScene"#Store-Confirm",TRUE
+			duio_SetActiveScene"#Store",FALSE
+			duio_SetAllButtonVisible"#Store-Confirm",TRUE
+			duio_SetAllImageVisible"#Store-Confirm",TRUE
+			duio_SetAllTextVisible"#Store-Confirm",TRUE
+		swbreak
 
 	swend
 
@@ -172,15 +415,25 @@
 
 							//値段
 							DrawStringToHandle 1115-760,145,str(mapdb_unlocklepus(item,lv))+" Lepus",$000000,duio_GetFontHandle("ps16")
+
+							//購入済み
+							if IsUnlocked(item,lv) {
+								SetDrawBlendMode DX_BLENDMODE_PMA_ALPHA,256
+								DrawGraph 1100-760,20,hdximg(istore_item_purchased),TRUE
+							}
 						
 						//duioに登録
-							duio_CreateButton"#Store","map@"+map_uuid(item,lv),mapitem_himg(mapitem_max),760+500*(mapitem_max\2),100+210*(mapitem_max/2),478,192
+							duio_CreateButton"#Store","0@"+map_uuid(item,lv),mapitem_himg(mapitem_max),760+500*(mapitem_max\2),159+210*(mapitem_max/2),478,192
 							mapitem_uisetid(mapitem_max)=stat
 							duio_AddInButtonAnimation_Zoom mapitem_uisetid(mapitem_max),300+35*mapitem_max,350,0,ease_cubic_out
-							if lv==0 :duio_SetButtonEvent mapitem_uisetid(mapitem_max),map_uuid(item,0)+",*,*"
-							if lv==1 :duio_SetButtonEvent mapitem_uisetid(mapitem_max),"*,"+map_uuid(item,1)+",*"
-							if lv==2 :duio_SetButtonEvent mapitem_uisetid(mapitem_max),"*,*,"+map_uuid(item,2)
+							duio_SetButtonEvent mapitem_uisetid(mapitem_max),"0@"+map_uuid(item,lv)
 							duio_SetButtonPushSound mapitem_uisetid(mapitem_max),"pushbutton"
+
+							if IsUnlocked(item,lv) {
+								duio_SetButtonEnable mapitem_uisetid(mapitem_max),FALSE
+							} else {
+								duio_SetButtonEnable mapitem_uisetid(mapitem_max),TRUE
+							}
 
 						mapitem_max++
 					}
@@ -190,11 +443,11 @@
 
 		case 1
 			//アイテム
-			CreateStoreItem"ticket1",hdximg(istore_ticket1)
-			CreateStoreItem"ticket10",hdximg(istore_ticket10)
-			CreateStoreItem"fragment1",hdximg(istore_fragment1)
-			CreateStoreItem"fragment5",hdximg(istore_fragment5)
-			CreateStoreItem"fragment10",hdximg(istore_fragment10)
+			CreateStoreItem"1@ticket1",hdximg(istore_ticket1)
+			CreateStoreItem"1@ticket10",hdximg(istore_ticket10)
+			CreateStoreItem"1@fragment1",hdximg(istore_fragment1)
+			CreateStoreItem"1@fragment5",hdximg(istore_fragment5)
+			CreateStoreItem"1@fragment10",hdximg(istore_fragment10)
 		swbreak
 
 		case 2
@@ -220,14 +473,24 @@
 						//値段
 						DrawStringToHandle 1115-760,145,str(customize_note_price(cnt))+" Lepus",$000000,duio_GetFontHandle("ps16")
 
+						//購入済み
+						if customize_note_unlockflag(cnt) {
+							SetDrawBlendMode DX_BLENDMODE_PMA_ALPHA,256
+							DrawGraph 1100-760,20,hdximg(istore_item_purchased),TRUE
+						}
+
 						//duioに登録
-						duio_CreateButton"#Store","customize_note@"+cnt,mapitem_himg(mapitem_max),760+500*(mapitem_max\2),100+210*(mapitem_max/2),478,192
+						duio_CreateButton"#Store","2@n"+cnt,mapitem_himg(mapitem_max),760+500*(mapitem_max\2),159+210*(mapitem_max/2),478,192
 						mapitem_uisetid(mapitem_max)=stat
 						duio_AddInButtonAnimation_Zoom mapitem_uisetid(mapitem_max),300+35*mapitem_max,350,0,ease_cubic_out
-						if lv==0 :duio_SetButtonEvent mapitem_uisetid(mapitem_max),map_uuid(item,0)+",*,*"
-						if lv==1 :duio_SetButtonEvent mapitem_uisetid(mapitem_max),"*,"+map_uuid(item,1)+",*"
-						if lv==2 :duio_SetButtonEvent mapitem_uisetid(mapitem_max),"*,*,"+map_uuid(item,2)
+						duio_SetButtonEvent mapitem_uisetid(mapitem_max),"2@n"+cnt
 						duio_SetButtonPushSound mapitem_uisetid(mapitem_max),"pushbutton"
+
+						if customize_note_unlockflag(cnt) {
+							duio_SetButtonEnable mapitem_uisetid(mapitem_max),FALSE
+						} else {
+							duio_SetButtonEnable mapitem_uisetid(mapitem_max),TRUE
+						}
 
 						mapitem_max++
 					}
@@ -249,14 +512,24 @@
 	DrawGraph 0,0,_himg,TRUE
 
 	//duioに登録
-	duio_CreateButton"#Store",_event,mapitem_himg(mapitem_max),760+500*(mapitem_max\2),100+210*(mapitem_max/2),478,192
+	duio_CreateButton"#Store",_event,mapitem_himg(mapitem_max),760+500*(mapitem_max\2),159+210*(mapitem_max/2),478,192
 	mapitem_uisetid(mapitem_max)=stat
 	duio_AddInButtonAnimation_Zoom mapitem_uisetid(mapitem_max),300+35*mapitem_max,350,0,ease_cubic_out
-	if lv==0 :duio_SetButtonEvent mapitem_uisetid(mapitem_max),map_uuid(item,0)+",*,*"
-	if lv==1 :duio_SetButtonEvent mapitem_uisetid(mapitem_max),"*,"+map_uuid(item,1)+",*"
-	if lv==2 :duio_SetButtonEvent mapitem_uisetid(mapitem_max),"*,*,"+map_uuid(item,2)
+	duio_SetButtonEvent mapitem_uisetid(mapitem_max),_event
 	duio_SetButtonPushSound mapitem_uisetid(mapitem_max),"pushbutton"
 
 	mapitem_max++
+
+	return
+
+#deffunc ShowLepusError int _required
+	duio_InitAllCount"#Store-LepusError"
+	duio_SetActiveScene"#Store",FALSE
+	duio_SetActiveScene"#Store-LepusError",TRUE
+	duio_SetAllButtonVisible"#Store-LepusError",TRUE
+	duio_SetAllImageVisible"#Store-LepusError",TRUE
+	duio_SetAllTextVisible"#Store-LepusError",TRUE
+	duio_ChangeTextBody duio_TextID2UIsetID("store_error_requiredlepus"),str(_required)
+	duio_ChangeTextBody duio_TextID2UIsetID("store_error_shortfalllepus"),str(_required-pfreg_NumLepus)
 
 	return

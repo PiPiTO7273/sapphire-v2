@@ -73,4 +73,8 @@
 	logmes GetTimeStamp()+" [portal-websvc] Uploading Profile..."
 	return webapi_post("http://"+duio_idsGet("Server")+"/apiv2/API-SendProfile-Multiple.php?key="+duio_idsGet("_keymac_APIkey_SendProfile")+"&id="+_id+"&password="+_password+"&decode="+duio_idsGet("_keymac_SSL_Decode_0")+duio_idsGet("_keymac_SSL_Decode_1")+duio_idsGet("_keymac_SSL_Decode_2")+duio_idsGet("_keymac_SSL_Decode_3"),tmpsendcue)
 
+//プロフィールを保存
+#deffunc PortalWebSvc_SendProfile str _id,str _password,str _obj,str _val
+	return WebAPI_Get("http://"+duio_idsGet("Server")+"/apiv2/API-SendProfile.php?key="+duio_idsGet("_keymac_APIkey_SendProfile")+"&id="+_id+"&password="+_password+"&decode="+duio_idsGet("_keymac_SSL_Decode_0")+duio_idsGet("_keymac_SSL_Decode_1")+duio_idsGet("_keymac_SSL_Decode_2")+duio_idsGet("_keymac_SSL_Decode_3")+"&object="+_obj+"&value="+_val)
+
 #global

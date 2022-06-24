@@ -100,6 +100,7 @@
 
 		sdim UIset_Text_RandomString
 		UIset_Text_RandomString="abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!?"
+		UIset_Text_RandomString="                                                                "
 		dim UIset_Text_RandomString_Length
 		UIset_Text_RandomString_Length=strlen(UIset_Text_RandomString)
 
@@ -696,6 +697,30 @@
 						UIset_3dsq_Camera_Target=d2f(double(UIset_3dcamera_tmpstruct_xyz(0))),d2f(double(UIset_3dcamera_tmpstruct_xyz(1))),d2f(double(UIset_3dcamera_tmpstruct_xyz(2)))
 
 						UIset_3dsq_Camera_fov=double(UIsetscript_linediv(4))
+					swbreak
+
+					case"0-005-**"	//@counter-delay
+						repeat UIset_Button_max
+							if UIset_Button_Tag(cnt)==UIsetscript_linediv(0) {
+								if UIset_Button_In_Mode(cnt)&UI_EASEIN_ZOOM :UIset_Button_EaseIn_Zoom_Delay(cnt)+fxint(UIsetscript_linediv(2))
+								if UIset_Button_In_Mode(cnt)&UI_EASEIN_FADE :UIset_Button_EaseIn_Fade_Delay(cnt)+fxint(UIsetscript_linediv(2))
+								if UIset_Button_In_Mode(cnt)&UI_EASEIN_MOVE :UIset_Button_EaseIn_Move_Delay(cnt)+fxint(UIsetscript_linediv(2))
+							}
+						loop
+						repeat UIset_Image_max
+							if UIset_Image_Tag(cnt)==UIsetscript_linediv(0) {
+								if UIset_Image_In_Mode(cnt)&UI_EASEIN_ZOOM :UIset_Image_EaseIn_Zoom_Delay(cnt)+fxint(UIsetscript_linediv(2))
+								if UIset_Image_In_Mode(cnt)&UI_EASEIN_FADE :UIset_Image_EaseIn_Fade_Delay(cnt)+fxint(UIsetscript_linediv(2))
+								if UIset_Image_In_Mode(cnt)&UI_EASEIN_MOVE :UIset_Image_EaseIn_Move_Delay(cnt)+fxint(UIsetscript_linediv(2))
+							}
+						loop
+						repeat UIset_Text_max
+							if UIset_Text_Tag(cnt)==UIsetscript_linediv(0) {
+								if UIset_Text_In_Mode(cnt)&UI_EASEIN_RANDOMTEXT :UIset_Text_EaseIn_Random_Delay(cnt)+fxint(UIsetscript_linediv(2))
+								if UIset_Text_In_Mode(cnt)&UI_EASEIN_FADE :UIset_Text_EaseIn_Fade_Delay(cnt)+fxint(UIsetscript_linediv(2))
+								if UIset_Text_In_Mode(cnt)&UI_EASEIN_MOVE :UIset_Text_EaseIn_Move_Delay(cnt)+fxint(UIsetscript_linediv(2))
+							}
+						loop
 					swbreak
 
 				swend
@@ -1333,6 +1358,13 @@
 	UIset_Button_EaseIn_Zoom_EaseFunc(_uisetid)=_func
 	return
 
+#deffunc duio_AddInButtonAnimation_Fade int _uisetid,int _delay,int _length,int _func
+	UIset_Button_In_Mode(_uisetid)=UIset_Button_In_Mode(_uisetid)|UI_EASEIN_FADE
+	UIset_Button_EaseIn_Fade_Delay(_uisetid)=_delay
+	UIset_Button_EaseIn_Fade_Length(_uisetid)=_length
+	UIset_Button_EaseIn_Fade_EaseFunc(_uisetid)=_func
+	return
+
 #deffunc duio_AddInImageAnimation_Move int _uisetid,int _delay,int _length,int _x,int _y,int _func
 	UIset_Image_In_Mode(_uisetid)=UIset_Image_In_Mode(_uisetid)|UI_EASEIN_MOVE
 	UIset_Image_EaseIn_Move_Delay(_uisetid)=_delay
@@ -1599,20 +1631,21 @@
 
 	return
 
-#deffunc duio_InitAllCount str _tag
+#define duio_InitAllCount(%1,%2=0) _duio_InitAllCount %1,%2
+#deffunc _duio_InitAllCount str _tag,int _value
 	repeat UIset_Button_max
 		if UIset_Button_Tag(cnt)==_tag {
-			UIset_Button_count(cnt)=0
+			UIset_Button_count(cnt)=_value
 		}
 	loop
 	repeat UIset_Image_max
 		if UIset_Image_Tag(cnt)==_tag {
-			UIset_Image_count(cnt)=0
+			UIset_Image_count(cnt)=_value
 		}
 	loop
 	repeat UIset_Text_max
 		if UIset_Text_Tag(cnt)==_tag {
-			UIset_Text_count(cnt)=0
+			UIset_Text_count(cnt)=_value
 		}
 	loop
 	return
@@ -1623,6 +1656,13 @@
 	loop
 	return
 
+#defcfunc duio_IsActiveScene str _tag
+	dim tmpres
+	repeat UIset_tag_max
+		if UIset_tag_id(cnt)==_tag :tmpres=UIset_tag_active(cnt):break
+	loop
+	return tmpres
+
 #defcfunc duio_GetButtonPushTime int _uisetid
 	return UIset_Button_rawpushCount(_uisetid)
 
@@ -1632,4 +1672,8 @@
 
 #deffunc duio_DeleteEventStack
 	UIset_Button_onEventStack=""
+	return
+
+#deffunc duio_SetEventStack str _event
+	UIset_Button_onEventStack=_event
 	return

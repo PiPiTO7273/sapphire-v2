@@ -1,0 +1,203 @@
+
+*scene_Mission_Init
+
+	duio_InitAllCount"#Mission"
+	duio_SetAllButtonVisible"#Mission",TRUE
+	duio_SetAllImageVisible"#Mission",TRUE
+	duio_SetAllTextVisible"#Mission",TRUE
+	duio_SetActiveScene"#Mission",TRUE
+
+	if BASS_ChannelIsActive(duio_GetHandle("main"))!BASS_ACTIVE_PLAYING {
+		duio_PlaySound"main"
+	}
+	duio_SetVolume"main",1.0
+
+	dim decidecount
+	dim mapitem_max
+	decidecount=-1
+
+	gosub*scene_Mission_InitItem
+
+	return
+
+*scene_Mission_InitItem
+
+	ClearMapItem
+
+	//ボタン作成
+	dim mapitem_max
+	dim mapitem_himg
+	dim mapitem_uisetid
+	dim mapitem_cursorwheel
+	dim mapitem_scrollfix
+	dim mapitem_scrollpos
+	dim mapitem_scrollclickmode
+
+	sdim mapitem_tmptitle
+	sdim mapitem_tmpreward
+
+	dim forcedop_uisetid
+	dim forcedop_himg
+
+	repeat mission_max
+
+		//条件
+			dim item:dim lv
+			SearchDBfromUUID mission_playmap(cnt),item,lv
+			mapitem_tmptitle=mapdb_title(item,lv)+" ["
+			mapitem_tmptitle+difid2difstr(lv)+"] を\n"
+			if mission_type(cnt)=="SCORE" {
+				//スコア基準
+				mapitem_tmptitle+"スコア "+strf("%08d",mission_typeprm(cnt))+"以上でクリア"
+			}
+
+		//報酬
+			dim item:dim lv
+			SearchDBfromUUID mission_reward(cnt),item,lv
+			mapitem_tmpreward=mapdb_title(item,lv)+" ["
+			mapitem_tmpreward+difid2difstr(lv)+"]"
+
+		//項目
+			mapitem_himg(mapitem_max)=MakeScreen(600,157,TRUE)
+			SetDrawScreen mapitem_himg(mapitem_max)
+
+			//背景
+			SetDrawBlendMode DX_BLENDMODE_PMA_ALPHA,256
+			DrawGraph 0,0,hdximg(imission_item),TRUE
+
+			SetDrawBlendMode DX_BLENDMODE_ALPHA,256
+			DrawStringToHandle 100,35,mapitem_tmptitle,$FFFFFF,duio_GetFontHandle("rom1cm16")
+			DrawStringToHandle 100,82,mapitem_tmpreward,$FFFFFF,duio_GetFontHandle("rom1cm20")
+			DrawStringToHandle 100,115,"楽曲 / 譜面難易度",$FF0E87,duio_GetFontHandle("rom1cm14")
+
+			//duioに登録
+			duio_CreateButton"#Mission","mission@"+cnt,mapitem_himg(mapitem_max),800,150+180*mapitem_max,600,157
+			mapitem_uisetid(mapitem_max)=stat
+			duio_AddInButtonAnimation_Zoom mapitem_uisetid(mapitem_max),200+50*mapitem_max,350,0.6,ease_cubic_out
+			duio_AddInButtonAnimation_Fade mapitem_uisetid(mapitem_max),200+50*mapitem_max,300,ease_cubic_out
+			duio_SetButtonEvent mapitem_uisetid(mapitem_max),"mission@"+cnt
+			duio_SetButtonPushSound mapitem_uisetid(mapitem_max),"pushbutton"
+
+		//強制クリア
+			forcedop_himg(mapitem_max)=MakeScreen(200,104,TRUE)
+			SetDrawScreen forcedop_himg(mapitem_max)
+
+			SetDrawBlendMode DX_BLENDMODE_PMA_ALPHA,256
+			DrawGraph 0,0,hdximg(imission_forced_bg),TRUE
+			DrawExtendGraph 20,71,20+int(160.0*(double(5-mission_progress(mapitem_max))/5.0)),71+16,hdximg(imission_forced_gauge),FALSE
+
+			SetDrawBlendMode DX_BLENDMODE_ALPHA,256
+			DrawStringToHandle 20,21,"挑戦回数",$FFFFFF,duio_GetFontHandle("rom1cm14")
+			DrawStringXAlignRightToHandle 152,21,str(mission_progress(mapitem_max))+"回",23,$FFFFFF,duio_GetFontHandle("rom1cm14")
+			DrawStringToHandle 20,48,"残り"+(5-mission_progress(mapitem_max))+"回で強制クリア",$FFFFFF,duio_GetFontHandle("rom1cm14")
+
+			//duioに登録
+			duio_CreateButton"#Mission","mission.forced@"+cnt,forcedop_himg(mapitem_max),1420,150+180*mapitem_max,200,104
+			forcedop_uisetid(mapitem_max)=stat
+			duio_AddInButtonAnimation_Zoom forcedop_uisetid(mapitem_max),250+50*mapitem_max,350,0.6,ease_cubic_out
+			duio_AddInButtonAnimation_Fade forcedop_uisetid(mapitem_max),250+50*mapitem_max,300,ease_cubic_out
+			duio_SetButtonEvent forcedop_uisetid(mapitem_max),"mission.forced@"+cnt
+			duio_SetButtonPushSound forcedop_uisetid(mapitem_max),"pushbutton"
+
+			if (5-mission_progress(mapitem_max))==0 {
+				duio_SetButtonEnable forcedop_uisetid(mapitem_max),TRUE
+			} else {
+				duio_SetButtonEnable forcedop_uisetid(mapitem_max),FALSE
+			}
+
+		mapitem_max++
+	loop
+
+	return
+
+*scene_Mission
+
+	DrawCommonBackground FrameCount
+
+	SetDrawBlendMode DX_BLENDMODE_PMA_ALPHA,256
+	DrawGraph 0,0,hdximg(icommon_bglayer),TRUE
+
+	//鉄骨ライン
+		dim shapemovepos:shapemovepos=-(1000.0/duio_GetFPS()*FrameCount)/15
+		SetDrawBlendMode DX_BLENDMODE_PMA_ALPHA,256
+		DrawGraph shapemovepos\1920,20,hdximg(icommon_ironline),TRUE
+		DrawGraph shapemovepos\1920+1920,20,hdximg(icommon_ironline),TRUE
+
+	if (159+180*mapitem_max)>BufHeight-64-157 {
+		if insquare(cursorPosX,cursorPosY,760,0,BufWidth,BufHeight)&mapitem_max!0 {
+			mapitem_cursorwheel=cursorWheel
+			repeat mapitem_max
+				duio_SetButtonPositionY mapitem_uisetid(cnt),duio_GetButtonPositionY(mapitem_uisetid(cnt))+mapitem_cursorwheel
+				duio_SetButtonPositionY forcedop_uisetid(cnt),duio_GetButtonPositionY(forcedop_uisetid(cnt))+mapitem_cursorwheel
+			loop
+			if duio_GetButtonPositionY(mapitem_uisetid(0))>159&mapitem_cursorwheel>0 {
+				mapitem_scrollfix=duio_GetButtonPositionY(mapitem_uisetid(0))-159
+				repeat mapitem_max
+					duio_SetButtonPositionY mapitem_uisetid(cnt),duio_GetButtonPositionY(mapitem_uisetid(cnt))-mapitem_scrollfix
+					duio_SetButtonPositionY forcedop_uisetid(cnt),duio_GetButtonPositionY(forcedop_uisetid(cnt))-mapitem_scrollfix
+				loop
+			}
+			if duio_GetButtonPositionY(mapitem_uisetid(mapitem_max-1))<BufHeight-64-157&mapitem_cursorwheel<0 {
+				mapitem_scrollfix=(BufHeight-64-157)-duio_GetButtonPositionY(mapitem_uisetid(mapitem_max-1))
+				repeat mapitem_max
+					duio_SetButtonPositionY mapitem_uisetid(cnt),duio_GetButtonPositionY(mapitem_uisetid(cnt))+mapitem_scrollfix
+					duio_SetButtonPositionY forcedop_uisetid(cnt),duio_GetButtonPositionY(forcedop_uisetid(cnt))+mapitem_scrollfix
+				loop
+			}
+		}
+		
+		//スクロール位置を特定
+			if mapitem_max!0 {
+				SetDrawBlendMode DX_BLENDMODE_PMA_ALPHA,256
+				mapitem_scrollpos=duio_GetButtonPositionY(mapitem_uisetid(mapitem_max-1))-duio_GetButtonPositionY(mapitem_uisetid(0))-BufHeight+64+192+159
+			}
+
+		//スクロールバー
+			if insquare(cursorPosX,cursorPosY,1885,140,1885+20,140+710)&(cursorStatus&MOUSE_INPUT_LEFT) :mapitem_scrollclickmode=TRUE
+			if mapitem_scrollclickmode {
+				cursorPosY=limit(cursorPosY,140,140+710)
+				repeat mapitem_max
+					duio_SetButtonPositionY mapitem_uisetid(cnt),159+180*mapitem_max-int(double(mapitem_scrollpos)/700.0*double(cursorPosY-140))
+					duio_SetButtonPositionY forcedop_uisetid(cnt),159+180*mapitem_max-int(double(mapitem_scrollpos)/700.0*double(cursorPosY-140))
+				loop
+				if (cursorStatus&MOUSE_INPUT_LEFT)==FALSE :mapitem_scrollclickmode=FALSE
+			}
+			DrawGraph 1870,130+int(700.0*(-double(duio_GetButtonPositionY(mapitem_uisetid(0))-159)/double(mapitem_scrollpos))),hdximg(imusicselect_itemscroll_circle),TRUE
+	}
+
+	duio_Draw"#Mission"
+	duio_Draw"#Common-Profile"
+
+	if duio_GetButtonEventStack()!"" :gosub*scene_Mission_eventstack
+	if decidecount!-1 :decidecount+FrameTime
+	if decidecount>300 {
+		gosub*scene_Mission_ClearForcedOpButton
+		ClearMapItem
+		gosub*scene_Lobby_Init
+		curSceneTag="#Lobby"
+		return
+	}
+
+	return
+
+*scene_Mission_eventstack
+
+	switch duio_GetButtonEventStack()
+
+		case"backscene"
+			decidecount=0
+			duio_SetAllButtonOutro"#Mission"
+			duio_SetAllImageOutro"#Mission"
+			duio_SetAllTextOutro"#Mission"
+		swbreak
+
+	swend
+
+	return
+
+*scene_Mission_ClearForcedOpButton
+	repeat mapitem_max
+		DeleteGraph forcedop_himg(cnt)
+		duio_DeleteButton forcedop_uisetid(0)
+	loop
+	return

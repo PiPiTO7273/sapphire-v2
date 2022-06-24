@@ -113,6 +113,11 @@
 
 *scene_MusicSelect_Init
 
+	gosub*syncIR
+	gosub*syncRecords
+
+	dim mapitem_max
+
 	CreateMapItem MAPITEM_TYPE_GROUP,"",TRUE
 
 	//変数初期化
@@ -277,15 +282,15 @@
 			duio_Draw"#Dialog-KeywordSearch-Nomatch"
 		}
 
-	if decidecount==-1 {
+	//楽曲プレビュー >> BGMのフェード処理
+		if curpreview_time!-1 {
+			setease 0,1,ease_linear
+			duio_SetVolume"main",geteasef(curpreview_time-9000,500)
+		} else {
+			duio_SetVolume"main",1.0
+		}
 
-		//楽曲プレビュー >> BGMのフェード処理
-			if curpreview_time!-1 {
-				setease 0,1,ease_linear
-				duio_SetVolume"main",geteasef(curpreview_time-9000,500)
-			} else {
-				duio_SetVolume"main",1.0
-			}
+	if DecideJumpScene!"play" {
 
 		//スクロール処理
 			if insquare(cursorPosX,cursorPosY,662,0,BufWidth,BufHeight)&mapitem_max!0 {
@@ -371,131 +376,133 @@
 					tmpdrawpos+24
 					if tmpdrawpos>116 :break
 				loop
-	
+
 			//IRウィンドウ >> 共通レイヤー
 				SetDrawScreen hcommonLayer
 				SetDrawBlendMode DX_BLENDMODE_ALPHA,256
 				DrawGraph 30,829,hdximg(imusicselect_ir),TRUE
-	
+
 		//自己ベスト
 			setease 0,350-1,ease_cubic_out
 			repeat getease(curselect_count,60),1
 				DrawLineAA d2f(280+cnt-1),d2f(535+100-peek(mapdb_mybest_gauge4binhex(curselect_item,curselect_lv),cnt-1)),d2f(280+cnt+1),d2f(535+100-peek(mapdb_mybest_gauge4binhex(curselect_item,curselect_lv),cnt)+2),$C8C8C8
 			loop
-	
-		//検索
-			if CheckKeyInput(SearchItem_hInput)==0 {
-				//検索文字列を取得
-					sdim curSearchWord
-					cfunc64v GetKeyInputString,varptr64(curSearchWord),SearchItem_hInput
-					curSearchWord=cnvatos(curSearchWord)
+	}
 
-				//IMEのUIを設定
-					SetKeyInputStringColor2 DX_KEYINPSTRCOLOR_IME_STR_BACK,$00E1E9
-					SetKeyInputStringColor2 DX_KEYINPSTRCOLOR_IME_SELECT_STR_BACK,$FFFFFF
-					SetKeyInputStringColor2 DX_KEYINPSTRCOLOR_IME_CONV_WIN_STR,$000000
-					SetKeyInputStringColor2 DX_KEYINPSTRCOLOR_IME_CONV_WIN_SELECT_STR,$222222
-					SetKeyInputStringColor2 DX_KEYINPSTRCOLOR_IME_CONV_WIN_SELECT_STR_BACK,$EEEEEE
-					SetKeyInputStringColor2 DX_KEYINPSTRCOLOR_IME_CONV_WIN_BACK,$FFFFFF
-					SetKeyInputStringColor2 DX_KEYINPSTRCOLOR_IME_CONV_WIN_EDGE,$00E1E9
-					SetKeyInputStringFont duio_GetFontHandle("rom1cm16")
+	//検索
+		if CheckKeyInput(SearchItem_hInput)==0 {
+			//検索文字列を取得
+				sdim curSearchWord
+				cfunc64v GetKeyInputString,varptr64(curSearchWord),SearchItem_hInput
+				curSearchWord=cnvatos(curSearchWord)
 
-				//入力中の文字列を描画
-					if duio_GetImageCount(duio_ImageID2UIsetID("musicselect_search_bg"))>200 {
-						SetDrawBlendMode DX_BLENDMODE_ALPHA,256
-						DrawKeyInputString 1375,156,SearchItem_hInput
-					}
+			//IMEのUIを設定
+				SetKeyInputStringColor2 DX_KEYINPSTRCOLOR_IME_STR_BACK,$00E1E9
+				SetKeyInputStringColor2 DX_KEYINPSTRCOLOR_IME_SELECT_STR_BACK,$FFFFFF
+				SetKeyInputStringColor2 DX_KEYINPSTRCOLOR_IME_CONV_WIN_STR,$000000
+				SetKeyInputStringColor2 DX_KEYINPSTRCOLOR_IME_CONV_WIN_SELECT_STR,$222222
+				SetKeyInputStringColor2 DX_KEYINPSTRCOLOR_IME_CONV_WIN_SELECT_STR_BACK,$EEEEEE
+				SetKeyInputStringColor2 DX_KEYINPSTRCOLOR_IME_CONV_WIN_BACK,$FFFFFF
+				SetKeyInputStringColor2 DX_KEYINPSTRCOLOR_IME_CONV_WIN_EDGE,$00E1E9
+				SetKeyInputStringFont duio_GetFontHandle("rom1cm16")
 
-				//改行コードを検出（ENTERで検索）
-					if checkLF(curSearchWord) {
-						delLF curSearchWord
-						duio_SetImageOutro duio_ImageID2UIsetID("musicselect_search_bg"),TRUE
-						DeleteKeyInput SearchItem_hInput
-		
-						CreateMapItem folder_mode,folder_dropdown_event(folder_cur),TRUE,curSearchWord
-					}
-	
-				//カーソル点滅
-					if SceneCount/8\2==0 :SetKeyInputStringColor2 DX_KEYINPSTRCOLOR_NORMAL_CURSOR,$000000:else:SetKeyInputStringColor2 DX_KEYINPSTRCOLOR_NORMAL_CURSOR,$FFFFFF
-			} else {
-				//入力終了
-				if duio_GetImageOutroFlag(duio_ImageID2UIsetID("musicselect_search_bg"))==FALSE&CheckKeyInput(SearchItem_hInput)!-1 {
+			//入力中の文字列を描画
+				if duio_GetImageCount(duio_ImageID2UIsetID("musicselect_search_bg"))>200 {
+					SetDrawBlendMode DX_BLENDMODE_ALPHA,256
+					DrawKeyInputString 1375,156,SearchItem_hInput
+				}
+
+			//改行コードを検出（ENTERで検索）
+				if checkLF(curSearchWord) {
+					delLF curSearchWord
 					duio_SetImageOutro duio_ImageID2UIsetID("musicselect_search_bg"),TRUE
 					DeleteKeyInput SearchItem_hInput
 	
-					//フィルタ処理開始
 					CreateMapItem folder_mode,folder_dropdown_event(folder_cur),TRUE,curSearchWord
 				}
+
+			//カーソル点滅
+				if SceneCount/8\2==0 :SetKeyInputStringColor2 DX_KEYINPSTRCOLOR_NORMAL_CURSOR,$000000:else:SetKeyInputStringColor2 DX_KEYINPSTRCOLOR_NORMAL_CURSOR,$FFFFFF
+		} else {
+			//入力終了
+			if duio_GetImageOutroFlag(duio_ImageID2UIsetID("musicselect_search_bg"))==FALSE&CheckKeyInput(SearchItem_hInput)!-1 {
+				duio_SetImageOutro duio_ImageID2UIsetID("musicselect_search_bg"),TRUE
+				DeleteKeyInput SearchItem_hInput
+
+				//フィルタ処理開始
+				CreateMapItem folder_mode,folder_dropdown_event(folder_cur),TRUE,curSearchWord
 			}
-
-		curselect_count++
-
-		//オプション設定
-		if optionwindowflag {
-
-			duio_ChangeTextBody duio_TextID2UIsetID("playoption_val_objspeed"),strf("x%.2f",pfreg_AddSpeed)		//オブジェクトの速さ
-			duio_ChangeTextBody duio_TextID2UIsetID("playoption_val_judgeoffset"),str(pfreg_JudgeOffset)+" ms"		//判定調整
-			duio_ChangeTextBody duio_TextID2UIsetID("playoption_val_volbgm"),str(volume_BGM)+" %"				//BGM音量
-			duio_ChangeTextBody duio_TextID2UIsetID("playoption_val_volse"),str(volume_SE)+" %"					//SE音量
-			duio_ChangeTextBody duio_TextID2UIsetID("playoption_val_volplay"),str(volume_PLAY)+" %"				//PLAY音量
-
-			//ボタン押し続け判定
-				//objspeed
-				if duio_GetButtonPushTime(duio_ButtonID2UIsetID("playoption_button_objspeed_left"))>500 {
-					if SceneCount\5==0 :pfreg_AddSpeed-0.05
-					if pfreg_AddSpeed<0.1 :pfreg_AddSpeed=0.1
-				}
-				if duio_GetButtonPushTime(duio_ButtonID2UIsetID("playoption_button_objspeed_right"))>500 {
-					if SceneCount\5==0 :pfreg_AddSpeed+0.05
-					if pfreg_AddSpeed>10.0 :pfreg_AddSpeed=10.0
-				}
-				//judgeoffset
-				if duio_GetButtonPushTime(duio_ButtonID2UIsetID("playoption_button_judgeoffset_left"))>500 {
-					if SceneCount\5==0 :pfreg_JudgeOffset-1
-				}
-				if duio_GetButtonPushTime(duio_ButtonID2UIsetID("playoption_button_judgeoffset_right"))>500 {
-					if SceneCount\5==0 :pfreg_JudgeOffset+1
-				}
-				//bgm音量
-				if duio_GetButtonPushTime(duio_ButtonID2UIsetID("playoption_button_volbgm_left"))>500 {
-					if SceneCount\5==0 :volume_BGM-5
-					if volume_BGM<0 :volume_BGM=0
-				}
-				if duio_GetButtonPushTime(duio_ButtonID2UIsetID("playoption_button_volbgm_right"))>500 {
-					if SceneCount\5==0 :volume_BGM+5
-					if volume_BGM>100 :volume_BGM=100
-				}
-				//se音量
-				if duio_GetButtonPushTime(duio_ButtonID2UIsetID("playoption_button_volse_left"))>500 {
-					if SceneCount\5==0 :volume_SE-5
-					if volume_SE<0 :volume_SE=0
-				}
-				if duio_GetButtonPushTime(duio_ButtonID2UIsetID("playoption_button_volse_right"))>500 {
-					if SceneCount\5==0 :volume_SE+5
-					if volume_SE>100 :volume_SE=100
-				}
-				//play音量
-				if duio_GetButtonPushTime(duio_ButtonID2UIsetID("playoption_button_volplay_left"))>500 {
-					if SceneCount\5==0 :volume_PLAY-5
-					if volume_PLAY<0 :volume_PLAY=0
-				}
-				if duio_GetButtonPushTime(duio_ButtonID2UIsetID("playoption_button_volplay_right"))>500 {
-					if SceneCount\5==0 :volume_PLAY+5
-					if volume_PLAY>100 :volume_PLAY=100
-				}
-
-			//右クリックでリセット判定
-				if insquare(cursorPosX,cursorPosY,420,206,420+110,206+35)&(cursorStatus&MOUSE_INPUT_RIGHT) {
-					pfreg_JudgeOffset=0
-				}
-
-			duio_Draw"#PlayOption"
-			if optionwindowclosecount!-1 :optionwindowclosecount+1000/duio_GetFPS()
-			if optionwindowclosecount>1000 :optionwindowflag=FALSE
 		}
 
-		if helpscene!"" :duio_Draw helpscene
-	} else {
+	curselect_count++
+
+	//オプション設定
+	if optionwindowflag {
+
+		duio_ChangeTextBody duio_TextID2UIsetID("playoption_val_objspeed"),strf("x%.2f",pfreg_AddSpeed)		//オブジェクトの速さ
+		duio_ChangeTextBody duio_TextID2UIsetID("playoption_val_judgeoffset"),str(pfreg_JudgeOffset)+" ms"		//判定調整
+		duio_ChangeTextBody duio_TextID2UIsetID("playoption_val_volbgm"),str(volume_BGM)+" %"				//BGM音量
+		duio_ChangeTextBody duio_TextID2UIsetID("playoption_val_volse"),str(volume_SE)+" %"					//SE音量
+		duio_ChangeTextBody duio_TextID2UIsetID("playoption_val_volplay"),str(volume_PLAY)+" %"				//PLAY音量
+
+		//ボタン押し続け判定
+			//objspeed
+			if duio_GetButtonPushTime(duio_ButtonID2UIsetID("playoption_button_objspeed_left"))>500 {
+				if SceneCount\5==0 :pfreg_AddSpeed-0.05
+				if pfreg_AddSpeed<0.1 :pfreg_AddSpeed=0.1
+			}
+			if duio_GetButtonPushTime(duio_ButtonID2UIsetID("playoption_button_objspeed_right"))>500 {
+				if SceneCount\5==0 :pfreg_AddSpeed+0.05
+				if pfreg_AddSpeed>10.0 :pfreg_AddSpeed=10.0
+			}
+			//judgeoffset
+			if duio_GetButtonPushTime(duio_ButtonID2UIsetID("playoption_button_judgeoffset_left"))>500 {
+				if SceneCount\5==0 :pfreg_JudgeOffset-1
+			}
+			if duio_GetButtonPushTime(duio_ButtonID2UIsetID("playoption_button_judgeoffset_right"))>500 {
+				if SceneCount\5==0 :pfreg_JudgeOffset+1
+			}
+			//bgm音量
+			if duio_GetButtonPushTime(duio_ButtonID2UIsetID("playoption_button_volbgm_left"))>500 {
+				if SceneCount\5==0 :volume_BGM-5
+				if volume_BGM<0 :volume_BGM=0
+			}
+			if duio_GetButtonPushTime(duio_ButtonID2UIsetID("playoption_button_volbgm_right"))>500 {
+				if SceneCount\5==0 :volume_BGM+5
+				if volume_BGM>100 :volume_BGM=100
+			}
+			//se音量
+			if duio_GetButtonPushTime(duio_ButtonID2UIsetID("playoption_button_volse_left"))>500 {
+				if SceneCount\5==0 :volume_SE-5
+				if volume_SE<0 :volume_SE=0
+			}
+			if duio_GetButtonPushTime(duio_ButtonID2UIsetID("playoption_button_volse_right"))>500 {
+				if SceneCount\5==0 :volume_SE+5
+				if volume_SE>100 :volume_SE=100
+			}
+			//play音量
+			if duio_GetButtonPushTime(duio_ButtonID2UIsetID("playoption_button_volplay_left"))>500 {
+				if SceneCount\5==0 :volume_PLAY-5
+				if volume_PLAY<0 :volume_PLAY=0
+			}
+			if duio_GetButtonPushTime(duio_ButtonID2UIsetID("playoption_button_volplay_right"))>500 {
+				if SceneCount\5==0 :volume_PLAY+5
+				if volume_PLAY>100 :volume_PLAY=100
+			}
+
+		//右クリックでリセット判定
+			if insquare(cursorPosX,cursorPosY,420,206,420+110,206+35)&(cursorStatus&MOUSE_INPUT_RIGHT) {
+				pfreg_JudgeOffset=0
+			}
+
+		duio_Draw"#PlayOption"
+		if optionwindowclosecount!-1 :optionwindowclosecount+1000/duio_GetFPS()
+		if optionwindowclosecount>1000 :optionwindowflag=FALSE
+	}
+
+	if helpscene!"" :duio_Draw helpscene
+
+	if decidecount!-1 {
 
 		switch DecideJumpScene
 
@@ -517,6 +524,7 @@
 				duio_Draw"#MusicSelect-Decide"
 
 				if (decidecount*(1000.0/duio_GetFPS()))>1500 {
+					ClearMapItem
 					gosub*scene_MusicSelect_free
 					gosub*scene_Gameplay_Init
 					curSceneTag="#Gameplay"
@@ -528,6 +536,7 @@
 				duio_Draw"#Shutter"
 
 				if decidecount*FrameTime>1000 {
+					ClearMapItem
 					gosub*scene_MusicSelect_PauseAllPreview
 					PauseMovieToGraph hdximg(ibg_common)
 					gosub*scene_Lobby_Init
@@ -544,6 +553,8 @@
 	if SceneTime<1000 {
 		duio_Draw"#Shutter"
 	}
+
+	if IsPushed(KEY_INPUT_ESCAPE)&decidecount==-1 :duio_SetEventStack"backscene"
 
 	if duio_GetButtonEventStack()!"" :gosub*scene_MusicSelect_eventstack
 	
@@ -1050,7 +1061,7 @@
 
 	if curpreview_time>9000|curpreview_time==-1 {
 		gosub*scene_MusicSelect_PauseAllPreview
-		duio_SetVolume"main",0.0
+		duio_StopSound"main"
 		cfunc64v BASS_ChannelSetPosition,mapdb_hpreview(curselect_item,curselect_lv),0,0
 		cfunc64v BASS_ChannelPlay,mapdb_hpreview(curselect_item,curselect_lv)
 		curPlayhPreview=mapdb_hpreview(curselect_item,curselect_lv)

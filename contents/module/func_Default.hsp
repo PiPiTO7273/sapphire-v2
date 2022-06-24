@@ -107,7 +107,7 @@
 		loop
 		return
 
-	//ミリ秒単位の値を渡すとMM:SSの形式の文字列に整形する
+	//ミリ秒単位の値を渡すとMM:SSの形式の文字列に変形する
 	#defcfunc hm2str int x
 		return strf("%02d:%02d",x/1000/60,x/1000\60)
 
@@ -119,6 +119,14 @@
 			case"CHAOS":return 2:swbreak
 		swend
 		return 0
+
+	#defcfunc difid2difstr int x
+		switch x
+			case 0:return"NORMAL":swbreak
+			case 1:return"HARD":swbreak
+			case 2:return"CHAOS":swbreak
+		swend
+		return""
 
 	//能力値を計算する
 	#defcfunc GetPfPoint int _lev,int _score,int _maxcombo,int _dif
@@ -207,6 +215,54 @@
 			default
 				return x
 			swbreak
+		swend
+		return
+
+	//起動の進捗を表示
+	#deffunc ShowBootProgress int n
+		SetDrawScreen DX_SCREEN_FRONT
+		ClearDrawScreen
+		LoadGraphScreen 720,450,"contents/graphic/bootprog_"+n+".png":WaitVSync 1:wait 10
+		return
+
+	#defcfunc ToDxlibKeyCode int _ascii
+		switch _ascii
+			case'a':return KEY_INPUT_A:swbreak
+			case'b':return KEY_INPUT_B:swbreak
+			case'c':return KEY_INPUT_C:swbreak
+			case'd':return KEY_INPUT_D:swbreak
+			case'e':return KEY_INPUT_E:swbreak
+			case'f':return KEY_INPUT_F:swbreak
+			case'g':return KEY_INPUT_G:swbreak
+			case'h':return KEY_INPUT_H:swbreak
+			case'i':return KEY_INPUT_I:swbreak
+			case'j':return KEY_INPUT_J:swbreak
+			case'k':return KEY_INPUT_K:swbreak
+			case'l':return KEY_INPUT_L:swbreak
+			case'm':return KEY_INPUT_M:swbreak
+			case'n':return KEY_INPUT_N:swbreak
+			case'o':return KEY_INPUT_O:swbreak
+			case'p':return KEY_INPUT_P:swbreak
+			case'q':return KEY_INPUT_Q:swbreak
+			case'r':return KEY_INPUT_R:swbreak
+			case's':return KEY_INPUT_S:swbreak
+			case't':return KEY_INPUT_T:swbreak
+			case'u':return KEY_INPUT_U:swbreak
+			case'v':return KEY_INPUT_V:swbreak
+			case'w':return KEY_INPUT_W:swbreak
+			case'x':return KEY_INPUT_X:swbreak
+			case'y':return KEY_INPUT_Y:swbreak
+			case'z':return KEY_INPUT_Z:swbreak
+			case'0':return KEY_INPUT_0:swbreak
+			case'1':return KEY_INPUT_1:swbreak
+			case'2':return KEY_INPUT_2:swbreak
+			case'3':return KEY_INPUT_3:swbreak
+			case'4':return KEY_INPUT_4:swbreak
+			case'5':return KEY_INPUT_5:swbreak
+			case'6':return KEY_INPUT_6:swbreak
+			case'7':return KEY_INPUT_7:swbreak
+			case'8':return KEY_INPUT_8:swbreak
+			case'9':return KEY_INPUT_9:swbreak
 		swend
 		return
 

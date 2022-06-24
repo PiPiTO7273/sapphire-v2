@@ -5,17 +5,32 @@
 	dim SceneTime
 	sdim DecideJumpScene
 	dim DecideTime
+	dim AcceptGiftCodeFlag
+	sdim InputGiftCode
+	dim AcceptAsciiTable
+	AcceptAsciiTable="abcdefghijklmnopqrstuvwxyz0123456789"
 	DecideTime=-1
 
 	duio_InitAllCount"#Lobby"
-	duio_InitAllCount"#Common-Profile"
+
+	duio_SetActiveScene"#Dialog-Common-InvalidAction",FALSE
 
 	duio_SetAllButtonVisible"#Lobby",TRUE
 	duio_SetAllImageVisible"#Lobby",TRUE
 	duio_SetAllTextVisible"#Lobby",TRUE
 
+	duio_SetActiveScene"#Accept-GiftCode",FALSE
+	duio_SetAllButtonVisible"#Accept-GiftCode",FALSE
+	duio_SetAllImageVisible"#Accept-GiftCode",FALSE
+	duio_SetAllTextVisible"#Accept-GiftCode",FALSE
+
+	duio_SetActiveScene"#Response-GiftCode",FALSE
+	duio_SetAllButtonVisible"#Response-GiftCode",FALSE
+	duio_SetAllImageVisible"#Response-GiftCode",FALSE
+	duio_SetAllTextVisible"#Response-GiftCode",FALSE
+
+	if duio_GetImageOutroFlag(duio_ImageID2UIsetID("shutter_00"))!TRUE :duio_PlaySound"shutter_out"
 	duio_SetAllImageOutro"#Shutter"
-	duio_PlaySound"shutter_out"
 
 	UpdateProfileDisp
 
@@ -34,7 +49,7 @@
 	DrawGraph 0,0,hdximg(icommon_bglayer),TRUE
 
 	//鉄骨ライン
-		dim shapemovepos:shapemovepos=-(1000.0/duio_GetFPS()*SceneCount)/15
+		dim shapemovepos:shapemovepos=-(1000.0/duio_GetFPS()*FrameCount)/15
 		SetDrawBlendMode DX_BLENDMODE_PMA_ALPHA,256
 		DrawGraph shapemovepos\1920,20,hdximg(icommon_ironline),TRUE
 		DrawGraph shapemovepos\1920+1920,20,hdximg(icommon_ironline),TRUE
@@ -43,16 +58,52 @@
 	duio_Draw"#Common-Profile"
 	duio_Draw"#Shutter"
 	duio_Draw"#Dialog-Common-InvalidAction"
+	duio_Draw"#Accept-GiftCode"
+	duio_Draw"#Response-GiftCode"
 
-	if duio_GetButtonEventStack()!"" :gosub*scene_Lobby_eventstack
+	if AcceptGiftCodeFlag {
+		SetDrawBlendMode DX_BLENDMODE_ALPHA,256
+		repeat 10
+			if cnt>strlen(InputGiftCode) :break
+			if strmid(InputGiftCode,cnt,1)==""&SceneCount/4\2==0 {
+				DrawStringXCenterToHandle 715+50*cnt,514,"_",40,$000000,duio_GetFontHandle("rom1cm24")
+			} else {
+				DrawStringXCenterToHandle 715+50*cnt,514,strmid(InputGiftCode,cnt,1),40,$000000,duio_GetFontHandle("rom1cm24")
+			}
+		loop
+		repeat strlen(AcceptAsciiTable)
+			if strlen(InputGiftCode)>=10 :break
+			if IsPushed(ToDxlibKeyCode(peek(AcceptAsciiTable,cnt))) {
+				duio_PlaySound"opchange"
+				if peek(AcceptAsciiTable,cnt)>=97&peek(AcceptAsciiTable,cnt)<=122 {	//アルファベットを大文字化
+					poke InputGiftCode,strlen(InputGiftCode),peek(AcceptAsciiTable,cnt)-32
+				} else {
+					poke InputGiftCode,strlen(InputGiftCode),peek(AcceptAsciiTable,cnt)
+				}
+			}
+		loop
+		if IsPushed(KEY_INPUT_BACK) :InputGiftCode=strmid(InputGiftCode,0,strlen(InputGiftCode)-1):duio_PlaySound"opchange"
+		if IsPushed(KEY_INPUT_DELETE) :sdim InputGiftCode:duio_PlaySound"cancel"
+		if IsPushed(KEY_INPUT_RETURN) :duio_PlaySound"decide":duio_SetEventStack"giftcode_ok"
+	}
 
 	DecideTime+FrameTime
 
+	//シャッター演出あり
 	if DecideTime>1000 {
 		switch DecideJumpScene
 			case"freeplay"
 				gosub*scene_MusicSelect_Init
 				curSceneTag="#MusicSelect"
+			swbreak
+		swend
+	}
+	//シャッター演出なし
+	if DecideTime>300 {
+		switch DecideJumpScene
+			case"mission"
+				gosub*scene_Mission_Init
+				curSceneTag="#Mission"
 			swbreak
 			case"store"
 				gosub*scene_Store_Init
@@ -60,6 +111,11 @@
 			swbreak
 		swend
 	}
+
+	if duio_IsActiveScene("#Dialog-Common-InvalidAction")&IsPushed(KEY_INPUT_RETURN) :duio_SetEventStack"dialog_common_invalidaction_close"
+	if duio_IsActiveScene("#Response-GiftCode")&IsPushed(KEY_INPUT_RETURN) :duio_SetEventStack"giftcode_res_ok":duio_PlaySound"decide"
+
+	if duio_GetButtonEventStack()!"" :gosub*scene_Lobby_eventstack
 
 	return
 
@@ -78,8 +134,19 @@
 			DecideJumpScene="freeplay"
 		swbreak
 
+		case"mission"
+			;gosub*onshutter
+			DecideTime=0
+
+			duio_SetAllButtonOutro"#Lobby"
+			duio_SetAllImageOutro"#Lobby"
+			duio_SetAllTextOutro"#Lobby"
+
+			DecideJumpScene="mission"
+		swbreak
+
 		case"store"
-			gosub*onshutter
+			;gosub*onshutter
 			DecideTime=0
 
 			duio_SetAllButtonOutro"#Lobby"
@@ -91,6 +158,68 @@
 
 		case"openweb"
 			exec"http://"+duio_idsGet("Server"),16
+		swbreak
+
+		case"gift"
+			sdim InputGiftCode
+			duio_SetActiveScene"#Lobby",FALSE
+			duio_SetActiveScene"#Accept-GiftCode",TRUE
+			duio_InitAllCount"#Accept-GiftCode"
+			duio_SetAllButtonVisible"#Accept-GiftCode",TRUE
+			duio_SetAllImageVisible"#Accept-GiftCode",TRUE
+			duio_SetAllTextVisible"#Accept-GiftCode",TRUE
+			AcceptGiftCodeFlag=TRUE
+		swbreak
+
+		case"giftcode_ok"
+			duio_SetActiveScene"#Accept-GiftCode",FALSE
+			duio_SetAllButtonOutro"#Accept-GiftCode"
+			duio_SetAllImageOutro"#Accept-GiftCode"
+			duio_SetAllTextOutro"#Accept-GiftCode"
+			AcceptGiftCodeFlag=FALSE
+
+			ExecGiftCode InputGiftCode
+
+			duio_SetActiveScene"#Response-GiftCode",TRUE
+			duio_InitAllCount"#Response-GiftCode"
+			duio_SetAllButtonVisible"#Response-GiftCode",TRUE
+			duio_SetAllImageVisible"#Response-GiftCode",TRUE
+			duio_SetAllTextVisible"#Response-GiftCode",TRUE
+			switch stat
+				case 0
+					//正常終了
+					duio_ChangeTextBody duio_TextID2UIsetID("giftcode_res_text"),refstr+"\n\nを獲得しました。"
+				swbreak
+				case 1
+					//使用済み
+					duio_ChangeTextBody duio_TextID2UIsetID("giftcode_res_text"),"\n入力されたギフトコードは既に使用されています。"
+				swbreak
+				case 2
+					//存在しないコード
+					duio_ChangeTextBody duio_TextID2UIsetID("giftcode_res_text"),"入力されたギフトコードは存在しません。\n\nもう一度正しく入力してください。"
+				swbreak
+				default
+					//エラー
+					duio_ChangeTextBody duio_TextID2UIsetID("giftcode_res_text"),"\n不明なエラーです。"
+				swbreak
+			swend
+		swbreak
+
+		case"giftcode_res_ok"
+			duio_SetActiveScene"#Lobby",TRUE
+			duio_SetActiveScene"#Response-GiftCode",FALSE
+			duio_SetAllButtonOutro"#Response-GiftCode"
+			duio_SetAllImageOutro"#Response-GiftCode"
+			duio_SetAllTextVisible"#Response-GiftCode",FALSE
+		swbreak
+
+		case"giftcode_cancel"
+			duio_SetActiveScene"#Lobby",TRUE
+			duio_SetActiveScene"#Accept-GiftCode",FALSE
+			duio_SetAllButtonOutro"#Accept-GiftCode"
+			duio_SetAllImageOutro"#Accept-GiftCode"
+			duio_SetAllTextOutro"#Accept-GiftCode"
+			AcceptGiftCodeFlag=FALSE
 		swbreak
 
 		case"game.exit"

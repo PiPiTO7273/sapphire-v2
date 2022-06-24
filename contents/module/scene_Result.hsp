@@ -299,11 +299,11 @@
 		irsend_flag=TRUE
 	}
 	if SceneTime>2100&recordload_flag==FALSE {
-		gosub*syncRecords
+		;gosub*syncRecords
 		recordload_flag=TRUE
 	}
 	if SceneTime>2500&irload_flag==FALSE {
-		gosub*syncIR
+		;gosub*syncIR
 		irload_flag=TRUE
 
 		duio_SetImageOutro duio_ImageID2UIsetID("result_status_load"),TRUE

@@ -81,3 +81,5 @@ https://icons8.com/icon/V9u2S9AhOCBt/combi-ticket
 https://icons8.com/icon/EHyUO6ZGSRkX/lock
 
 https://icons8.com/icon/17333/diamond
+
+https://icons8.com/icon/kLORTzuNOM2d/wrapped-gift

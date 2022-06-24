@@ -34,6 +34,7 @@ goto*Startup
 #include"contents/module/scene_Gameplay.hsp"			//ゲームプレイ
 #include"contents/module/scene_Result.hsp"			//リザルト
 #include"contents/module/scene_Store.hsp"			//ストア
+#include"contents/module/scene_Mission.hsp"			//ミッション
 #include"contents/module/scene_ErrorDialog.hsp"		//エラーダイアログ
 
 #epack"start.ax"
@@ -100,7 +101,7 @@ goto*Startup
 		SetAlwaysRunFlag TRUE
 		ChangeWindowMode TRUE
 		SetGraphMode DispWidth,DispHeight
-		SetWindowVisibleFlag FALSE
+		;SetWindowVisibleFlag FALSE
 		;SetWaitVSyncFlag FALSE
 		SetWindowStyleMode 7
 		SetWindowSizeChangeEnableFlag TRUE,TRUE
@@ -108,6 +109,8 @@ goto*Startup
 		if MSAAflag :SetDrawMode DX_DRAWMODE_BILINEAR
 		SetUsePremulAlphaConvertLoad TRUE
 		SetMouseDispFlag FALSE
+
+		ShowBootProgress 0
 
 		//DirectXバージョン出力
 		sdim dxversionarr:dxversionarr="[ERROR]","9","9 EX","11"
@@ -117,6 +120,7 @@ goto*Startup
 		SetCameraNearFar d2f(100),d2f(4000)
 
 		LoadAllImgResource
+		ShowBootProgress 1
 
 	//BASS audio library初期化
 		logmes GetTimeStamp()+" [bass] Initializing audio component..."
@@ -234,6 +238,16 @@ goto*Startup
 		hdximg(istore_fragment10)=LoadGraph("contents/graphic/store_item_fragment_x10.png")
 		hdximg(istore_show_purchased_on)=LoadGraph("contents/graphic/store_purchased_on.png")
 		hdximg(istore_show_purchased_off)=LoadGraph("contents/graphic/store_purchased_off.png")
+		hdximg(istore_category)=LoadGraph("contents/graphic/store_layer_curcategory.png")
+		hdximg(istore_item_purchased)=LoadGraph("contents/graphic/store_item_purchased.png")
+		hdximg(istore_icon_ticket)=LoadGraph("contents/graphic/store_icon_ticket.png")
+		hdximg(istore_icon_fragment_0)=LoadGraph("contents/graphic/store_icon_fragment_0.png")
+		hdximg(istore_icon_fragment_1)=LoadGraph("contents/graphic/store_icon_fragment_1.png")
+		hdximg(istore_icon_tmp)=MakeScreen(150,150,TRUE)
+
+		hdximg(imission_item)=LoadGraph("contents/graphic/mission_item.png")
+		hdximg(imission_forced_bg)=LoadGraph("contents/graphic/mission_forced.png")
+		hdximg(imission_forced_gauge)=LoadGraph("contents/graphic/mission_forced_gauge.png")
 
 		//オブジェクトの配置
 			repeat 6
@@ -362,8 +376,12 @@ goto*Startup
 		dim SubThreadCount
 		dim DrawThreadTime
 		dim SubThreadTime
+		dim bfKeyInputFlag,256
+		dim KeyInputFlag,256
+		dim DebugMode
 
 	//ライブラリ読み込み
+		ShowBootProgress 2
 		sdim mapgroup
 		dim mapgroup_max
 		repeat
@@ -598,9 +616,12 @@ goto*Startup
 		loop
 
 		//IR
-			gosub*syncIR
+			ShowBootProgress 3
+			;gosub*syncIR
+			gosub*syncRecords
 
 		//プロフィール取得
+			ShowBootProgress 4
 			sdim PFrawdata:sdim PFdivdata
 			sdim INIkey:sdim INIvalue
 			PFrawdata=PortalWebSvc_DownloadProfile(PlayerID,PlayerPassword)
@@ -677,12 +698,38 @@ goto*Startup
 					case"XODAV2.SELECT.LV":curselect_lv=int(INIvalue):swbreak
 				swend
 
+				//使用済みのギフトコード
+				if strmid(INIkey,0,strlen("XODA.GIFTCODE.USED"))=="XODA.GIFTCODE.USED" {
+					if int(INIvalue) {
+						sdim tmpunlockinfo
+						split INIkey,".",tmpunlockinfo
+						duio_idsWrite"_GiftCodeUsed."+tmpunlockinfo(3),"TRUE"
+					}
+				}
+
+				//譜面のアンロック
 				if strmid(INIkey,0,strlen("XODA.MAP.UNLOCK"))=="XODA.MAP.UNLOCK" {
 					if int(INIvalue) {
 						sdim tmpunlockinfo
 						split INIkey,".",tmpunlockinfo
 						duio_idsWrite"_MapUnlock."+tmpunlockinfo(3),"TRUE"
 					}
+				}
+
+				//カスタマイズパーツのアンロック
+				if strmid(INIkey,0,strlen("XODA.CUSTOMIZE.UNLOCK"))=="XODA.CUSTOMIZE.UNLOCK" {
+					if int(INIvalue) {
+						sdim tmpunlockinfo
+						split INIkey,".",tmpunlockinfo
+						duio_idsWrite"_Customize."+tmpunlockinfo(3),"TRUE"
+					}
+				}
+
+				//ミッションの進捗
+				if strmid(INIkey,0,strlen("XODA.MISSION.PROGRESS"))=="XODA.MISSION.PROGRESS" {
+					sdim tmpunlockinfo
+					split INIkey,".",tmpunlockinfo
+					duio_idsWrite"_Mission."+tmpunlockinfo(3),INIvalue
 				}
 			loop
 
@@ -711,12 +758,37 @@ goto*Startup
 			customize_note_hsingle(cnt)=LoadGraph("contents/graphic/"+customize_tmppath(0))
 			customize_note_hhold(cnt)=LoadGraph("contents/graphic/"+customize_tmppath(1))
 			customize_note_price(cnt)=int(customize_pricetmp)
-			customize_note_unlockflag(cnt)=FALSE
+			
+			if duio_idsGet("_Customize.n"+cnt)=="TRUE" {
+				customize_note_unlockflag(cnt)=TRUE
+			} else {
+				customize_note_unlockflag(cnt)=FALSE
+			}
 			customize_note_max++
 		loop
 
+	//ミッション読み込み
+
+		sdim mission_idstmp
+
+		sdim mission_playmap
+		sdim mission_type
+		sdim mission_typeprm
+		sdim mission_reward
+		dim mission_progress
+		dim mission_max
+
+		repeat
+			mission_idstmp=duio_idsGet("mission@"+cnt)
+			if mission_idstmp=="" :break
+			split mission_idstmp,",",mission_playmap(mission_max),mission_type(mission_max),mission_typeprm(mission_max),mission_reward(mission_max)
+			mission_progress(mission_max)=int(duio_idsGet("_Mission."+cnt))
+			mission_max++
+		loop
+
+
 	//初期状態
-	SetWindowVisibleFlag TRUE
+	;SetWindowVisibleFlag TRUE
 
 	//オプション画面のボタン配置
 		dim playoption_objplace_hbuttonimg,6,2
@@ -760,6 +832,10 @@ goto*Startup
 	SceneTime=int(1000.0/duio_GetFPS()*SceneCount)
 	FrameTime=1000/duio_GetFPS()
 
+	repeat 256
+		KeyInputFlag(cnt)=CheckHitKey(cnt)
+	loop
+
 	//カーソル座標
 		cfunc64v GetMousePoint,varptr64(cursorPosX),varptr64(cursorPosY)
 		cursorStatus=GetMouseInput()
@@ -801,6 +877,9 @@ goto*Startup
 			case"#Store"
 				gosub*scene_Store
 			swbreak
+			case"#Mission"
+				gosub*scene_Mission
+			swbreak
 		swend
 
 	//マウスカーソル
@@ -817,12 +896,14 @@ goto*Startup
 		CurFPS=double(cfunc64f(GetFPS))
 		SumFPS+CurFPS
 		if FrameCount\60==0 :AvgFPS=SumFPS/60.0:SumFPS=0.0
-		/*DrawOverlayString 0,0,"MainThread FPS="+strf("%.2f",CurFPS)
-		DrawOverlayString 0,20,"MainThread Average-FPS="+strf("%.2f",AvgFPS)
-		DrawOverlayString 0,40,"SubThread FPS="+strf("%.2f",CurFPS*double(SubThreadCount))
-		DrawOverlayString 0,60,"Draw "+DrawThreadTime+"ms , SubThread "+SubThreadTime+" ms"
-		DrawOverlayString 0,80,"Cursor ("+cursorPosX+","+cursorPosY+") w="+cursorWheel
-		DrawOverlayString 0,100,"Scene="+curSceneTag*/
+		if DebugMode {
+			DrawOverlayString 0,0,"MainThread FPS="+strf("%.2f",CurFPS)
+			DrawOverlayString 0,20,"MainThread Average-FPS="+strf("%.2f",AvgFPS)
+			DrawOverlayString 0,40,"SubThread FPS="+strf("%.2f",CurFPS*double(SubThreadCount))
+			DrawOverlayString 0,60,"Draw "+DrawThreadTime+"ms , SubThread "+SubThreadTime+" ms"
+			DrawOverlayString 0,80,"Cursor ("+cursorPosX+","+cursorPosY+") w="+cursorWheel
+			DrawOverlayString 0,100,"Scene="+curSceneTag
+		}
 
 	if CheckHitKey(KEY_INPUT_HOME) {
 		repeat UIset_Button_max:UIset_Button_count(cnt)=0:loop
@@ -832,6 +913,10 @@ goto*Startup
 
 	bfcursorStatus=cursorStatus
 	bfCursorWheelraw=cursorWheelraw
+
+	repeat 256
+		bfKeyInputFlag(cnt)=KeyInputFlag(cnt)
+	loop
 
 	SceneCount++
 	FrameCount++

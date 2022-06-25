@@ -2,6 +2,10 @@
 //	Sapphire v2.xx Project
 //	(c) 2022 puoro.
 
+//既知の不具合
+// - SINGLEオプション使用時かつBPM変更地点がロングノーツ終点に存在する場合に、描画と判定がずれる
+//   -> BPM変更地点に存在しないレーンのダミーオブジェクトを配置すると解決？？
+
 #include"hsp3_64.as"
 #include"contents/module/hspint64.as"
 
@@ -155,6 +159,7 @@ goto*Startup
 		duio_LoadFontData"contents/fontdata"
 		duio_LoadSoundData"contents/sound/data.txt"
 		duio_LoadScript duioScenePath,duioScenePath+".tmp"
+		duio_SetButtonHoverSound"hover"
 
 	//キー登録
 		#addition"contents/module/puorosvc.key"

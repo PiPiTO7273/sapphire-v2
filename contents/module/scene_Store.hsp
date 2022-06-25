@@ -97,6 +97,7 @@
 
 	duio_Draw"#Store-Confirm"
 	duio_Draw"#Store-LepusError"
+	duio_Draw"#Store-Confirm-LillyConv"
 	;duio_Draw"#Shutter"
 
 	if duio_GetButtonEventStack()!"" :gosub*scene_Store_eventstack
@@ -142,6 +143,38 @@
 			duio_SetAllImageOutro"#Store"
 			duio_SetAllTextOutro"#Store"
 			;gosub*onshutter
+		swbreak
+
+		//変換
+		case"exchange"
+			duio_InitAllCount"#Store-Confirm-LillyConv"
+			duio_SetActiveScene"#Store-Confirm-LillyConv",TRUE
+			duio_SetActiveScene"#Store",FALSE
+			duio_SetAllButtonVisible"#Store-Confirm-LillyConv",TRUE
+			duio_SetAllImageVisible"#Store-Confirm-LillyConv",TRUE
+			duio_SetAllTextVisible"#Store-Confirm-LillyConv",TRUE
+			duio_ChangeTextBody duio_TextID2UIsetID("store_lillyconv_value"),str(pfreg_NumLilly)
+		swbreak
+
+		//変換 OK
+		case"store_lillyconv_ok"
+			duio_SetActiveScene"#Store-Confirm-LillyConv",FALSE
+			duio_SetActiveScene"#Store",TRUE
+			duio_SetAllButtonOutro"#Store-Confirm-LillyConv"
+			duio_SetAllImageOutro"#Store-Confirm-LillyConv"
+			duio_SetAllTextOutro"#Store-Confirm-LillyConv"
+
+			pfreg_NumLepus+pfreg_NumLilly
+			pfreg_NumLilly=0
+			UpdateProfileDisp
+		swbreak
+		//変換 キャンセル
+		case"store_lillyconv_cancel"
+			duio_SetActiveScene"#Store-Confirm-LillyConv",FALSE
+			duio_SetActiveScene"#Store",TRUE
+			duio_SetAllButtonOutro"#Store-Confirm-LillyConv"
+			duio_SetAllImageOutro"#Store-Confirm-LillyConv"
+			duio_SetAllTextOutro"#Store-Confirm-LillyConv"
 		swbreak
 
 		//購入確認 OK

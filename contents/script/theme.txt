@@ -49,7 +49,7 @@
 
 		#MusicSelect @button musicselect_button_back graphic/common_button_back.png 0 1020 240 60 &animation-in=fade,200,300,CUBIC_OUT &animation-in=move,200,300,-128,0,CUBIC_OUT &pushsound=pushbutton &event=backscene
 
-		#MusicSelect @image musicselect_itemscroll_bg graphic/musicselect_itemscroll_bg.png 1891 150 &animation-in=fade,350,300,CUBIC_OUT &animation-in=move,350,300,64,0,CUBIC_OUT
+		#MusicSelect @image musicselect_itemscroll_bg graphic/common_itemscroll_bg.png 1891 150 &animation-in=fade,350,300,CUBIC_OUT &animation-in=move,350,300,64,0,CUBIC_OUT
 
 		#MusicSelect @text musicselect_activeitem_title * 115 262 rom1cm28 &animation-in=fade,100,300,CUBIC_OUT &animation-in=move,100,300,-32,0,CUBIC_OUT &animation-in=random.text,100,400 &color=0,0,0 &layerlv=1
 		#MusicSelect @text musicselect_activeitem_artist * 115 305 rom1cm16 &animation-in=fade,130,300,CUBIC_OUT &animation-in=move,130,300,-32,0,CUBIC_OUT &animation-in=random.text,130,400 &color=50,50,50 &layerlv=1
@@ -208,6 +208,10 @@
 		#PlayOption @image playoption_valbg_volplay graphic/playoption_value_bg_100.png 182 912 &animation-in=fade,700,250,LINEAR playoption_style
 		#PlayOption @text playoption_val_volplay * 217 918 ps20 &animation-in=move,700,300,-64,0,CUBIC_OUT &animation-in=fade,700,300,CUBIC_OUT playoption_style &align-center-size=30
 
+		////// for Mission Mode //////
+		#PlayOption @button playoption_mission_dummy * 36 281 596 242 &layerlv=6
+		#PlayOption @image playoption_mission_img graphic/playoption_mission.png 36 281 &animation-in=fade,200,100,LINEAR &animation-in=zoom,200,150,1.3,CUBIC_OUT &layerlv=6
+
 	////// help //////
 		#PlayOption @button playoption_button_help_objspeed graphic/playoption_button_help.png 290 141 32 32 &animation-in=zoom,400,250,0,CUBIC_OUT playoption_style &event=help_objspeed_open &pushsound=pushbutton
 		#PlayOption @button playoption_button_help_judgeoffset graphic/playoption_button_help.png 600 141 32 32 &animation-in=zoom,400,250,0,CUBIC_OUT playoption_style &event=help_judgeoffset_open &pushsound=pushbutton
@@ -256,6 +260,9 @@
 		#MusicSelect-Decide @text musicdecide_level * 596 578 ps40 &animation-in=fade,500,400,CUBIC_OUT &color=0,0,0 &align-center-size=34
 		#MusicSelect-Decide @text musicdecide_bpm * 863 585 ps16 &animation-in=fade,500,400,CUBIC_OUT &animation-in=move,500,400,32,0,CUBIC_OUT &color=0,0,0
 		#MusicSelect-Decide @text musicdecide_totalnotes * 863 612 ps16 &animation-in=fade,500,400,CUBIC_OUT &animation-in=move,500,400,32,0,CUBIC_OUT &color=0,0,0
+
+		#MusicSelect-Decide @text musicdecide_loadprogress_tx NOW{*sp}LOADING 1661 502 ps16 &animation-in=fade,400,300,LINEAR &color=50,50,50 &align-center-size=118
+		#MusicSelect-Decide @text musicdecide_loadprogress * 1678 531 ps40 &animation-in=fade,450,300,CUBIC_OUT &animation-in=move,450,300,0,32,CUBIC_OUT &align-center-size=84 &color=0,0,0 &extratext=%
 
 		#MusicSelect-Decide @image musicdecide_left graphic/musicdecide_left.png 0 0 &animation-in=move,100,800,-16,0,CUBIC_OUT
 
@@ -485,7 +492,7 @@
 		
 		#Store @button store_button_back graphic/common_button_back.png 0 1020 240 60 &animation-in=fade,200,300,CUBIC_OUT &animation-in=move,200,300,-128,0,CUBIC_OUT &pushsound=pushbutton &event=backscene
 
-		#Store @image musicselect_itemscroll_bg graphic/musicselect_itemscroll_bg.png 1891 150 &animation-in=fade,350,300,CUBIC_OUT &animation-in=move,350,300,64,0,CUBIC_OUT
+		#Store @image store_itemscroll_bg graphic/common_itemscroll_bg.png 1891 150 &animation-in=fade,350,300,CUBIC_OUT &animation-in=move,350,300,64,0,CUBIC_OUT
 
 	////// action //////
 		#Store @image store_layer_category graphic/store_layer_category.png 284 220 &animation-in=fade,200,300,CUBIC_OUT &animation-in=move,200,350,-64,0,CUBIC_OUT
@@ -508,13 +515,18 @@
 		#Store-Confirm @text store_confirm_prm1 * 740 497 rom1cm16 &animation-in=fade,300,250,CUBIC_OUT &animation-in=move,300,250,-64,0,CUBIC_OUT &hide &color=200,200,200
 		#Store-Confirm @text store_confirm_prm2 * 1180 470 ps20 &animation-in=fade,250,250,CUBIC_OUT &animation-in=move,250,250,-64,0,CUBIC_OUT &hide &color=255,255,255
 		#Store-Confirm @text store_confirm_price * 1226 538 ps20 &animation-in=fade,250,250,CUBIC_OUT &animation-in=move,250,250,32,0,CUBIC_OUT &animation-in=increase.text,250,500,-1 &hide &color=255,255,255 &extratext={*sp}Lepus
-		#Store-Confirm @button store_button_purchase graphic/store_button_purchase.png 970 600 180 50 &animation-in=zoom,400,250,0,CUBIC_OUT &animation-in=fade,400,200,CUBIC_OUT &event=store_purchase_ok &pushsound=decide
-		#Store-Confirm @button store_button_cancel graphic/store_button_cancel.png 770 600 180 50 &animation-in=zoom,370,250,0,CUBIC_OUT &animation-in=fade,370,200,CUBIC_OUT &event=store_purchase_cancel &pushsound=cancel
+		#Store-Confirm @button store_button_purchase graphic/store_button_purchase.png 970 600 180 50 &animation-in=zoom,400,250,0,CUBIC_OUT &animation-in=fade,400,200,CUBIC_OUT &event=store_purchase_ok &pushsound=decide &hide
+		#Store-Confirm @button store_button_cancel graphic/store_button_cancel.png 770 600 180 50 &animation-in=zoom,370,250,0,CUBIC_OUT &animation-in=fade,370,200,CUBIC_OUT &event=store_purchase_cancel &pushsound=cancel &hide
 
 		#Store-LepusError @image store_dialog_error graphic/store_dialog_error.png 0 302 &animation-in=zoom,0,250,1.2,CUBIC_OUT &animation-in=fade,0,200,CUBIC_OUT &hide
 		#Store-LepusError @button store_error_ok graphic/store_button_ok.png 870 600 180 50 &animation-in=zoom,370,250,0,CUBIC_OUT &animation-in=fade,370,200,CUBIC_OUT &event=store_error_ok &pushsound=cancel &hide
 		#Store-LepusError @text store_error_requiredlepus * 980 464 ps16 &animation-in=fade,150,250,CUBIC_OUT &animation-in=move,150,250,-32,0,CUBIC_OUT &animation-in=increase.text,150,300,-1 &hide &color=255,255,255 &extratext={*sp}Lepus
 		#Store-LepusError @text store_error_shortfalllepus * 980 497 ps16 &animation-in=fade,200,250,CUBIC_OUT &animation-in=move,200,250,-32,0,CUBIC_OUT &animation-in=increase.text,200,300,-1 &hide &color=255,0,119 &extratext={*sp}Lepus
+
+		#Store-Confirm-LillyConv @image store_dialog_lillyconv graphic/store_dialog_lillyconv.png 0 302 &animation-in=zoom,0,250,1.2,CUBIC_OUT &animation-in=fade,0,200,CUBIC_OUT &hide
+		#Store-Confirm-LillyConv @text store_lillyconv_value * 980 500 ps20 &animation-in=fade,100,150,CUBIC_OUT &animation-in=move,100,200,-32,0,CUBIC_OUT &animation-in=increase.text,100,400,-1 &extratext={*sp}Lilly &hide
+		#Store-Confirm-LillyConv @button store_lillyconv_ok graphic/store_button_ok.png 970 600 180 50 &animation-in=zoom,400,250,0,CUBIC_OUT &animation-in=fade,400,200,CUBIC_OUT &event=store_lillyconv_ok &pushsound=decide &hide
+		#Store-Confirm-LillyConv @button store_lillyconv_cancel graphic/store_button_cancel.png 770 600 180 50 &animation-in=zoom,370,250,0,CUBIC_OUT &animation-in=fade,370,200,CUBIC_OUT &event=store_lillyconv_cancel &pushsound=cancel &hide
 
 //----- Mission -----//
 	////// base //////
@@ -530,3 +542,11 @@
 		#Mission @text mission_guide_tx0_0 選択してくだサイ！ 230 305 rom1cm20 &animation-in=fade,550,250,CUBIC_OUT &animation-in=move,550,300,-32,0,CUBIC_OUT &animation-in=random.text,550,400 &color=255,255,255
 		#Mission @text mission_guide_tx0_0 ミッションに挑戦するには、 230 350 rom1cm16 &animation-in=fade,600,250,CUBIC_OUT &animation-in=move,600,300,-32,0,CUBIC_OUT &animation-in=random.text,600,400 &color=14,255,222
 		#Mission @text mission_guide_tx0_0 チャレンジチケットが一枚必要デス！ 230 374 rom1cm16 &animation-in=fade,700,250,CUBIC_OUT &animation-in=move,700,300,-32,0,CUBIC_OUT &animation-in=random.text,700,400 &color=14,255,222
+
+		#Mission @image mission_itemscroll_bg graphic/common_itemscroll_bg.png 1891 150 &animation-in=fade,350,300,CUBIC_OUT &animation-in=move,350,300,64,0,CUBIC_OUT
+
+		#Mission @image mission_icon_ticket graphic/store_icon_ticket.png 140 444 &animation-in=fade,300,250,CUBIC_OUT &animation-in=zoom,300,300,0,CUBIC_OUT
+		#Mission @text mission_numticket_tx チケット所持数 290 480 rom1cm20 &animation-in=fade,400,250,CUBIC_OUT &animation-in=move,400,300,-64,0,CUBIC_OUT &color=230,230,230
+		#Mission @text mission_numticket_value * 290 520 rom1cm32 &animation-in=fade,450,250,CUBIC_OUT &animation-in=move,450,300,-64,0,CUBIC_OUT &animation-in=increase.text,450,600,-1 &extratext={*sp}枚 &color=255,255,255
+
+		#Mission @button mission_button_option graphic/musicselect_button_option.png 120 620 250 50 &animation-in=fade,500,300,CUBIC_OUT &animation-in=zoom,500,300,0.8,CUBIC_OUT &pushsound=pushbutton &event=mission_option

@@ -12,11 +12,19 @@
 	}
 	duio_SetVolume"main",1.0
 
+	duio_SetButtonVisible duio_ButtonID2UIsetID("playoption_mission_dummy"),TRUE
+	duio_SetButtonEnable duio_ButtonID2UIsetID("playoption_mission_dummy"),TRUE
+	duio_SetImageVisible duio_ImageID2UIsetID("playoption_mission_img"),TRUE
+
 	dim decidecount
 	dim mapitem_max
+	dim optionwindowflag
+	dim optionwindowclosecount
+	sdim helpscene
 	decidecount=-1
 
 	gosub*scene_Mission_InitItem
+	gosub*InitPlayOption
 
 	return
 
@@ -108,6 +116,8 @@
 		mapitem_max++
 	loop
 
+	duio_ChangeTextBody duio_TextID2UIsetID("mission_numticket_value"),str(pfreg_NumTickets)
+
 	return
 
 *scene_Mission
@@ -122,6 +132,9 @@
 		SetDrawBlendMode DX_BLENDMODE_PMA_ALPHA,256
 		DrawGraph shapemovepos\1920,20,hdximg(icommon_ironline),TRUE
 		DrawGraph shapemovepos\1920+1920,20,hdximg(icommon_ironline),TRUE
+
+	duio_Draw"#Mission"
+	duio_Draw"#Common-Profile"
 
 	if (159+180*mapitem_max)>BufHeight-64-157 {
 		if insquare(cursorPosX,cursorPosY,760,0,BufWidth,BufHeight)&mapitem_max!0 {
@@ -149,7 +162,7 @@
 		//スクロール位置を特定
 			if mapitem_max!0 {
 				SetDrawBlendMode DX_BLENDMODE_PMA_ALPHA,256
-				mapitem_scrollpos=duio_GetButtonPositionY(mapitem_uisetid(mapitem_max-1))-duio_GetButtonPositionY(mapitem_uisetid(0))-BufHeight+64+192+159
+				mapitem_scrollpos=duio_GetButtonPositionY(mapitem_uisetid(mapitem_max-1))-duio_GetButtonPositionY(mapitem_uisetid(0))-BufHeight+64+157+159
 			}
 
 		//スクロールバー
@@ -157,16 +170,24 @@
 			if mapitem_scrollclickmode {
 				cursorPosY=limit(cursorPosY,140,140+710)
 				repeat mapitem_max
-					duio_SetButtonPositionY mapitem_uisetid(cnt),159+180*mapitem_max-int(double(mapitem_scrollpos)/700.0*double(cursorPosY-140))
-					duio_SetButtonPositionY forcedop_uisetid(cnt),159+180*mapitem_max-int(double(mapitem_scrollpos)/700.0*double(cursorPosY-140))
+					duio_SetButtonPositionY mapitem_uisetid(cnt),159+180*cnt-int(double(mapitem_scrollpos)/700.0*double(cursorPosY-140))
+					duio_SetButtonPositionY forcedop_uisetid(cnt),159+180*cnt-int(double(mapitem_scrollpos)/700.0*double(cursorPosY-140))
 				loop
 				if (cursorStatus&MOUSE_INPUT_LEFT)==FALSE :mapitem_scrollclickmode=FALSE
 			}
 			DrawGraph 1870,130+int(700.0*(-double(duio_GetButtonPositionY(mapitem_uisetid(0))-159)/double(mapitem_scrollpos))),hdximg(imusicselect_itemscroll_circle),TRUE
 	}
 
-	duio_Draw"#Mission"
-	duio_Draw"#Common-Profile"
+	//オプション設定
+	if optionwindowflag {
+		gosub*PlayOption_FrameProcess
+		if optionwindowclosecount!-1 :optionwindowclosecount+FrameTime
+		if optionwindowclosecount>1000 :optionwindowflag=FALSE
+
+		//シーン別設定
+		duio_Draw"#PlayOption"
+	}
+	if helpscene!"" :duio_Draw helpscene
 
 	if duio_GetButtonEventStack()!"" :gosub*scene_Mission_eventstack
 	if decidecount!-1 :decidecount+FrameTime
@@ -184,6 +205,34 @@
 
 	switch duio_GetButtonEventStack()
 
+		case"mission_option"
+			//UIパーツを表示
+			duio_SetAllButtonVisible"#PlayOption",TRUE
+			duio_SetAllImageVisible"#PlayOption",TRUE
+			duio_SetAllTextVisible"#PlayOption",TRUE
+			duio_InitAllCount"#PlayOption"
+
+			duio_SetButtonEnable duio_ButtonID2UIsetID("playoption_close_0"),TRUE
+			optionwindowflag=TRUE:optionwindowclosecount=-1
+
+			duio_SetActiveScene"#PlayOption",TRUE
+			duio_SetActiveScene"#Mission",FALSE
+		swbreak
+
+		case"playoption_close"
+			//UIパーツを非表示
+			duio_SetAllButtonOutro"#PlayOption"
+			duio_SetAllImageOutro"#PlayOption"
+			duio_SetAllTextOutro"#PlayOption"
+
+			//閉じるボタンを一時的に無効化
+			duio_SetButtonEnable duio_ButtonID2UIsetID("playoption_close_0"),FALSE
+			optionwindowclosecount=0
+
+			duio_SetActiveScene"#Mission",TRUE
+			duio_SetActiveScene"#PlayOption",FALSE
+		swbreak
+
 		case"backscene"
 			decidecount=0
 			duio_SetAllButtonOutro"#Mission"
@@ -191,7 +240,11 @@
 			duio_SetAllTextOutro"#Mission"
 		swbreak
 
+		case"game.exit":goto*exit:swbreak
+
 	swend
+
+	gosub*PlayOption_EventStack
 
 	return
 

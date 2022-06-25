@@ -336,6 +336,8 @@
 			if binpos+1>map_buf_size(item,lv) :break
 
 			if (GetNowCount()-Mapload_updateinterval_std)>(1000/duio_GetFPS())-1 {
+				duio_ChangeTextBody duio_TextID2UIsetID("musicdecide_loadprogress"),str(int(50.0+50.0*(double(binpos)/double(map_buf_size(item,lv)))))
+
 				gosub*scene_Gameplay_UpdateLoadScreen
 				Mapload_updateinterval_std=GetNowCount()
 			}
@@ -606,6 +608,7 @@
 		duio_Change3DSquareImage duio_3DSquareID2UIsetID("gameplay_lane_side_l"),hdximg(igameplay_sidelane_l)
 		duio_Change3DSquareImage duio_3DSquareID2UIsetID("gameplay_lane_side_r"),hdximg(igameplay_sidelane_r)
 
+	duio_ChangeTextBody duio_TextID2UIsetID("musicdecide_loadprogress"),"100"
 	gosub*scene_Gameplay_UpdateLoadScreen
 
 	//タイマー設定

@@ -19,6 +19,7 @@
 		dim UIset_Button_Height
 		dim UIset_Button_drawHeight
 		dim UIset_Button_hoverCount
+		dim UIset_Button_bfhoverStatus
 		dim UIset_Button_rawpushCount
 		dim UIset_Button_pushCount
 		dim UIset_Button_drawOffsetX
@@ -34,6 +35,8 @@
 		dim UIset_Button_Outroflag
 		dim UIset_Button_EnableAlpha
 		dim UIset_Button_hPushSound
+
+		sdim UIset_Button_HoverSound
 
 		dim UIset_Button_In_Mode				//シーンが開始したときに再生するエフェクトの種類
 		dim UIset_Button_EaseIn_Zoom_Delay		//ズームインの遅延時間
@@ -329,6 +332,7 @@
 						UIset_Button_Enabled(UIset_Button_max)=TRUE
 						UIset_Button_DrawFlag(UIset_Button_max)=TRUE
 						UIset_Button_hoverCount(UIset_Button_max)=0
+						UIset_Button_bfhoverStatus(UIset_Button_max)=0
 						UIset_Button_rawpushCount(UIset_Button_max)=0
 						UIset_Button_pushCount(UIset_Button_max)=0
 						UIset_Button_PushEvent(UIset_Button_max)="ID:"+UIset_Button_ID(UIset_Button_max)
@@ -898,9 +902,16 @@
 						logmes GetTimeStamp()+" [duio-scenesvc] @button event (id="+UIset_Button_ID(i)+" , event="+UIset_Button_onEventStack+")"
 					}
 					UIset_Button_hoverCount(i)+1000/int(CurDUIObasedFPS)
+
+					if UIset_Button_bfhoverStatus(i)==0 {
+						if UIset_Button_HoverSound!"" :duio_PlaySound UIset_Button_HoverSound
+						UIset_Button_bfhoverStatus(i)=1
+					}
+
 					UIset_Button_curHover=i
 				} else {
 					UIset_Button_hoverCount(i)-1000/int(CurDUIObasedFPS)
+					UIset_Button_bfhoverStatus(i)=0
 				}
 
 				UIset_Button_pushCount(i)-1000/int(CurDUIObasedFPS)
@@ -1246,6 +1257,7 @@
 	UIset_Button_Enabled(UIset_Button_max)=TRUE
 	UIset_Button_DrawFlag(UIset_Button_max)=TRUE
 	UIset_Button_hoverCount(UIset_Button_max)=0
+	UIset_Button_bfhoverStatus(UIset_Button_max)=0
 	UIset_Button_rawpushCount(UIset_Button_max)=0
 	UIset_Button_pushCount(UIset_Button_max)=0
 	UIset_Button_PushEvent(UIset_Button_max)=""
@@ -1287,6 +1299,7 @@
 	arraydeli UIset_Button_Height,_uisetid
 	arraydeli UIset_Button_drawHeight,_uisetid
 	arraydeli UIset_Button_hoverCount,_uisetid
+	arraydeli UIset_Button_bfhoverStatus,_uisetid
 	arraydeli UIset_Button_rawpushCount,_uisetid
 	arraydeli UIset_Button_pushCount,_uisetid
 	arraydeli UIset_Button_drawOffsetX,_uisetid
@@ -1676,4 +1689,8 @@
 
 #deffunc duio_SetEventStack str _event
 	UIset_Button_onEventStack=_event
+	return
+
+#deffunc duio_SetButtonHoverSound str _snd
+	UIset_Button_HoverSound=_snd
 	return

@@ -138,7 +138,7 @@
 	dim decidecount
 	dim optionwindowflag
 	dim optionwindowclosecount
-	dim helpscene
+	sdim helpscene
 	dim curPlayhPreview
 	dim AutoPlayFlag
 	dim SearchItem_hInput
@@ -172,54 +172,7 @@
 		duio_ChangeButtonImage duio_ButtonID2UIsetID("musicselect_button_folder"),hdximg(imusicselect_folder_all)
 		duio_ChangeButtonImage duio_ButtonID2UIsetID("musicselect_button_sort"),hdximg(imusicselect_sort_default)
 
-	//オブジェクトの配置
-		dim playoption_objplace_select
-		playoption_objplace_select=pfreg_Placement
-		//後方互換性のために設定値を新バージョン仕様に変更
-			switch pfreg_Placement
-				case PLAYOPT_ID_OBJPLACE_NORMAL_OLD:playoption_objplace_select=PLAYOPT_ID_OBJPLACE_NORMAL:swbreak
-				case PLAYOPT_ID_OBJPLACE_MIRROR_OLD:playoption_objplace_select=PLAYOPT_ID_OBJPLACE_MIRROR:swbreak
-				case PLAYOPT_ID_OBJPLACE_SMIRROR_OLD:playoption_objplace_select=PLAYOPT_ID_OBJPLACE_SMIRROR:swbreak
-				case PLAYOPT_ID_OBJPLACE_RANDOM_OLD:playoption_objplace_select=PLAYOPT_ID_OBJPLACE_RANDOM:swbreak
-			swend
-		//扱いやすいように-100
-			playoption_objplace_select-100
-
-	//ゲージの難易度
-		dim playoption_gauge_select
-		playoption_gauge_select=pfreg_GaugeType
-		//後方互換性のために設定値を新バージョン仕様に変更
-			switch pfreg_GaugeType
-				case PLAYOPT_ID_GAUGE_ASSIST_OLD:playoption_gauge_select=PLAYOPT_ID_GAUGE_ASSIST:swbreak
-				case PLAYOPT_ID_GAUGE_NORMAL_OLD:playoption_gauge_select=PLAYOPT_ID_GAUGE_NORMAL:swbreak
-				case PLAYOPT_ID_GAUGE_EXPERT_OLD:playoption_gauge_select=PLAYOPT_ID_GAUGE_EXPERT:swbreak
-				case PLAYOPT_ID_GAUGE_MADNESS_OLD:playoption_gauge_select=PLAYOPT_ID_GAUGE_MADNESS:swbreak
-			swend
-		//扱いやすいように-100
-			playoption_gauge_select-100
-
-	//ウィンドウレイアウト
-		dim playoption_window_select
-		playoption_window_select=pfreg_WindowLayout
-
-	//目標スコア
-		dim playoption_target_select
-		playoption_target_select=pfreg_Target
-		//後方互換性のために設定値を新バージョン仕様に変更
-			switch pfreg_Target
-				case PLAYOPT_ID_TARGET_MAX_OLD:playoption_target_select=PLAYOPT_ID_TARGET_100:swbreak
-				case PLAYOPT_ID_TARGET_EX_OLD:playoption_target_select=PLAYOPT_ID_TARGET_EX:swbreak
-				case PLAYOPT_ID_TARGET_S_OLD:playoption_target_select=PLAYOPT_ID_TARGET_S:swbreak
-				case PLAYOPT_ID_TARGET_AAA_OLD:playoption_target_select=PLAYOPT_ID_TARGET_AAA:swbreak
-				case PLAYOPT_ID_TARGET_AA_OLD:playoption_target_select=PLAYOPT_ID_TARGET_AA:swbreak
-				case PLAYOPT_ID_TARGET_A_OLD:playoption_target_select=PLAYOPT_ID_TARGET_A:swbreak
-				case PLAYOPT_ID_TARGET_MYBEST_OLD:playoption_target_select=PLAYOPT_ID_TARGET_MYBEST:swbreak
-				case PLAYOPT_ID_TARGET_ONLINETOP_OLD:playoption_target_select=PLAYOPT_ID_TARGET_WR:swbreak
-			swend
-		//扱いやすいように-100
-			playoption_target_select-100
-
-	gosub*scene_MusicSelect_UpdatePlayOptionUI
+	gosub*InitPlayOption
 	gosub*scene_MusicSelect_UpdateMetadataString
 
 	//シーンをアクティブ化
@@ -438,66 +391,14 @@
 
 	//オプション設定
 	if optionwindowflag {
-
-		duio_ChangeTextBody duio_TextID2UIsetID("playoption_val_objspeed"),strf("x%.2f",pfreg_AddSpeed)		//オブジェクトの速さ
-		duio_ChangeTextBody duio_TextID2UIsetID("playoption_val_judgeoffset"),str(pfreg_JudgeOffset)+" ms"		//判定調整
-		duio_ChangeTextBody duio_TextID2UIsetID("playoption_val_volbgm"),str(volume_BGM)+" %"				//BGM音量
-		duio_ChangeTextBody duio_TextID2UIsetID("playoption_val_volse"),str(volume_SE)+" %"					//SE音量
-		duio_ChangeTextBody duio_TextID2UIsetID("playoption_val_volplay"),str(volume_PLAY)+" %"				//PLAY音量
-
-		//ボタン押し続け判定
-			//objspeed
-			if duio_GetButtonPushTime(duio_ButtonID2UIsetID("playoption_button_objspeed_left"))>500 {
-				if SceneCount\5==0 :pfreg_AddSpeed-0.05
-				if pfreg_AddSpeed<0.1 :pfreg_AddSpeed=0.1
-			}
-			if duio_GetButtonPushTime(duio_ButtonID2UIsetID("playoption_button_objspeed_right"))>500 {
-				if SceneCount\5==0 :pfreg_AddSpeed+0.05
-				if pfreg_AddSpeed>10.0 :pfreg_AddSpeed=10.0
-			}
-			//judgeoffset
-			if duio_GetButtonPushTime(duio_ButtonID2UIsetID("playoption_button_judgeoffset_left"))>500 {
-				if SceneCount\5==0 :pfreg_JudgeOffset-1
-			}
-			if duio_GetButtonPushTime(duio_ButtonID2UIsetID("playoption_button_judgeoffset_right"))>500 {
-				if SceneCount\5==0 :pfreg_JudgeOffset+1
-			}
-			//bgm音量
-			if duio_GetButtonPushTime(duio_ButtonID2UIsetID("playoption_button_volbgm_left"))>500 {
-				if SceneCount\5==0 :volume_BGM-5
-				if volume_BGM<0 :volume_BGM=0
-			}
-			if duio_GetButtonPushTime(duio_ButtonID2UIsetID("playoption_button_volbgm_right"))>500 {
-				if SceneCount\5==0 :volume_BGM+5
-				if volume_BGM>100 :volume_BGM=100
-			}
-			//se音量
-			if duio_GetButtonPushTime(duio_ButtonID2UIsetID("playoption_button_volse_left"))>500 {
-				if SceneCount\5==0 :volume_SE-5
-				if volume_SE<0 :volume_SE=0
-			}
-			if duio_GetButtonPushTime(duio_ButtonID2UIsetID("playoption_button_volse_right"))>500 {
-				if SceneCount\5==0 :volume_SE+5
-				if volume_SE>100 :volume_SE=100
-			}
-			//play音量
-			if duio_GetButtonPushTime(duio_ButtonID2UIsetID("playoption_button_volplay_left"))>500 {
-				if SceneCount\5==0 :volume_PLAY-5
-				if volume_PLAY<0 :volume_PLAY=0
-			}
-			if duio_GetButtonPushTime(duio_ButtonID2UIsetID("playoption_button_volplay_right"))>500 {
-				if SceneCount\5==0 :volume_PLAY+5
-				if volume_PLAY>100 :volume_PLAY=100
-			}
-
-		//右クリックでリセット判定
-			if insquare(cursorPosX,cursorPosY,420,206,420+110,206+35)&(cursorStatus&MOUSE_INPUT_RIGHT) {
-				pfreg_JudgeOffset=0
-			}
-
-		duio_Draw"#PlayOption"
-		if optionwindowclosecount!-1 :optionwindowclosecount+1000/duio_GetFPS()
+		gosub*PlayOption_FrameProcess
+		if optionwindowclosecount!-1 :optionwindowclosecount+FrameTime
 		if optionwindowclosecount>1000 :optionwindowflag=FALSE
+
+		//シーン別設定
+		duio_SetButtonVisible duio_ButtonID2UIsetID("playoption_mission_dummy"),FALSE
+		duio_SetImageVisible duio_ImageID2UIsetID("playoption_mission_img"),FALSE
+		duio_Draw"#PlayOption"
 	}
 
 	if helpscene!"" :duio_Draw helpscene
@@ -520,6 +421,9 @@
 				setease 256,0,ease_cubic_out
 				SetDrawBlendMode DX_BLENDMODE_PMA_ALPHA,getease(decidecount*(1000.0/duio_GetFPS()),400)
 				DrawExtendGraph EasePosX,EasePosY,EasePosX+EaseWidth,EasePosY+EaseHeight,hdximg(itmplayer),TRUE
+
+				setease 0,40,ease_cubic_out
+				duio_ChangeTextBody duio_TextID2UIsetID("musicdecide_loadprogress"),str(getease(decidecount*FrameTime,1500))
 
 				duio_Draw"#MusicSelect-Decide"
 
@@ -671,7 +575,6 @@
 
 		//オプション（開く）
 		case"musicselect_option"
-
 			//UIパーツを表示
 			duio_SetAllButtonVisible"#PlayOption",TRUE
 			duio_SetAllImageVisible"#PlayOption",TRUE
@@ -696,28 +599,6 @@
 			gosub*scene_MusicSelect_Decide
 		swbreak
 
-		case"playoption_objspeed_left":pfreg_AddSpeed=limitf(pfreg_AddSpeed-0.05,0.1,10.0):swbreak	//オブジェクトの速さ -
-		case"playoption_objspeed_right":pfreg_AddSpeed=limitf(pfreg_AddSpeed+0.05,0.1,10.0):swbreak	//オブジェクトの速さ +
-		case"playoption_judgeoffset_left":pfreg_JudgeOffset=limit(pfreg_JudgeOffset-1,-1000,1000):swbreak	//判定調整 -
-		case"playoption_judgeoffset_right":pfreg_JudgeOffset=limit(pfreg_JudgeOffset+1,-1000,1000):swbreak	//判定調整 +
-		case"playoption_volbgm_left":volume_BGM=limit(volume_BGM-5,0,100):swbreak		//BGM音量 -
-		case"playoption_volbgm_right":volume_BGM=limit(volume_BGM+5,0,100):swbreak		//BGM音量 +
-		case"playoption_volse_left":volume_SE=limit(volume_SE-5,0,100):swbreak		//SE音量 -
-		case"playoption_volse_right":volume_SE=limit(volume_SE+5,0,100):swbreak		//SE音量 +
-		case"playoption_volplay_left":volume_PLAY=limit(volume_PLAY-5,0,100):swbreak	//PLAY音量 -
-		case"playoption_volplay_right":volume_PLAY=limit(volume_PLAY+5,0,100):swbreak	//PLAY音量 +
-
-		case"help_objspeed_open":OpenHelpDialog"#Help-ObjSpeed":swbreak		//"オブジェクトの速度" ヘルプを開く
-		case"help_objspeed_close":CloseHelpDialog"#Help-ObjSpeed":swbreak	//"オブジェクトの速度" ヘルプを閉じる
-		case"help_judgeoffset_open":OpenHelpDialog"#Help-JudgeOffset":swbreak		//"判定調整" ヘルプを開く
-		case"help_judgeoffset_close":CloseHelpDialog"#Help-JudgeOffset":swbreak	//"判定調整" ヘルプを閉じる
-		case"help_objplace_open":OpenHelpDialog"#Help-ObjPlace":swbreak		//"オブジェクトの配置" ヘルプを開く
-		case"help_objplace_close":CloseHelpDialog"#Help-ObjPlace":swbreak	//"オブジェクトの配置" ヘルプを閉じる
-		case"help_gauge_open":OpenHelpDialog"#Help-Gauge":swbreak		//"ゲージの難易度" ヘルプを開く
-		case"help_gauge_close":CloseHelpDialog"#Help-Gauge":swbreak		//"ゲージの難易度" ヘルプを閉じる
-		case"help_window_open":OpenHelpDialog"#Help-Window":swbreak		//"ウィンドウレイアウト" ヘルプを開く
-		case"help_window_close":CloseHelpDialog"#Help-Window":swbreak	//"ウィンドウレイアウト" ヘルプを閉じる
-
 		//戻る
 		case"backscene"
 			decidecount=0
@@ -731,41 +612,7 @@
 
 	swend
 
-	//オブジェクトの配置
-		repeat length(playoption_objplace_buttonid)
-			if duio_GetButtonEventStack()=="ID:"+playoption_objplace_buttonid(cnt) {
-				playoption_objplace_select=cnt
-				gosub*scene_MusicSelect_UpdatePlayOptionUI
-			}
-		loop
-
-	//ゲージの難易度
-		repeat length(playoption_gauge_buttonid)
-			if duio_GetButtonEventStack()=="ID:"+playoption_gauge_buttonid(cnt) {
-				playoption_gauge_select=cnt
-				gosub*scene_MusicSelect_UpdatePlayOptionUI
-			}
-		loop
-
-	//ウィンドウレイアウト
-		repeat length(playoption_window_buttonid)
-			if duio_GetButtonEventStack()=="ID:"+playoption_window_buttonid(cnt) {
-				if playoption_window_select&powf(2,cnt) {
-					playoption_window_select-powf(2,cnt)		//ON→OFF
-				} else {
-					playoption_window_select+powf(2,cnt)		//OFF→ON
-				}
-				gosub*scene_MusicSelect_UpdatePlayOptionUI
-			}
-		loop
-
-	//目標スコア
-		repeat length(playoption_target_buttonid)
-			if duio_GetButtonEventStack()=="ID:"+playoption_target_buttonid(cnt) {
-				playoption_target_select=cnt
-				gosub*scene_MusicSelect_UpdatePlayOptionUI
-			}
-		loop
+	gosub*PlayOption_EventStack
 
 	tmpstr=duio_GetButtonEventStack()
 	if strmid(tmpstr,0,7)=="decide:" {
@@ -1003,51 +850,6 @@
 	//IR
 	duio_ChangeTextBody duio_TextID2UIsetID("musicselect_ir_myrank"),str(mapdb_ir_myrank(curselect_item,curselect_lv)+1)+" / "+str(mapdb_ir_regmax(curselect_item,curselect_lv))
 	duio_ChangeTextBody duio_TextID2UIsetID("musicselect_ir_myscore"),str(mapdb_ir_score(curselect_item,curselect_lv,mapdb_ir_myrank(curselect_item,curselect_lv)))
-
-	return
-
-*scene_MusicSelect_UpdatePlayOptionUI
-
-	//オブジェクトの配置
-		repeat 6
-			if playoption_objplace_select==cnt {
-				duio_ChangeButtonImage duio_ButtonID2UIsetID(playoption_objplace_buttonid(cnt)),playoption_objplace_hbuttonimg(cnt,1)
-			} else {
-				duio_ChangeButtonImage duio_ButtonID2UIsetID(playoption_objplace_buttonid(cnt)),playoption_objplace_hbuttonimg(cnt,0)
-			}
-		loop
-
-	//ゲージの難易度
-		repeat 6
-			if playoption_gauge_select==cnt {
-				duio_ChangeButtonImage duio_ButtonID2UIsetID(playoption_gauge_buttonid(cnt)),playoption_gauge_hbuttonimg(cnt,1)
-			} else {
-				duio_ChangeButtonImage duio_ButtonID2UIsetID(playoption_gauge_buttonid(cnt)),playoption_gauge_hbuttonimg(cnt,0)
-			}
-		loop
-
-	//ウィンドウレイアウト
-		repeat 3
-			if playoption_window_select&powf(2,cnt) {
-				duio_ChangeButtonImage duio_ButtonID2UIsetID(playoption_window_buttonid(cnt)),playoption_window_hbuttonimg(cnt,1)
-			} else {
-				duio_ChangeButtonImage duio_ButtonID2UIsetID(playoption_window_buttonid(cnt)),playoption_window_hbuttonimg(cnt,0)
-			}
-		loop
-
-	//目標スコア
-		repeat 8
-			if playoption_target_select==cnt {
-				duio_ChangeButtonImage duio_ButtonID2UIsetID(playoption_target_buttonid(cnt)),playoption_target_hbuttonimg(cnt,1)
-			} else {
-				duio_ChangeButtonImage duio_ButtonID2UIsetID(playoption_target_buttonid(cnt)),playoption_target_hbuttonimg(cnt,0)
-			}
-		loop
-
-	pfreg_Placement=playoption_objplace_select+100
-	pfreg_GaugeType=playoption_gauge_select+100
-	pfreg_WindowLayout=playoption_window_select
-	pfreg_Target=playoption_target_select+100
 
 	return
 

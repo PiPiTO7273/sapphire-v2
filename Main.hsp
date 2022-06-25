@@ -73,7 +73,7 @@ goto*Startup
 		randomize
 
 	//シグネチャを確認
-		if (peek(ClientSaveData,0)=='s'&peek(ClientSaveData,0)=='s'&peek(ClientSaveData,0)=='s'&peek(ClientSaveData,0)=='s')==FALSE {
+		if (peek(ClientSaveData,0)=='s'&peek(ClientSaveData,1)=='2'&peek(ClientSaveData,2)=='s'&peek(ClientSaveData,3)=='*')==FALSE {
 			OpenErrorDialog"S2S0001"
 			end
 		}

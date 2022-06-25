@@ -7,39 +7,37 @@
 //   -> BPM変更地点に存在しないレーンのダミーオブジェクトを配置すると解決？？
 
 #include"hsp3_64.as"
-#include"contents/module/hspint64.as"
+#include"hspint64.as"
 
-#include"contents/module/dxlib_x64.as"		//DXライブラリ
-#include"contents/module/bass_x64.as"		//BASS Audio Library
-#include"a2d.hsp"						//Artlet2D
-#include"kernel32.as"					//KERNEL32.DLL header
-#include"contents/module/mod_wininet64.hsp"	//WININET.DLL header
-#include"contents/module/mod_fx.as"		//式評価
-#include"contents/module/mod_strmidfix.hsp"	//strmid命令の高速化
-#include"contents/module/dirlist2.hsp"		//hspextのdirlist2を再現
+#include"dxlib_x64.as"		//DXライブラリ
+#include"bass_x64.as"		//BASS Audio Library
+#include"a2d.hsp"			//Artlet2D
+#include"kernel32.as"		//KERNEL32.DLL header
+#include"mod_wininet64.hsp"	//WININET.DLL header
+#include"mod_fx.as"			//式評価
+#include"mod_strmidfix.hsp"	//strmid命令の高速化
+#include"dirlist2.hsp"		//hspextのdirlist2を再現
 
 goto*Startup
 
-#include"contents/module/mod_Debug.hsp"			//デバッグ関連
-#include"contents/module/mod_dxlibplus.hsp"		//DXライブラリ拡張命令
-#include"contents/module/mod_v2zip.hsp"			//データ圧縮
-#include"contents/module/mod_4bithex.hsp"		//バイナリ→文字列変換
-#include"contents/module/mod_BinPkg.hsp"		//バイナリパッケージ
-
-#include"contents/module/NameSpace.hsp"				//グローバル空間の定数・マクロ
-#include"contents/module/StringTable.hsp"			//文字列の配列
-#include"contents/module/func_Default.hsp"			//基本命令・関数
-#include"contents/module/func_InternetRanking.hsp"	//IR同期関連
-
-#include"contents/module/duioparse.hsp"				//Dynamic UI Language (Input-Output Module)
-#include"contents/module/scene_CommonLayer.hsp"		//共通レイヤー
-#include"contents/module/scene_Lobby.hsp"			//ロビー
-#include"contents/module/scene_MusicSelect.hsp"		//楽曲選択画面
-#include"contents/module/scene_Gameplay.hsp"			//ゲームプレイ
-#include"contents/module/scene_Result.hsp"			//リザルト
-#include"contents/module/scene_Store.hsp"			//ストア
-#include"contents/module/scene_Mission.hsp"			//ミッション
-#include"contents/module/scene_ErrorDialog.hsp"		//エラーダイアログ
+#include"mod_Debug.hsp"				//デバッグ関連
+#include"mod_dxlibplus.hsp"			//DXライブラリ拡張命令
+#include"mod_v2zip.hsp"				//データ圧縮
+#include"mod_4bithex.hsp"			//バイナリ→文字列変換
+#include"mod_BinPkg.hsp"				//バイナリパッケージ
+#include"NameSpace.hsp"				//グローバル空間の定数・マクロ
+#include"StringTable.hsp"			//文字列の配列
+#include"func_Default.hsp"			//基本命令・関数
+#include"func_InternetRanking.hsp"		//IR同期関連
+#include"duioparse.hsp"				//Dynamic UI Language (Input-Output Module)
+#include"scene_CommonLayer.hsp"		//共通レイヤー
+#include"scene_Lobby.hsp"			//ロビー
+#include"scene_MusicSelect.hsp"		//楽曲選択画面
+#include"scene_Gameplay.hsp"			//ゲームプレイ
+#include"scene_Result.hsp"			//リザルト
+#include"scene_Store.hsp"			//ストア
+#include"scene_Mission.hsp"			//ミッション
+#include"scene_ErrorDialog.hsp"		//エラーダイアログ
 
 #epack"start.ax"
 #packopt hide 1
@@ -162,7 +160,7 @@ goto*Startup
 		duio_SetButtonHoverSound"hover"
 
 	//キー登録
-		#addition"contents/module/puorosvc.key"
+		#addition"puorosvc.key"
 
 	//画像読み込み
 		SetDXArchiveExtension"bin"

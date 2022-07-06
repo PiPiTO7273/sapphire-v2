@@ -104,6 +104,7 @@
 #enum iplayoption_target_100_enabled
 #enum iplayoption_target_mybest_enabled
 #enum iplayoption_target_wr_enabled
+#enum iplayoption_target_mission_enabled
 
 #enum igameplay_bg_sidelr
 #enum igameplay_bgorg_side_0
@@ -159,6 +160,8 @@
 #enum iresult_ratio_bad
 #enum iresult_ratio_miss
 
+#enum iresult_gaugegraph
+
 #enum istore_item_map
 #enum istore_item_customize_note
 #enum istore_ticket1
@@ -178,6 +181,14 @@
 #enum imission_item
 #enum imission_forced_bg
 #enum imission_forced_gauge
+
+#enum iembvideo_seek
+#enum iembvideo_seekorg
+
+#enum iprofile_customize_bg_0
+#enum iprofile_customize_bg_1
+
+#enum icommon_connecting
 
 #const MAPITEM_TYPE_GROUP		0
 #const MAPITEM_TYPE_SINGLE		1
@@ -235,19 +246,21 @@
 #enum ID_OBJTYPE_HOLDSTART
 #enum ID_OBJTYPE_HOLDEND
 
-#const jWid_Excellent	40
-#const jWid_Great		80
+#const jWid_Excellent	30
+#const jWid_Great		60
 #const jWid_Good		120
 #const jWid_Bad		160
 #const jWid_Miss		240
 
 #const Pretime		3000
 
-#const SubThreadLimit		4		//サブスレッドの最大処理回数（負の数で実行回数を固定）
+;#const SubThreadLimit		4		//サブスレッドの最大処理回数（負の数で実行回数を固定）
 #const AudioBufferSize		0		//オーディオバッファサイズ（0で自動）
-#const TexLv				4		//テクスチャの画質（数値が上がるほど荒くなる）
-#const MSAAflag			1		//アンチエイリアスを有効にするフラグ
-#const SndEventThread		1		//ゲームプレイのサウンドイベント処理を行うスレッド（0=メインスレッド,1=サブスレッド,2=処理しない）
+;#const TexLv				4		//テクスチャの画質（数値が上がるほど荒くなる）
+;#const MSAAflag			1		//アンチエイリアスを有効にするフラグ
+;#const SndEventThread		1		//ゲームプレイのサウンドイベント処理を行うスレッド（0=メインスレッド,1=サブスレッド,2=処理しない）
+#const AllUnlock			0		//全ての楽曲をアンロック状態にする
+#const ExtraTicket			0		//追加のチケット数（デバッグ用）
 
 #const UIlayout_Profile		1
 #const UIlayout_ScoreGraph	2
@@ -300,6 +313,7 @@
 #enum PLAYOPT_ID_TARGET_100
 #enum PLAYOPT_ID_TARGET_MYBEST
 #enum PLAYOPT_ID_TARGET_WR
+#enum PLAYOPT_ID_TARGET_MISSION
 
 //クリアの種類
 #enum CLEARTYPE_NODATA		=	0
@@ -310,3 +324,7 @@
 #enum CLEARTYPE_MADNESS
 #enum CLEARTYPE_FC
 #enum CLEARTYPE_ALLEX
+
+//ゲームプレイモード
+#enum GAMEMODE_FREEPLAY		=	0
+#enum GAMEMODE_MISSION

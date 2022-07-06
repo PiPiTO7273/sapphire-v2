@@ -28,16 +28,20 @@ goto*Startup
 #include"NameSpace.hsp"				//グローバル空間の定数・マクロ
 #include"StringTable.hsp"			//文字列の配列
 #include"func_Default.hsp"			//基本命令・関数
-#include"func_InternetRanking.hsp"		//IR同期関連
+#include"PortalSync.hsp"				//IR同期関連
 #include"duioparse.hsp"				//Dynamic UI Language (Input-Output Module)
 #include"scene_CommonLayer.hsp"		//共通レイヤー
+#include"scene_Title.hsp"			//タイトル画面
 #include"scene_Lobby.hsp"			//ロビー
 #include"scene_MusicSelect.hsp"		//楽曲選択画面
 #include"scene_Gameplay.hsp"			//ゲームプレイ
 #include"scene_Result.hsp"			//リザルト
 #include"scene_Store.hsp"			//ストア
 #include"scene_Mission.hsp"			//ミッション
+#include"scene_Tutorial.hsp"			//チュートリアル
+#include"scene_Profile.hsp"			//プロフィール編集
 #include"scene_ErrorDialog.hsp"		//エラーダイアログ
+#include"scene_Config.hsp"			//システム設定
 
 #epack"start.ax"
 #packopt hide 1
@@ -79,6 +83,7 @@ goto*Startup
 		}
 
 	//設定読み込み
+		dim OnlineFlag:OnlineFlag=FALSE
 		dupptr DispWidth,varptr64(ClientSaveData)+4,4,vartype("int")
 		dupptr DispHeight,varptr64(ClientSaveData)+8,4,vartype("int")
 		dupptr BufWidth,varptr64(ClientSaveData)+12,4,vartype("int")
@@ -87,6 +92,16 @@ goto*Startup
 		dupptr PlayerID,varptr64(ClientSaveData)+96,64,vartype("str")
 		dupptr PlayerPassword,varptr64(ClientSaveData)+160,64,vartype("str")
 		dupptr HTTPproxy,varptr64(ClientSaveData)+224,64,vartype("str")
+
+		dupptr csconf_ScreenMode,varptr64(ClientSaveData)+288,4,vartype("int")
+		dupptr csconf_DispResolution,varptr64(ClientSaveData)+292,4,vartype("int")
+		dupptr csconf_SubThreadLimit,varptr64(ClientSaveData)+296,4,vartype("int")
+		dupptr csconf_TextureLevel,varptr64(ClientSaveData)+300,4,vartype("int")
+		dupptr csconf_Antialias,varptr64(ClientSaveData)+304,4,vartype("int")
+		dupptr csconf_proxyIP,varptr64(ClientSaveData)+308,64,vartype("str")
+		dupptr csconf_proxyPort,varptr64(ClientSaveData)+372,64,vartype("str")
+
+		gosub*ApplyClientConfig
 
 		logmes GetTimeStamp()+" Loading system settings..."
 		logmes GetTimeStamp()+" - Display : "+DispWidth+"x"+DispHeight
@@ -101,18 +116,36 @@ goto*Startup
 		logmes GetTimeStamp()+" Initializing DirectX..."
 		SetOutApplicationLogValidFlag FALSE
 		SetAlwaysRunFlag TRUE
-		ChangeWindowMode TRUE
+
 		SetGraphMode DispWidth,DispHeight
+		switch csconf_ScreenMode
+			case 0	//ウィンドウモード
+				ChangeWindowMode TRUE
+				SetUseASyncChangeWindowModeFunction TRUE,0
+				SetChangeScreenModeGraphicsSystemResetFlag FALSE
+			swbreak
+			case 1	//フルスクリーンモード
+				ChangeWindowMode FALSE
+			swbreak
+			case 2	//枠なしウィンドウモード
+				chgdisp 1,DispWidth,DispHeight
+				bgscr 0,DispWidth,DispHeight,0,0,0
+				SetUserWindow hwnd
+			swbreak
+		swend
 		;SetWindowVisibleFlag FALSE
 		;SetWaitVSyncFlag FALSE
-		SetWindowStyleMode 7
-		SetWindowSizeChangeEnableFlag TRUE,TRUE
+		
+		SetMainWindowText"SAPPHIRE"
 		DxLib_Init
 		if MSAAflag :SetDrawMode DX_DRAWMODE_BILINEAR
 		SetUsePremulAlphaConvertLoad TRUE
 		SetMouseDispFlag FALSE
 
-		ShowBootProgress 0
+		dim hdximg_preloader,90
+		dim preloader_interval
+		dim preloader_framecount
+		cfunc64v LoadDivGraph,"contents/graphic/common_Preloader.png",90,1,90,300,64,varptr64(hdximg_preloader)
 
 		//DirectXバージョン出力
 		sdim dxversionarr:dxversionarr="[ERROR]","9","9 EX","11"
@@ -122,7 +155,6 @@ goto*Startup
 		SetCameraNearFar d2f(100),d2f(4000)
 
 		LoadAllImgResource
-		ShowBootProgress 1
 
 	//BASS audio library初期化
 		logmes GetTimeStamp()+" [bass] Initializing audio component..."
@@ -287,7 +319,7 @@ goto*Startup
 				DrawGraph 0,0,duio_GetButtonhImg(duio_ButtonID2UIsetID(playoption_target_buttonid(cnt))),TRUE
 				DrawGraph 0,0,hdximg(iplayoption_enabled_120),TRUE
 			loop
-			repeat 2
+			repeat 2+1
 				if duio_ButtonID2UIsetID(playoption_target_buttonid(cnt+6))==-1 :continue
 				hdximg(iplayoption_target_mybest_enabled+cnt)=MakeScreen(180,35,TRUE)
 				SetDrawScreen hdximg(iplayoption_target_mybest_enabled+cnt)
@@ -296,13 +328,13 @@ goto*Startup
 			loop
 
 		hdximg(igameplay_bg_sidelr)=MakeScreen(256,1024,TRUE)
-		hdximg(igameplay_bgorg_side_0)=LoadGraph("contents/graphic/gameplay_bg_effect_0.png")
+		;hdximg(igameplay_bgorg_side_0)=LoadGraph("contents/graphic/gameplay_bg_effect_0.png")
 
 		hdximg(igameplay_bg_grid)=MakeScreen(1024,1024,TRUE)
 		hdximg(igameplay_bgorg_grid_0)=LoadGraph("contents/graphic/gameplay_bg_grid.png")
 
-		hdximg(igameplay_note_single_0)=LoadGraph("contents/graphic/gameplay_note_single_0.png")
-		hdximg(igameplay_note_hold_0)=LoadGraph("contents/graphic/gameplay_note_hold_0.png")
+		;hdximg(igameplay_note_single_0)=LoadGraph("contents/graphic/gameplay_note_single_0.png")
+		;hdximg(igameplay_note_hold_0)=LoadGraph("contents/graphic/gameplay_note_hold_0.png")
 		hdximg(igameplay_lane)=MakeScreen(512/TexLv,2048/TexLv,TRUE)
 		hdximg(igameplay_bg_lane)=LoadGraph("contents/graphic/gameplay_bg_lane.png")
 		hdximg(igameplay_sidelane_l)=MakeScreen(128/TexLv,2048/TexLv,TRUE)
@@ -348,6 +380,13 @@ goto*Startup
 		hdximg(iresult_ratio_bad)=LoadGraph("contents/graphic/result_ratio_bad.png")
 		hdximg(iresult_ratio_miss)=LoadGraph("contents/graphic/result_ratio_miss.png")
 
+		hdximg(iresult_gaugegraph)=MakeScreen(700,100,TRUE)
+
+		hdximg(iprofile_customize_bg_0)=LoadGraph("contents/graphic/profile_customize_bg_0.png")
+		hdximg(iprofile_customize_bg_1)=LoadGraph("contents/graphic/profile_customize_bg_1.png")
+
+		hdximg(icommon_connecting)=LoadGraph("contents/graphic/common_connecting.png")
+
 		dim hdximgarr_gameplay_particle,8
 		repeat 8
 			hdximgarr_gameplay_particle(cnt)=LoadGraph("contents/package/res_effect_particle/effect_Particle_"+cnt+".png")
@@ -356,6 +395,14 @@ goto*Startup
 		dim hdximgarr_load_connect,28
 		repeat 28
 			hdximgarr_load_connect(cnt)=LoadGraph("contents/package/res_loadframe_connect/if"+strf("%02d",cnt+1)+".png")
+		loop
+
+		hdximg(iembvideo_seek)=MakeScreen(1280,10,TRUE)
+		hdximg(iembvideo_seekorg)=LoadGraph("contents/graphic/embvideo_seek.png")
+
+		dim hdximgarr_titlelogo,120
+		repeat 120
+			hdximgarr_titlelogo(cnt)=LoadGraph("contents/package/res_titlelogo/f"+strf("%04d.png",cnt))
 		loop
 
 	//グローバル変数
@@ -381,10 +428,13 @@ goto*Startup
 		dim SubThreadTime
 		dim bfKeyInputFlag,256
 		dim KeyInputFlag,256
+		dim KeyInputTime,256
 		dim DebugMode
+		dim GameplayMode
+		dim UnlimitedTime
+		dim UnlimitedTime_textUIsetID
 
 	//ライブラリ読み込み
-		ShowBootProgress 2
 		sdim mapgroup
 		dim mapgroup_max
 		repeat
@@ -441,6 +491,8 @@ goto*Startup
 			repeat 3
 				lv=cnt
 				if map_uuid(item,lv)=="*" :continue
+
+				gosub*UpdatePreloader
 
 				map_path(item,lv)="contents/maps/"+map_uuid(item,lv)+".m2o"
 				exist map_path(item,lv)
@@ -613,181 +665,19 @@ goto*Startup
 					mapdb_hpreview_smp(item,lv)=cfunc64i(BASS_SampleLoad,FALSE,"contents/maps/"+mapdb_resource(item,lv)+"/preview.wav",0,0,16,0)
 					if mapdb_hpreview_smp(item,lv)==0 :mapdb_hpreview_smp(item,lv)=cfunc64i(BASS_SampleLoad,FALSE,"contents/maps/"+mapdb_resource(item,lv)+"/preview.ogg",0,0,16,0)
 					mapdb_hpreview(item,lv)=cfunc64i(BASS_SampleGetChannel,mapdb_hpreview_smp(item,lv),0)
-					cfunc64v BASS_ChannelSetAttribute,mapdb_hpreview(item,lv),BASS_ATTRIB_VOL,d2f(0.5)
+					cfunc64v BASS_ChannelSetAttribute,mapdb_hpreview(item,lv),BASS_ATTRIB_VOL,d2f(0.6)
 				}
 			loop
 		loop
 
 		//IR
-			ShowBootProgress 3
 			;gosub*syncIR
-			gosub*syncRecords
 
-		//プロフィール取得
-			ShowBootProgress 4
-			sdim PFrawdata:sdim PFdivdata
-			sdim INIkey:sdim INIvalue
-			PFrawdata=PortalWebSvc_DownloadProfile(PlayerID,PlayerPassword)
-			split PFrawdata,"\n",PFdivdata
-
-			//プロフィール情報変数
-				sdim pfreg_dispname			//表示名
-				sdim pfreg_RegDate			//登録日時
-				sdim pfreg_EmailAddress		//メールアドレス
-				sdim pfreg_InvitationCode	//招待コード
-				dim pfreg_NewdataFlag		//新規データフラグ
-				dim pfreg_NumLilly			//Lilly所持数（旧バージョンの共通通貨）
-				dim pfreg_NumLepus			//Lepus所持数（v2.xxの共通通貨）
-				dim pfreg_NumFragments		//音色のかけら所持数
-				dim pfreg_Level			//プレイヤーランク
-				dim pfreg_EXPvalue			//プレイヤー経験値
-				ddim pfreg_PFpoint,1		//プレイヤー能力値
-				sdim pfreg_Badge			//バッジ（旧バージョンのコメント）
-				dim pfreg_NumTickets		//チャレンジチケットの枚数
-
-			//オプション設定値
-				ddim pfreg_AddSpeed,1		//オブジェクトの速度
-				dim pfreg_GaugeType			//ゲージの種類
-				dim pfreg_Placement			//オブジェクトの配置オプション
-				dim pfreg_Target			//目標スコア
-				dim pfreg_JudgeOffset		//判定オフセット
-				dim pfreg_DispOffset		//表示オフセット
-				dim pfreg_WindowLayout		//ウィンドウレイアウト
-				pfreg_AddSpeed=1.0
-				pfreg_Bonusflag=TRUE
-				pfreg_WindowLayout=1+2+4
-
-				dim volume_BGM		//BGM音量(0-100)
-				dim volume_SE		//SE音量(0-100)
-				dim volume_PLAY	//キーサウンド、イベントサウンドの音量(0-100)
-				volume_BGM=70
-				volume_SE=70
-				volume_PLAY=70
-
-				dim curselect_item
-				dim curselect_lv
-
-			repeat length(PFdivdata)
-				split PFdivdata(cnt),"=",INIkey,INIvalue
-
-				switch INIkey
-					case"DISP.NAME":pfreg_dispname=inivalue:swbreak
-					case"REG.DATE":pfreg_RegDate=INIvalue:swbreak
-					case"EMAIL.ADDRESS":pfreg_EmailAddress=INIvalue:swbreak
-					case"INVITATION":pfreg_InvitationCode=INIvalue:swbreak
-					case"XODA.NEWDATA":pfreg_NewdataFlag=int(INIvalue):swbreak
-					case"XODA.NUMLILLY":pfreg_NumLilly=int(INIvalue):swbreak
-					case"XODA.NUMLEPUS":pfreg_NumLepus=int(INIvalue):swbreak
-					case"XODA.NUMFRAGMENTS":pfreg_NumFragments=int(INIvalue):swbreak
-					case"XODA.LEVEL":pfreg_Level=int(INIvalue):swbreak
-					case"XODA.EXP":pfreg_EXPvalue=int(INIvalue):swbreak
-					case"XODA.RATE":pfreg_PFpoint=double(INIvalue):swbreak
-					case"XODA.BADGE":pfreg_Badge=INIvalue:swbreak
-					case"XODA.NUMTICKETS":pfreg_NumTickets=int(INIvalue):swbreak
-
-					case"XODA.OPTION.ADDSPEED":pfreg_AddSpeed=double(INIvalue):swbreak
-					case"XODA.OPTION.GAUGE":pfreg_GaugeType=int(INIvalue):swbreak
-					case"XODA.OPTION.PLACEMENT":pfreg_Placement=int(INIvalue):swbreak
-					case"XODA.OPTION.TARGET":pfreg_Target=int(INIvalue):swbreak
-					case"XODA.OPTION.JUDGEOFFSET":pfreg_JudgeOffset=int(INIvalue):swbreak
-					case"XODA.OPTION.DISPOFFSET":pfreg_DispOffset=int(INIvalue):swbreak
-					case"XODA.OPTION.LAYOUT":pfreg_WindowLayout=int(INIvalue):swbreak
-
-					case"XODA.VOLUME.BGM":volume_BGM=int(INIvalue):swbreak
-					case"XODA.VOLUME.SE":volume_SE=int(INIvalue):swbreak
-					case"XODA.VOLUME.PLAY":volume_PLAY=int(INIvalue):swbreak
-
-					case"XODAV2.SELECT.ITEM":curselect_item=int(INIvalue):swbreak
-					case"XODAV2.SELECT.LV":curselect_lv=int(INIvalue):swbreak
-				swend
-
-				//使用済みのギフトコード
-				if strmid(INIkey,0,strlen("XODA.GIFTCODE.USED"))=="XODA.GIFTCODE.USED" {
-					if int(INIvalue) {
-						sdim tmpunlockinfo
-						split INIkey,".",tmpunlockinfo
-						duio_idsWrite"_GiftCodeUsed."+tmpunlockinfo(3),"TRUE"
-					}
-				}
-
-				//譜面のアンロック
-				if strmid(INIkey,0,strlen("XODA.MAP.UNLOCK"))=="XODA.MAP.UNLOCK" {
-					if int(INIvalue) {
-						sdim tmpunlockinfo
-						split INIkey,".",tmpunlockinfo
-						duio_idsWrite"_MapUnlock."+tmpunlockinfo(3),"TRUE"
-					}
-				}
-
-				//カスタマイズパーツのアンロック
-				if strmid(INIkey,0,strlen("XODA.CUSTOMIZE.UNLOCK"))=="XODA.CUSTOMIZE.UNLOCK" {
-					if int(INIvalue) {
-						sdim tmpunlockinfo
-						split INIkey,".",tmpunlockinfo
-						duio_idsWrite"_Customize."+tmpunlockinfo(3),"TRUE"
-					}
-				}
-
-				//ミッションの進捗
-				if strmid(INIkey,0,strlen("XODA.MISSION.PROGRESS"))=="XODA.MISSION.PROGRESS" {
-					sdim tmpunlockinfo
-					split INIkey,".",tmpunlockinfo
-					duio_idsWrite"_Mission."+tmpunlockinfo(3),INIvalue
-				}
-			loop
-
-			if pfreg_dispname=="" :pfreg_dispname=PlayerID	//表示名が未設定の場合、IDをそのまま反映
-
-		//自己ベスト記録
-			gosub*syncRecords
-
-	//カスタマイズスキン読み込み
-
-		sdim customize_idstmp
-		sdim customize_pricetmp
-		sdim customize_tmppath
-
-		//ノーツ
-		sdim customize_note_name		//カスタマイズ名
-		dim customize_note_hsingle	//シングルノーツの画像ハンドル
-		dim customize_note_hhold		//ホールドノーツの画像ハンドル
-		dim customize_note_price		//値段
-		dim customize_note_unlockflag	//アンロックフラグ
-		dim customize_note_max		//登録数
-		repeat
-			customize_idstmp=duio_idsGet("cpart.note@"+cnt)
-			if customize_idstmp=="" :break
-			split customize_idstmp,",",customize_note_name(cnt),customize_tmppath(0),customize_tmppath(1),customize_pricetmp
-			customize_note_hsingle(cnt)=LoadGraph("contents/graphic/"+customize_tmppath(0))
-			customize_note_hhold(cnt)=LoadGraph("contents/graphic/"+customize_tmppath(1))
-			customize_note_price(cnt)=int(customize_pricetmp)
-			
-			if duio_idsGet("_Customize.n"+cnt)=="TRUE" {
-				customize_note_unlockflag(cnt)=TRUE
-			} else {
-				customize_note_unlockflag(cnt)=FALSE
-			}
-			customize_note_max++
-		loop
-
-	//ミッション読み込み
-
-		sdim mission_idstmp
-
-		sdim mission_playmap
-		sdim mission_type
-		sdim mission_typeprm
-		sdim mission_reward
-		dim mission_progress
-		dim mission_max
-
-		repeat
-			mission_idstmp=duio_idsGet("mission@"+cnt)
-			if mission_idstmp=="" :break
-			split mission_idstmp,",",mission_playmap(mission_max),mission_type(mission_max),mission_typeprm(mission_max),mission_reward(mission_max)
-			mission_progress(mission_max)=int(duio_idsGet("_Mission."+cnt))
-			mission_max++
-		loop
+		gosub*syncAllSavedata
+		if stat<0 {
+			PlayerID=""
+			PlayerPassword=""
+		}
 
 
 	//初期状態
@@ -809,8 +699,8 @@ goto*Startup
 			playoption_window_hbuttonimg(cnt,0)=duio_GetButtonhImg(duio_ButtonID2UIsetID(playoption_window_buttonid(cnt)))
 			playoption_window_hbuttonimg(cnt,1)=hdximg(iplayoption_window_profile_enabled+cnt)
 		loop
-		dim playoption_target_hbuttonimg,8,2
-		repeat 8
+		dim playoption_target_hbuttonimg,8+1,2
+		repeat 8+1
 			playoption_target_hbuttonimg(cnt,0)=duio_GetButtonhImg(duio_ButtonID2UIsetID(playoption_target_buttonid(cnt)))
 			playoption_target_hbuttonimg(cnt,1)=hdximg(iplayoption_target_ex_enabled+cnt)
 		loop
@@ -818,11 +708,15 @@ goto*Startup
 	//FPS測定初期化
 		duio_Draw""
 
-	curSceneTag="#Lobby"
-	gosub*scene_Lobby_Init
+	curSceneTag="#Title"
+	gosub*scene_Title_Init
+	;gosub*scene_Lobby_Init
 	;gosub*scene_Result_Init
 	;gosub*scene_MusicSelect_Init
 	;gosub*scene_Gameplay_Init
+
+	duio_ChangeTextBody duio_TextID2UIsetID("common_unlimitedtime"),""
+	duio_ChangeTextBody duio_TextID2UIsetID("gameplay_unlimitedtime"),""
 
 *MainLoop
 
@@ -837,6 +731,7 @@ goto*Startup
 
 	repeat 256
 		KeyInputFlag(cnt)=CheckHitKey(cnt)
+		if KeyInputFlag(cnt)&bfKeyInputFlag(cnt) :KeyInputTime(cnt)+FrameTime:else:KeyInputTime(cnt)=0
 	loop
 
 	//カーソル座標
@@ -853,6 +748,22 @@ goto*Startup
 		cursorWheel=getease(cursorWheelCount,320)
 		cursorWheelCount+(1000/limitf(CurFPS,1.0))
 
+	//Unlimitedモード時間
+		if UnlimitedTime!0 {
+			if curSceneTag=="#Gameplay" {
+				UnlimitedTime_textUIsetID=duio_TextID2UIsetID("gameplay_unlimitedtime")
+			} else {
+				UnlimitedTime_textUIsetID=duio_TextID2UIsetID("common_unlimitedtime")
+			}
+
+			duio_ChangeTextBody UnlimitedTime_textUIsetID,strf("Unlimited Mode - 残り%d分%02d秒",UnlimitedTime/1000/60,UnlimitedTime/1000\60)
+			UnlimitedTime-FrameTime
+			if UnlimitedTime<=0 {
+				duio_ChangeTextBody UnlimitedTime_textUIsetID,""
+				UnlimitedTime=0
+			}
+		}
+
 	//画面の描画先の設定と初期化
 		SetDrawScreen hcommonLayer
 		ClearDrawScreen
@@ -865,6 +776,9 @@ goto*Startup
 
 	//シーン別
 		switch curSceneTag
+			case"#Title"
+				gosub*scene_Title
+			swbreak
 			case"#Lobby"
 				gosub*scene_Lobby
 			swbreak
@@ -882,6 +796,15 @@ goto*Startup
 			swbreak
 			case"#Mission"
 				gosub*scene_Mission
+			swbreak
+			case"#Tutorial"
+				gosub*scene_Tutorial
+			swbreak
+			case"#Profile"
+				gosub*scene_Profile
+			swbreak
+			case"#Config"
+				gosub*scene_Config
 			swbreak
 		swend
 
@@ -916,6 +839,8 @@ goto*Startup
 
 	bfcursorStatus=cursorStatus
 	bfCursorWheelraw=cursorWheelraw
+
+	if CheckHitKey(KEY_INPUT_F11) :duio_InitAllCount"#Config"
 
 	repeat 256
 		bfKeyInputFlag(cnt)=KeyInputFlag(cnt)
@@ -965,34 +890,7 @@ goto*Startup
 
 *Exit
 
-	//プロフィール保存
-	PortalWebSvc_mSendProfile_Init
-		PortalWebSvc_mSendProfile_Reg"DISP.NAME",pfreg_dispname
-		PortalWebSvc_mSendProfile_Reg"REG.DATE",pfreg_RegDate
-		PortalWebSvc_mSendProfile_Reg"EMAIL.ADDRESS",pfreg_EmailAddress
-		PortalWebSvc_mSendProfile_Reg"INVITATION",pfreg_InvitationCode
-		PortalWebSvc_mSendProfile_Reg"XODA.NEWDATA",str(pfreg_NewdataFlag)
-		PortalWebSvc_mSendProfile_Reg"XODA.NUMLILLY",str(pfreg_NumLilly)
-		PortalWebSvc_mSendProfile_Reg"XODA.NUMLEPUS",str(pfreg_NumLepus)
-		PortalWebSvc_mSendProfile_Reg"XODA.NUMFRAGMENTS",str(pfreg_NumFragments)
-		PortalWebSvc_mSendProfile_Reg"XODA.LEVEL",str(pfreg_Level)
-		PortalWebSvc_mSendProfile_Reg"XODA.EXP",str(pfreg_EXPvalue)
-		PortalWebSvc_mSendProfile_Reg"XODA.RATE",str(pfreg_PFpoint)
-		PortalWebSvc_mSendProfile_Reg"XODA.BADGE",pfreg_Badge
-		PortalWebSvc_mSendProfile_Reg"XODA.NUMTICKETS",str(pfreg_NumTickets)
-		PortalWebSvc_mSendProfile_Reg"XODA.OPTION.ADDSPEED",str(pfreg_AddSpeed)
-		PortalWebSvc_mSendProfile_Reg"XODA.OPTION.GAUGE",str(pfreg_GaugeType)
-		PortalWebSvc_mSendProfile_Reg"XODA.OPTION.PLACEMENT",str(pfreg_Placement)
-		PortalWebSvc_mSendProfile_Reg"XODA.OPTION.TARGET",str(pfreg_Target)
-		PortalWebSvc_mSendProfile_Reg"XODA.OPTION.JUDGEOFFSET",str(pfreg_JudgeOffset)
-		PortalWebSvc_mSendProfile_Reg"XODA.OPTION.DISPOFFSET",str(pfreg_DispOffset)
-		PortalWebSvc_mSendProfile_Reg"XODA.OPTION.LAYOUT",str(pfreg_WindowLayout)
-		PortalWebSvc_mSendProfile_Reg"XODA.VOLUME.BGM",str(volume_BGM)
-		PortalWebSvc_mSendProfile_Reg"XODA.VOLUME.SE",str(volume_SE)
-		PortalWebSvc_mSendProfile_Reg"XODA.VOLUME.PLAY",str(volume_PLAY)
-		PortalWebSvc_mSendProfile_Reg"XODAV2.SELECT.ITEM",str(curselect_item)
-		PortalWebSvc_mSendProfile_Reg"XODAV2.SELECT.LV",str(curselect_lv)
-	PortalWebSvc_SendProfile_Send PlayerID,PlayerPassword
+	gosub*UploadAllSavedata
 
 	DxLib_End
 	end

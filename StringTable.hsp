@@ -35,6 +35,7 @@
 	playoption_target_buttonid(5)="playoption_button_target_100"
 	playoption_target_buttonid(6)="playoption_button_target_mybest"
 	playoption_target_buttonid(7)="playoption_button_target_wr"
+	playoption_target_buttonid(8)="playoption_button_target_mission"	//ex
 
 	sdim folder_dropdown_id:sdim folder_dropdown_event
 	folder_dropdown_id(0)="musicselect_button_folder_all_dl"

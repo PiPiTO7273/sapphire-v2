@@ -1,0 +1,282 @@
+
+*scene_Profile_Init
+
+	gosub*UploadAllSavedata
+
+	dim SceneCount
+	dim DecideTime
+	dim ChangeName_hInput
+	dim ChangeComment_hInput
+	DecideTime=-1
+
+	duio_InitAllCount"#Profile"
+	duio_SetAllButtonVisible"#Profile",TRUE
+	duio_SetAllImageVisible"#Profile",TRUE
+	duio_SetAllTextVisible"#Profile",TRUE
+
+	duio_ChangeTextBody duio_TextID2UIsetID("profile_account_name"),pfreg_dispname
+	duio_ChangeTextBody duio_TextID2UIsetID("profile_account_comment"),pfreg_Badge
+	duio_ChangeTextBody duio_TextID2UIsetID("profile_note_curset"),customize_note_name(pfreg_CustomizeNote)
+	duio_ChangeTextBody duio_TextID2UIsetID("profile_note_changeset"),""
+	duio_ChangeTextBody duio_TextID2UIsetID("profile_bg_curset"),customize_bg_name(pfreg_CustomizeBackground)
+	duio_ChangeTextBody duio_TextID2UIsetID("profile_bg_changeset"),""
+
+	//ボタン作成
+	dim mapitem_max
+	dim mapitem_himg
+	dim mapitem_uisetid
+
+	sdim mapitem_tmptitle
+	sdim mapitem_tmpreward
+
+	dim forcedop_uisetid
+	dim forcedop_himg
+
+	repeat customize_note_max
+
+		//項目
+			mapitem_himg(mapitem_max)=MakeScreen(90,94,TRUE)
+			SetDrawScreen mapitem_himg(mapitem_max)
+
+			//背景
+			SetDrawBlendMode DX_BLENDMODE_PMA_ALPHA,256
+			DrawGraph 0,0,hdximg(iprofile_customize_bg_0),TRUE
+
+			DrawExtendGraph 789-776,224-219,789-776+64,224-219+64,customize_note_hhold(cnt),TRUE
+			DrawExtendGraph 789-776,288-219,789-776+64,288-219+int(duio_idsGet("playtheme_"+mapitem_max+"_single_height"))/2,customize_note_hsingle(cnt),TRUE
+
+			//duioに登録
+			duio_CreateButton"#Profile","profile_note@"+cnt,mapitem_himg(mapitem_max),776+100*(mapitem_max\8),219+110*(mapitem_max/8),90,94
+			mapitem_uisetid(mapitem_max)=stat
+			duio_AddInButtonAnimation_Zoom mapitem_uisetid(mapitem_max),200+50*mapitem_max,350,0.6,ease_cubic_out
+			duio_AddInButtonAnimation_Fade mapitem_uisetid(mapitem_max),200+50*mapitem_max,300,ease_cubic_out
+			duio_SetButtonEvent mapitem_uisetid(mapitem_max),"note@"+cnt
+			duio_SetButtonPushSound mapitem_uisetid(mapitem_max),"decide"
+
+			if customize_note_unlockflag(cnt) {
+				duio_SetButtonEnable mapitem_uisetid(mapitem_max),TRUE
+				duio_SetButtonAlpha mapitem_uisetid(mapitem_max),255
+			} else {
+				duio_SetButtonEnable mapitem_uisetid(mapitem_max),FALSE
+				duio_SetButtonAlpha mapitem_uisetid(mapitem_max),100
+			}
+
+		mapitem_max++
+	loop
+
+	repeat customize_bg_max
+
+		//項目
+			mapitem_himg(mapitem_max)=MakeScreen(84,300,TRUE)
+			SetDrawScreen mapitem_himg(mapitem_max)
+
+			//背景
+			SetDrawBlendMode DX_BLENDMODE_PMA_ALPHA,256
+			DrawGraph 0,0,hdximg(iprofile_customize_bg_1),TRUE
+
+			DrawExtendGraph 8,16,8+64,16+256,customize_bg_himg(cnt),TRUE
+
+			//duioに登録
+			duio_CreateButton"#Profile","profile_bg@"+cnt,mapitem_himg(mapitem_max),776+96*cnt,530,84,300
+			mapitem_uisetid(mapitem_max)=stat
+			duio_AddInButtonAnimation_Zoom mapitem_uisetid(mapitem_max),200+50*mapitem_max,350,0.6,ease_cubic_out
+			duio_AddInButtonAnimation_Fade mapitem_uisetid(mapitem_max),200+50*mapitem_max,300,ease_cubic_out
+			duio_SetButtonEvent mapitem_uisetid(mapitem_max),"bg@"+cnt
+			duio_SetButtonPushSound mapitem_uisetid(mapitem_max),"decide"
+
+			if customize_bg_unlockflag(cnt) {
+				duio_SetButtonEnable mapitem_uisetid(mapitem_max),TRUE
+				duio_SetButtonAlpha mapitem_uisetid(mapitem_max),255
+			} else {
+				duio_SetButtonEnable mapitem_uisetid(mapitem_max),FALSE
+				duio_SetButtonAlpha mapitem_uisetid(mapitem_max),100
+			}
+
+		mapitem_max++
+	loop
+
+	return
+
+*scene_Profile
+
+	duio_InitHoverButton
+
+	DrawCommonBackground FrameCount
+
+	SetDrawBlendMode DX_BLENDMODE_PMA_ALPHA,256
+	DrawGraph 0,0,hdximg(icommon_bglayer),TRUE
+
+	duio_Draw"#Profile"
+	duio_Draw"#Common-Profile"
+
+	if CheckKeyInput(ChangeName_hInput)==0 {
+		//文字列を取得
+			sdim pfreg_dispname
+			cfunc64v GetKeyInputString,varptr64(pfreg_dispname),ChangeName_hInput
+			pfreg_dispname=cnvatos(pfreg_dispname)
+
+		//IMEのUIを設定
+			SetKeyInputStringColor2 DX_KEYINPSTRCOLOR_IME_STR_BACK,$00E1E9
+			SetKeyInputStringColor2 DX_KEYINPSTRCOLOR_IME_SELECT_STR_BACK,$FFFFFF
+			SetKeyInputStringColor2 DX_KEYINPSTRCOLOR_IME_CONV_WIN_STR,$000000
+			SetKeyInputStringColor2 DX_KEYINPSTRCOLOR_IME_CONV_WIN_SELECT_STR,$222222
+			SetKeyInputStringColor2 DX_KEYINPSTRCOLOR_IME_CONV_WIN_SELECT_STR_BACK,$EEEEEE
+			SetKeyInputStringColor2 DX_KEYINPSTRCOLOR_IME_CONV_WIN_BACK,$FFFFFF
+			SetKeyInputStringColor2 DX_KEYINPSTRCOLOR_IME_CONV_WIN_EDGE,$00E1E9
+			SetKeyInputStringFont duio_GetFontHandle("rom1cm32")
+
+		//入力中の文字列を描画
+			SetDrawBlendMode DX_BLENDMODE_ALPHA,256
+			DrawKeyInputString 160,300,ChangeName_hInput
+
+		//改行コードを検出（ENTER）
+			if checkLF(pfreg_dispname) {
+				delLF pfreg_dispname
+				DeleteKeyInput ChangeName_hInput
+
+				duio_ChangeTextBody duio_TextID2UIsetID("profile_account_name"),pfreg_dispname
+				UpdateProfileDisp
+			}
+
+		//カーソル点滅
+			if SceneCount/8\2==0 :SetKeyInputStringColor2 DX_KEYINPSTRCOLOR_NORMAL_CURSOR,$000000:else:SetKeyInputStringColor2 DX_KEYINPSTRCOLOR_NORMAL_CURSOR,$FFFFFF
+	} else {
+		//入力終了
+		if CheckKeyInput(ChangeName_hInput)!-1 {
+			DeleteKeyInput ChangeName_hInput
+
+			duio_ChangeTextBody duio_TextID2UIsetID("profile_account_name"),pfreg_dispname
+			UpdateProfileDisp
+		}
+	}
+
+	if CheckKeyInput(ChangeComment_hInput)==0 {
+		//文字列を取得
+			sdim pfreg_Badge
+			cfunc64v GetKeyInputString,varptr64(pfreg_Badge),ChangeComment_hInput
+			pfreg_Badge=cnvatos(pfreg_Badge)
+
+		//IMEのUIを設定
+			SetKeyInputStringColor2 DX_KEYINPSTRCOLOR_IME_STR_BACK,$00E1E9
+			SetKeyInputStringColor2 DX_KEYINPSTRCOLOR_IME_SELECT_STR_BACK,$FFFFFF
+			SetKeyInputStringColor2 DX_KEYINPSTRCOLOR_IME_CONV_WIN_STR,$000000
+			SetKeyInputStringColor2 DX_KEYINPSTRCOLOR_IME_CONV_WIN_SELECT_STR,$222222
+			SetKeyInputStringColor2 DX_KEYINPSTRCOLOR_IME_CONV_WIN_SELECT_STR_BACK,$EEEEEE
+			SetKeyInputStringColor2 DX_KEYINPSTRCOLOR_IME_CONV_WIN_BACK,$FFFFFF
+			SetKeyInputStringColor2 DX_KEYINPSTRCOLOR_IME_CONV_WIN_EDGE,$00E1E9
+			SetKeyInputStringFont duio_GetFontHandle("rom1cm20")
+
+		//入力中の文字列を描画
+			SetDrawBlendMode DX_BLENDMODE_ALPHA,256
+			DrawKeyInputString 170,373,ChangeComment_hInput
+
+		//改行コードを検出（ENTER）
+			if checkLF(pfreg_Badge) {
+				delLF pfreg_Badge
+				DeleteKeyInput ChangeComment_hInput
+
+				duio_ChangeTextBody duio_TextID2UIsetID("profile_account_comment"),pfreg_Badge
+				UpdateProfileDisp
+			}
+
+		//カーソル点滅
+			if SceneCount/8\2==0 :SetKeyInputStringColor2 DX_KEYINPSTRCOLOR_NORMAL_CURSOR,$000000:else:SetKeyInputStringColor2 DX_KEYINPSTRCOLOR_NORMAL_CURSOR,$FFFFFF
+	} else {
+		//入力終了
+		if CheckKeyInput(ChangeComment_hInput)!-1 {
+			DeleteKeyInput ChangeComment_hInput
+
+			duio_ChangeTextBody duio_TextID2UIsetID("profile_account_comment"),pfreg_Badge
+			UpdateProfileDisp
+		}
+	}
+
+	duio_ChangeTextBody duio_TextID2UIsetID("profile_note_changeset"),""
+	repeat customize_note_max
+		if duio_GetHoverButtonUIsetID()==duio_ButtonID2UIsetID("profile_note@"+cnt) {
+			duio_ChangeTextBody duio_TextID2UIsetID("profile_note_changeset"),customize_note_name(cnt)
+		}
+	loop
+	duio_ChangeTextBody duio_TextID2UIsetID("profile_bg_changeset"),""
+	repeat customize_bg_max
+		if duio_GetHoverButtonUIsetID()==duio_ButtonID2UIsetID("profile_bg@"+cnt) {
+			duio_ChangeTextBody duio_TextID2UIsetID("profile_bg_changeset"),customize_bg_name(cnt)
+		}
+	loop
+
+	if DecideTime!-1 :DecideTime+FrameTime
+	if DecideTime>300 { 
+		ClearMapItem
+		gosub*scene_Lobby_Init
+		curSceneTag="#Lobby"
+		return
+	}
+	if duio_GetButtonEventStack()!"" :gosub*scene_Profile_eventstack
+
+	return
+
+*scene_Profile_eventstack
+
+	switch duio_GetButtonEventStack()
+
+		case"backscene"
+			DecideTime=0
+			duio_SetAllButtonOutro"#Profile"
+			duio_SetAllImageOutro"#Profile"
+			duio_SetAllTextOutro"#Profile"
+		swbreak
+
+		case"profile_changename"
+			if CheckKeyInput(ChangeComment_hInput)==0 {
+				DeleteKeyInput ChangeComment_hInput
+				duio_ChangeTextBody duio_TextID2UIsetID("profile_account_comment"),pfreg_Badge
+				UpdateProfileDisp
+			}
+			if CheckKeyInput(ChangeName_hInput)==0 {
+				DeleteKeyInput ChangeName_hInput
+				duio_ChangeTextBody duio_TextID2UIsetID("profile_account_name"),pfreg_dispname
+				UpdateProfileDisp
+			} else {
+				ChangeName_hInput=MakeKeyInput(16,TRUE,FALSE,FALSE)
+				SetActiveKeyInput ChangeName_hInput
+				SetKeyInputString pfreg_dispname,ChangeName_hInput
+				duio_ChangeTextBody duio_TextID2UIsetID("profile_account_name"),""
+			}
+		swbreak
+
+		case"profile_changecomment"
+			if CheckKeyInput(ChangeName_hInput)==0 {
+				DeleteKeyInput ChangeName_hInput
+				duio_ChangeTextBody duio_TextID2UIsetID("profile_account_name"),pfreg_dispname
+				UpdateProfileDisp
+			}
+			if CheckKeyInput(ChangeComment_hInput)==0 {
+				DeleteKeyInput ChangeComment_hInput
+				duio_ChangeTextBody duio_TextID2UIsetID("profile_account_comment"),pfreg_Badge
+				UpdateProfileDisp
+			} else {
+				ChangeComment_hInput=MakeKeyInput(32,TRUE,FALSE,FALSE)
+				SetActiveKeyInput ChangeComment_hInput
+				SetKeyInputString pfreg_Badge,ChangeComment_hInput
+				duio_ChangeTextBody duio_TextID2UIsetID("profile_account_comment"),""
+			}
+		swbreak
+
+		case"game.exit":goto*Exit:swbreak
+
+	swend
+
+	repeat customize_note_max
+		if duio_GetButtonEventStack()=="note@"+cnt {
+			pfreg_CustomizeNote=cnt
+			duio_ChangeTextBody duio_TextID2UIsetID("profile_note_curset"),customize_note_name(pfreg_CustomizeNote)
+		}
+	loop
+	repeat customize_bg_max
+		if duio_GetButtonEventStack()=="bg@"+cnt {
+			pfreg_CustomizeBackground=cnt
+			duio_ChangeTextBody duio_TextID2UIsetID("profile_bg_curset"),customize_bg_name(pfreg_CustomizeBackground)
+		}
+	loop
+
+	return

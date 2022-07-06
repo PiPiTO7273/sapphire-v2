@@ -1,6 +1,8 @@
 
 *scene_Result_Init
 
+	gosub*UploadAllSavedata
+
 	dim SceneCount
 	dim SceneTime
 	dim decidecount
@@ -152,6 +154,14 @@
 					if common_cleartype(cnt)==mapdb_mybest_cleartype(item,lv) :mybestClearType=cnt:break
 				loop
 
+				if GameplayMode==GAMEMODE_MISSION&mission_type(currentSetMission)=="CLEAR" {
+					dim missionClearType
+					missionClearType=CLEARTYPE_NODATA
+					foreach common_cleartype
+						if common_cleartype(cnt)==mission_typeprm(currentSetMission) :missionClearType=cnt:break
+					loop
+				}
+
 			//今回
 				dim curClearType
 				curClearType=CLEARTYPE_FAILED
@@ -247,6 +257,56 @@
 		if pfreg_Placement==PLAYOPT_ID_OBJPLACE_SINGLE :recordsend_flag=TRUE:irsend_flag=TRUE
 		if AutoPlayFlag :recordsend_flag=TRUE:irsend_flag=TRUE
 
+	//ミッションクリア処理
+	if GameplayMode==GAMEMODE_MISSION {
+		dim reward_windowflag
+		reward_windowflag=FALSE
+
+		switch mission_type(currentSetMission)
+			case"SCORE"
+				if curScore>=int(mission_typeprm(currentSetMission)) {
+					//クリア
+					gosub*scene_Mission_GetReward
+					reward_windowflag=TRUE
+				} else {
+					//失敗
+					mission_progress(currentSetMission)++
+				}
+			swbreak
+			case"CLEAR"
+				if curClearType>=missionClearType {
+					//クリア
+					gosub*scene_Mission_GetReward
+					reward_windowflag=TRUE
+				} else {
+					//失敗
+					mission_progress(currentSetMission)++
+				}
+			swbreak
+		swend
+
+		if mission_progress(currentSetMission)==5 {
+			gosub*scene_Mission_GetReward
+			reward_windowflag=TRUE
+		}
+
+		PortalWebSvc_SendProfile PlayerID,PlayerPassword,"XODA.MISSION.PROGRESS."+currentSetMission,str(mission_progress(currentSetMission))
+	}
+
+	//グラフ画像生成
+		SetDrawScreen hdximg(iresult_gaugegraph)
+		ClearDrawScreen
+
+		SetDrawBlendMode DX_BLENDMODE_ALPHA,256
+		ddim x:ddim y
+		repeat 350-1,1
+			x(0)=double(0+cnt*2)
+			y(0)=double(100-gaugecapture_buf(cnt-1))
+			x(1)=x(0)+2.0
+			y(1)=double(100-gaugecapture_buf(cnt))
+			DrawLineAA d2f(x(0)),d2f(y(0)),d2f(x(1)),d2f(y(1)),0,d2f(2.0)
+		loop
+
 	duio_SetAllImageOutro"#Shutter"
 	duio_PlaySound"shutter_out"
 
@@ -274,7 +334,7 @@
 	loop
 
 	//ゲージの推移
-	ddim x:ddim y
+	/*ddim x:ddim y
 	setease 0,350-1,ease_cubic_out
 	repeat getease(1000.0/duio_GetFPS()*SceneCount-500,1000),1
 		x(0)=double(duio_GetImagePositionX(duio_ImageID2UIsetID("result_bg_gaugegraph"))+cnt*2)
@@ -282,13 +342,30 @@
 		x(1)=x(0)+2.0
 		y(1)=double(duio_GetImagePositionY(duio_ImageID2UIsetID("result_bg_gaugegraph"))+44+100-gaugecapture_buf(cnt))
 		DrawLineAA d2f(x(0)),d2f(y(0)),d2f(x(1)),d2f(y(1)),0,d2f(2.0)
-	loop
+	loop*/
+	setease 0,700,ease_cubic_out
+	dim EasePosX:dim EasePosY:dim EaseWidth
+	EasePosX=duio_GetImagePositionX(duio_ImageID2UIsetID("result_bg_gaugegraph"))
+	EasePosY=duio_GetImagePositionY(duio_ImageID2UIsetID("result_bg_gaugegraph"))
+	EaseWidth=getease(SceneTime-500,1000)
+	DrawRectExtendGraph EasePosX,EasePosY+44,EasePosX+EaseWidth,EasePosY+44+100,0,0,EaseWidth,100,hdximg(iresult_gaugegraph),TRUE
+
+	if reward_windowflag {
+		duio_Draw"#Result-MissionReward"
+		/*if SceneTime>3000&duio_GetImageOutroFlag(duio_ImageID2UIsetID("result_missionreward_bg"))==FALSE {
+			duio_SetAllButtonOutro"#Result-MissionReward"
+			duio_SetAllImageOutro"#Result-MissionReward"
+			duio_SetAllTextOutro"#Result-MissionReward"
+		}*/
+	}
 
 	//シャッター
 	duio_Draw"#Shutter"
 
-	//接続中
-	duio_ChangeImage duio_ImageID2UIsetID("result_status_load"),hdximgarr_load_connect(SceneTime/20\28)
+	if SceneTime<3000 {
+		//接続中
+		duio_ChangeImage duio_ImageID2UIsetID("result_status_load"),hdximgarr_load_connect(SceneTime/20\28)
+	}
 
 	if SceneTime>1500&recordsend_flag==FALSE {
 		PortalWebSvc_UploadRecord map_uuid(item,lv),PlayerID,saveScore,saveJudge,saveMaxCombo,common_cleartype(saveClearType),saveGaugeCapture,saveScoreCapture,saveability
@@ -323,8 +400,18 @@
 	if decidecount>1000 {
 		switch DecideJumpScene
 			case"next"
-				curSceneTag="#MusicSelect"
-				gosub*scene_MusicSelect_Init
+				switch GameplayMode
+					case GAMEMODE_FREEPLAY
+						curSceneTag="#MusicSelect"
+						gosub*scene_MusicSelect_Init
+					swbreak
+					case GAMEMODE_MISSION
+						curSceneTag="#Mission"
+						gosub*scene_Mission_Init
+						duio_SetAllImageOutro"#Shutter"
+						duio_PlaySound"shutter_out"
+					swbreak
+				swend
 			swbreak
 		swend
 	}
@@ -337,8 +424,17 @@
 
 		//次へ
 		case"next"
-			decidecount=0:DecideJumpScene="next"
-			gosub*onshutter
+			if decidecount==-1 {
+				decidecount=0:DecideJumpScene="next"
+				gosub*onshutter
+			}
+		swbreak
+
+		//報酬の通知を閉じる
+		case"missionreward_close"
+			duio_SetAllButtonOutro"#Result-MissionReward"
+			duio_SetAllImageOutro"#Result-MissionReward"
+			duio_SetAllTextOutro"#Result-MissionReward"
 		swbreak
 
 		//ゲーム終了

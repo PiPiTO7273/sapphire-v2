@@ -28,6 +28,18 @@
 	loop
 	return searchdb_res
 
+//項目IDと難易度からアンロック状態を取得する
+//IsUnlocked _item,_lv,_unlimitedflag
+//	_item			項目ID
+//	_lv				難易度
+//	_unlimitedflag		Unlimitedモードの状態を考慮するか
+#define ctype IsUnlocked(%1,%2,%3=0) _IsUnlocked(%1,%2,%3)
+#defcfunc _IsUnlocked int x,int y,int unlimitedflag
+	if AllUnlock :return TRUE		//デバッグ用フラグ
+	if unlimitedflag&UnlimitedTime>0 :return TRUE
+	if duio_idsGet("_MapUnlock."+map_uuid(x,y))!"TRUE"&mapdb_unlocklepus(x,y)!0 :return FALSE
+	return TRUE
+
 //Internet Rankingを同期する
 *syncIR
 	sdim IRrawdata:sdim IRdivdata
@@ -113,6 +125,7 @@
 
 *scene_MusicSelect_Init
 
+	gosub*UploadAllSavedata
 	gosub*syncIR
 	gosub*syncRecords
 
@@ -429,6 +442,7 @@
 
 				if (decidecount*(1000.0/duio_GetFPS()))>1500 {
 					ClearMapItem
+					GameplayMode=GAMEMODE_FREEPLAY	//ゲームモード変更
 					gosub*scene_MusicSelect_free
 					gosub*scene_Gameplay_Init
 					curSceneTag="#Gameplay"
@@ -586,6 +600,8 @@
 
 			duio_SetActiveScene"#PlayOption",TRUE
 			duio_SetActiveScene"#MusicSelect",FALSE
+
+			gosub*UpdatePlayOptionUI
 		swbreak
 
 		//オプション（閉じる）
@@ -674,8 +690,8 @@
 			dim AllLevelLockedFlag:AllLevelLockedFlag=TRUE
 			if tmpdiv(0)!"*" {	//NORMAL
 				tmpdiv(3)=tmpdiv(0)
-				if IsUnlocked(item,lv) :AllLevelLockedFlag=FALSE
-				duio_SetButtonVisible duio_ButtonID2UIsetID("musicselect_levelselect_normal"),IsUnlocked(item,lv)
+				if IsUnlocked(item,lv,TRUE) :AllLevelLockedFlag=FALSE
+				duio_SetButtonVisible duio_ButtonID2UIsetID("musicselect_levelselect_normal"),IsUnlocked(item,lv,TRUE)
 				duio_SetButtonEvent duio_ButtonID2UIsetID("musicselect_levelselect_normal"),"decide:"+tmpdiv(3)
 
 				SetDrawScreen hdximg(imusicselect_levelsel_normal)
@@ -691,8 +707,8 @@
 			SearchDBfromUUID tmpdiv(1),item,lv
 			if tmpdiv(1)!"*" {	//HARD
 				tmpdiv(3)=tmpdiv(1)
-				if IsUnlocked(item,lv) :AllLevelLockedFlag=FALSE
-				duio_SetButtonVisible duio_ButtonID2UIsetID("musicselect_levelselect_hard"),IsUnlocked(item,lv)
+				if IsUnlocked(item,lv,TRUE) :AllLevelLockedFlag=FALSE
+				duio_SetButtonVisible duio_ButtonID2UIsetID("musicselect_levelselect_hard"),IsUnlocked(item,lv,TRUE)
 				duio_SetButtonEvent duio_ButtonID2UIsetID("musicselect_levelselect_hard"),"decide:"+tmpdiv(3)
 
 				SetDrawScreen hdximg(imusicselect_levelsel_hard)
@@ -708,8 +724,8 @@
 			SearchDBfromUUID tmpdiv(2),item,lv
 			if tmpdiv(2)!"*" {	//CHAOS
 				tmpdiv(3)=tmpdiv(2)
-				if IsUnlocked(item,lv) :AllLevelLockedFlag=FALSE
-				duio_SetButtonVisible duio_ButtonID2UIsetID("musicselect_levelselect_chaos"),IsUnlocked(item,lv)
+				if IsUnlocked(item,lv,TRUE) :AllLevelLockedFlag=FALSE
+				duio_SetButtonVisible duio_ButtonID2UIsetID("musicselect_levelselect_chaos"),IsUnlocked(item,lv,TRUE)
 				duio_SetButtonEvent duio_ButtonID2UIsetID("musicselect_levelselect_chaos"),"decide:"+tmpdiv(3)
 
 				SetDrawScreen hdximg(imusicselect_levelsel_chaos)
@@ -939,24 +955,24 @@
 
 				//難易度
 				SetDrawBlendMode DX_BLENDMODE_ALPHA,256
-				if map_uuid(cnt,0)!"*"&IsUnlocked(cnt,0) {
+				if map_uuid(cnt,0)!"*"&IsUnlocked(cnt,0,TRUE) {
 					DrawGraph 39+72*0,312,hdximg(imusicselect_item_normal),TRUE
 					DrawStringXCenterToHandle 63,283,str(mapdb_level(cnt,0)),16,$000000,duio_GetFontHandle("ps32")
 					DrawStringXCenterToHandle 53+72*0,349,ConvClearType2ShortStyle(mapdb_mybest_cleartype(cnt,0)),36,$000000,duio_GetFontHandle("ps10")
 				}
-				if map_uuid(cnt,1)!"*"&IsUnlocked(cnt,1) {
+				if map_uuid(cnt,1)!"*"&IsUnlocked(cnt,1,TRUE) {
 					DrawGraph 39+72*1,312,hdximg(imusicselect_item_hard),TRUE
 					DrawStringXCenterToHandle 133,283,str(mapdb_level(cnt,1)),20,$000000,duio_GetFontHandle("ps32")
 					DrawStringXCenterToHandle 53+72*1,349,ConvClearType2ShortStyle(mapdb_mybest_cleartype(cnt,1)),36,$000000,duio_GetFontHandle("ps10")
 
 				}
-				if map_uuid(cnt,2)!"*"&IsUnlocked(cnt,2) {
+				if map_uuid(cnt,2)!"*"&IsUnlocked(cnt,2,TRUE) {
 					DrawGraph 39+72*2,312,hdximg(imusicselect_item_chaos),TRUE
 					DrawStringXCenterToHandle 202,283,str(mapdb_level(cnt,2)),26,$000000,duio_GetFontHandle("ps32")
 					DrawStringXCenterToHandle 53+72*2,349,ConvClearType2ShortStyle(mapdb_mybest_cleartype(cnt,2)),36,$000000,duio_GetFontHandle("ps10")
 				}
 
-				if IsUnlocked(cnt,0)==FALSE&IsUnlocked(cnt,1)==FALSE&IsUnlocked(cnt,2)==FALSE {
+				if IsUnlocked(cnt,0,TRUE)==FALSE&IsUnlocked(cnt,1,TRUE)==FALSE&IsUnlocked(cnt,2,TRUE)==FALSE {
 					DrawGraph 8,8,hdximg(imusicselect_item_locked),TRUE
 				}
 			
@@ -1072,14 +1088,11 @@
 
 				//難易度
 				SetDrawBlendMode DX_BLENDMODE_ALPHA,256
-				if IsUnlocked(item,lv) {
+				if IsUnlocked(item,lv,TRUE) {
 					DrawStringXCenterToHandle 133,283,str(mapdb_level(item,lv)),20,$000000,duio_GetFontHandle("ps32")
 					DrawGraph 39+72*1,312,hdximg(imusicselect_item_normal+lv),TRUE
 					DrawStringXCenterToHandle 53+72*1,349,ConvClearType2ShortStyle(mapdb_mybest_cleartype(item,lv)),36,$000000,duio_GetFontHandle("ps10")
-				}
-
-			//ロック済み
-				if IsUnlocked(item,lv)==FALSE {
+				} else {
 					DrawGraph 8,8,hdximg(imusicselect_item_locked),TRUE
 				}
 			
@@ -1212,7 +1225,3 @@
 	loop
 
 	return
-
-#defcfunc IsUnlocked int x,int y
-	if duio_idsGet("_MapUnlock."+map_uuid(x,y))!"TRUE"&mapdb_unlocklepus(x,y)!0 :return FALSE
-	return TRUE

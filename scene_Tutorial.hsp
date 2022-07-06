@@ -1,0 +1,97 @@
+
+*scene_Tutorial_Init
+
+	duio_InitAllCount"#EmbVideo"
+
+	dim SceneCount
+	dim DecideTime
+	dim hVideo
+	dim bfCursorPosX
+	dim bfCursorPosY
+	dim CursorKeepTime
+	dim VideoPlayTime
+	dim VideoPlayLength
+
+	DecideTime=-1
+	hVideo=LoadGraph("contents/video/tutorial.ogv")
+	PlayMovieToGraph hVideo
+	VideoPlayLength=GetMovieTotalFrameToGraph(hVideo)*1000/30
+
+	duio_SetAllImageOutro"#Shutter"
+	duio_PlaySound"shutter_out"
+
+	duio_ChangeTextBody duio_TextID2UIsetID("embvideo_title_text"),"チュートリアル"
+	duio_ChangeImage duio_ImageID2UIsetID("embvideo_seek"),hdximg(iembvideo_seek)
+
+	duio_StopSound"main"
+
+	return
+
+*scene_Tutorial
+
+	SetDrawScreen hdximg(iembvideo_seek)
+	ClearDrawScreen
+	DrawRectExtendGraph 0,0,int(1280.0*(double(VideoPlayTime)/double(VideoPlayLength))),10,0,0,int(1280.0*(double(VideoPlayTime)/double(VideoPlayLength))),10,hdximg(iembvideo_seekorg),TRUE
+
+	SetDrawScreen hcommonLayer
+
+	DrawExtendGraph 0,0,BufWidth,BufHeight,hVideo,FALSE
+
+	VideoPlayTime=TellMovieToGraph(hVideo)
+	duio_ChangeTextBody duio_TextID2UIsetID("embvideo_time"),strf("%02d:%02d",VideoPlayTime/1000/60,VideoPlayTime/1000\60)
+	duio_ChangeTextBody duio_TextID2UIsetID("embvideo_time_length"),strf("%02d:%02d",VideoPlayLength/1000/60,VideoPlayLength/1000\60)
+
+	if cursorPosX==bfCursorPosX&cursorPosY==bfCursorPosY :CursorKeepTime+FrameTime:else:CursorKeepTime=0
+	if CursorKeepTime==0&duio_GetImageVisible(duio_ImageID2UIsetID("embvideo_controller"))==FALSE {
+		duio_InitAllCount"#EmbVideo"
+		duio_SetAllButtonVisible"#EmbVideo",TRUE
+		duio_SetAllImageVisible"#EmbVideo",TRUE
+		duio_SetAllTextVisible"#EmbVideo",TRUE
+	} else {
+		if CursorKeepTime>2000&duio_GetImageOutroFlag(duio_ImageID2UIsetID("embvideo_controller"))==FALSE {
+			duio_SetAllButtonOutro"#EmbVideo"
+			duio_SetAllImageOutro"#EmbVideo"
+			duio_SetAllTextOutro"#EmbVideo"
+		}
+	}
+	bfCursorPosX=cursorPosX
+	bfCursorPosY=cursorPosY
+
+	if cursorStatus&MOUSE_INPUT_LEFT&insquare(cursorPosX,cursorPosY,270,1045,270+1280,1045+10) {
+		//シーク
+		SeekMovieToGraph hVideo,int(double(VideoPlayLength)*(double(cursorPosX-270)/1280.0))
+	}
+
+	duio_Draw"#EmbVideo"
+	duio_Draw"#Shutter"
+
+	if duio_GetButtonEventStack()!"" :gosub*scene_Tutorial_eventstack
+
+	if GetMovieStateToGraph(hVideo)==0&DecideTime==-1 {
+		gosub*onshutter
+		DecideTime=0
+	}
+
+	if DecideTime!-1 :DecideTime+FrameTime
+	if DecideTime>1000 {
+		gosub*scene_Tutorial_Free
+		gosub*scene_Lobby_Init
+		curSceneTag="#Lobby"
+	}
+
+	return
+
+*scene_Tutorial_eventstack
+
+	switch duio_GetButtonEventStack()
+		case"backscene"
+			gosub*onshutter
+			DecideTime=0
+		swbreak
+	swend
+
+	return
+
+*scene_Tutorial_Free
+	DeleteGraph hVideo
+	return

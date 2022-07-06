@@ -1,0 +1,356 @@
+
+#module
+
+#defcfunc PortalWebSvc_DownloadIRraw
+	gosub*DrawConnectingStatus@
+	logmes GetTimeStamp()+" [portal-websvc] Downloading IRraw..."
+	return webapi_get("http://"+duio_idsGet("Server")+"/apiv2/API-GetGlobalRanking.php?key="+duio_idsGet("_keymac_APIkey_GetGlobalRanking"))
+
+#defcfunc PortalWebSvc_DownloadProfile str _id,str _password
+	gosub*DrawConnectingStatus@
+	logmes GetTimeStamp()+" [portal-websvc] Downloading Profile..."
+	return webapi_get("http://"+duio_idsGet("Server")+"/apiv2/API-GetProfile.php?key="+duio_idsGet("_keymac_APIkey_GetProfile")+"&id="+_id+"&password="+_password+"&decode="+duio_idsGet("_keymac_SSL_Decode_0")+duio_idsGet("_keymac_SSL_Decode_1")+duio_idsGet("_keymac_SSL_Decode_2")+duio_idsGet("_keymac_SSL_Decode_3"))
+
+#defcfunc PortalWebSvc_DownloadRecord str _id
+	gosub*DrawConnectingStatus@
+	logmes GetTimeStamp()+" [portal-websvc] Downloading Records..."
+	return webapi_get("http://"+duio_idsGet("Server")+"/apiv2/API-GetRecord.php?key="+duio_idsGet("_keymac_APIkey_GetRecord")+"&name="+_id)
+
+#deffunc PortalWebSvc_UploadRecord str _mapuuid,str _playerid,int _score,array _judge,int _maxcombo,str _cleartype,array _gaugecapture,str _scorecapture,double _ability
+	gosub*DrawConnectingStatus@
+
+	logmes GetTimeStamp()+" [portal-websvc] Uploading Records..."
+
+	sdim HTTPrequestData
+	HTTPrequestData=""
+	HTTPrequestData+"key="+duio_idsGet("_keymac_APIkey_SendNewRecord")+"&"
+	HTTPrequestData+"id="+_mapuuid+"&"
+	HTTPrequestData+"name="+_playerid+"&"
+	HTTPrequestData+"score="+str(_score)+"&"
+	HTTPrequestData+"j_ex="+_judge(JUDGEID_EXCELLENT)+"&"
+	HTTPrequestData+"j_gr="+_judge(JUDGEID_GREAT)+"&"
+	HTTPrequestData+"j_go="+_judge(JUDGEID_GOOD)+"&"
+	HTTPrequestData+"j_ba="+_judge(JUDGEID_BAD)+"&"
+	HTTPrequestData+"j_mi="+_judge(JUDGEID_MISS)+"&"
+	HTTPrequestData+"j_ea="+_judge(JUDGEID_EARLY)+"&"
+	HTTPrequestData+"j_la="+_judge(JUDGEID_LATE)+"&"
+	HTTPrequestData+"maxcombo="+_maxcombo+"&"
+	HTTPrequestData+"type="+_cleartype+"&"
+
+	//ゲージ推移
+	sdim orgbindata,350
+	repeat 350
+		poke orgbindata,cnt,_gaugecapture(cnt)
+	loop
+	sdim convbindata
+	ConvHEXenc convbindata,orgbindata,350
+	HTTPrequestData+"g64="+convbindata+"&"
+
+	//スコアグラフ
+	HTTPrequestData+"s64="+_scorecapture+"&"
+
+	HTTPrequestData+"ability="+_ability
+
+	sdim orgbindata
+	sdim convbindata
+
+	return webapi_post("http://"+duio_idsGet("Server")+"/apiv2/API-SendNewRecord.php",HTTPrequestData)
+
+#deffunc PortalWebSvc_UploadIR str _id,str _name,int _score
+	gosub*DrawConnectingStatus@
+	logmes GetTimeStamp()+" [portal-websvc] Uploading IR..."
+	return webapi_get("http://"+duio_idsGet("Server")+"/apiv2/API-SendGlobalRanking.php?key="+duio_idsGet("_keymac_APIkey_SendGlobalRanking")+"&id="+_id+"&name="+_name+"&score="+str(_score))
+
+//プロフィールをまとめて保存（初期化）
+#deffunc PortalWebSvc_mSendProfile_Init
+	gosub*DrawConnectingStatus@
+	sdim tmpsendcue
+	dim tmpsendcue_max
+	return
+
+//プロフィールをまとめて保存（登録）
+#deffunc PortalWebSvc_mSendProfile_Reg str _key,str _value
+	tmpsendcue+"object_"+tmpsendcue_max+"="+_key+"&value_"+tmpsendcue_max+"="+_value+"&"
+	tmpsendcue_max++
+	return
+
+//プロフィールをまとめて保存（送信）
+#deffunc PortalWebSvc_SendProfile_Send str _id,str _password
+	logmes GetTimeStamp()+" [portal-websvc] Uploading Profile..."
+	return webapi_post("http://"+duio_idsGet("Server")+"/apiv2/API-SendProfile-Multiple.php?key="+duio_idsGet("_keymac_APIkey_SendProfile")+"&id="+_id+"&password="+_password+"&decode="+duio_idsGet("_keymac_SSL_Decode_0")+duio_idsGet("_keymac_SSL_Decode_1")+duio_idsGet("_keymac_SSL_Decode_2")+duio_idsGet("_keymac_SSL_Decode_3"),tmpsendcue)
+
+//プロフィールを保存
+#deffunc PortalWebSvc_SendProfile str _id,str _password,str _obj,str _val
+	gosub*DrawConnectingStatus@
+	return WebAPI_Get("http://"+duio_idsGet("Server")+"/apiv2/API-SendProfile.php?key="+duio_idsGet("_keymac_APIkey_SendProfile")+"&id="+_id+"&password="+_password+"&decode="+duio_idsGet("_keymac_SSL_Decode_0")+duio_idsGet("_keymac_SSL_Decode_1")+duio_idsGet("_keymac_SSL_Decode_2")+duio_idsGet("_keymac_SSL_Decode_3")+"&object="+_obj+"&value="+_val)
+
+#deffunc PortalWebSvc_Register str _id,str _password
+	gosub*DrawConnectingStatus@
+	return WebAPI_Get("http://"+duio_idsGet("Server")+"/apiv2/API-RegisterUser.php?key="+duio_idsGet("_keymac_APIkey_RegisterUser")+"&id="+_id+"&pass="+_password+"&passconf="+_password)
+
+#global
+
+*syncAllSavedata
+
+	OnlineFlag=FALSE
+	if PlayerID=="" :return -1
+
+	//プロフィール取得
+		sdim PFrawdata:sdim PFdivdata
+		sdim INIkey:sdim INIvalue
+		PFrawdata=PortalWebSvc_DownloadProfile(PlayerID,PlayerPassword)
+
+		switch PFrawdata
+
+			case"ERROR_AUTH_PASSWORD"
+				return -2
+			swbreak
+			case"ERROR_UNKNOWN_ID"
+				return -3
+			swbreak
+
+			default
+				OnlineFlag=TRUE
+				split PFrawdata,"\n",PFdivdata
+
+				//プロフィール情報変数
+					sdim pfreg_dispname			//表示名
+					sdim pfreg_RegDate			//登録日時
+					sdim pfreg_EmailAddress		//メールアドレス
+					sdim pfreg_InvitationCode	//招待コード
+					dim pfreg_NewdataFlag		//新規データフラグ
+					dim pfreg_NumLilly			//Lilly所持数（旧バージョンの共通通貨）
+					dim pfreg_NumLepus			//Lepus所持数（v2.xxの共通通貨）
+					dim pfreg_NumFragments		//音色のかけら所持数
+					dim pfreg_Level			//プレイヤーランク
+					dim pfreg_EXPvalue			//プレイヤー経験値
+					ddim pfreg_PFpoint,1		//プレイヤー能力値
+					sdim pfreg_Badge			//バッジ（旧バージョンのコメント）
+					dim pfreg_NumTickets		//チャレンジチケットの枚数
+
+				//オプション設定値
+					ddim pfreg_AddSpeed,1		//オブジェクトの速度
+					dim pfreg_GaugeType			//ゲージの種類
+					dim pfreg_Placement			//オブジェクトの配置オプション
+					dim pfreg_Target			//目標スコア
+					dim pfreg_JudgeOffset		//判定オフセット
+					dim pfreg_DispOffset		//表示オフセット
+					dim pfreg_WindowLayout		//ウィンドウレイアウト
+					dim pfreg_CustomizeNote		//カスタマイズ（音符）
+					dim pfreg_CustomizeBackground	//カスタマイズ（背景）
+					pfreg_AddSpeed=1.0
+					pfreg_Bonusflag=TRUE
+					pfreg_WindowLayout=1+2+4
+
+					dim volume_BGM		//BGM音量(0-100)
+					dim volume_SE		//SE音量(0-100)
+					dim volume_PLAY	//キーサウンド、イベントサウンドの音量(0-100)
+					volume_BGM=70
+					volume_SE=70
+					volume_PLAY=70
+
+					dim curselect_item
+					dim curselect_lv
+
+				repeat length(PFdivdata)
+					split PFdivdata(cnt),"=",INIkey,INIvalue
+
+					switch INIkey
+						case"DISP.NAME":pfreg_dispname=inivalue:swbreak
+						case"REG.DATE":pfreg_RegDate=INIvalue:swbreak
+						case"EMAIL.ADDRESS":pfreg_EmailAddress=INIvalue:swbreak
+						case"INVITATION":pfreg_InvitationCode=INIvalue:swbreak
+						case"XODA.NEWDATA":pfreg_NewdataFlag=int(INIvalue):swbreak
+						case"XODA.NUMLILLY":pfreg_NumLilly=int(INIvalue):swbreak
+						case"XODA.NUMLEPUS":pfreg_NumLepus=int(INIvalue):swbreak
+						case"XODA.NUMFRAGMENTS":pfreg_NumFragments=int(INIvalue):swbreak
+						case"XODA.LEVEL":pfreg_Level=int(INIvalue):swbreak
+						case"XODA.EXP":pfreg_EXPvalue=int(INIvalue):swbreak
+						case"XODA.RATE":pfreg_PFpoint=double(INIvalue):swbreak
+						case"XODA.BADGE":pfreg_Badge=INIvalue:swbreak
+						case"XODA.NUMTICKETS":pfreg_NumTickets=int(INIvalue):swbreak
+
+						case"XODA.OPTION.ADDSPEED":pfreg_AddSpeed=double(INIvalue):swbreak
+						case"XODA.OPTION.GAUGE":pfreg_GaugeType=int(INIvalue):swbreak
+						case"XODA.OPTION.PLACEMENT":pfreg_Placement=int(INIvalue):swbreak
+						case"XODA.OPTION.TARGET":pfreg_Target=int(INIvalue):swbreak
+						case"XODA.OPTION.JUDGEOFFSET":pfreg_JudgeOffset=int(INIvalue):swbreak
+						case"XODA.OPTION.DISPOFFSET":pfreg_DispOffset=int(INIvalue):swbreak
+						case"XODA.OPTION.LAYOUT":pfreg_WindowLayout=int(INIvalue):swbreak
+
+						case"XODA.VOLUME.BGM":volume_BGM=int(INIvalue):swbreak
+						case"XODA.VOLUME.SE":volume_SE=int(INIvalue):swbreak
+						case"XODA.VOLUME.PLAY":volume_PLAY=int(INIvalue):swbreak
+
+						case"XODAV2.CUSTOMIZE.NOTE":pfreg_CustomizeNote=int(INIvalue):swbreak
+						case"XODAV2.CUSTOMIZE.BACKGROUND":pfreg_CustomizeBackground=int(INIvalue):swbreak
+
+						case"XODAV2.SELECT.ITEM":curselect_item=int(INIvalue):swbreak
+						case"XODAV2.SELECT.LV":curselect_lv=int(INIvalue):swbreak
+					swend
+
+					//使用済みのギフトコード
+					if strmid(INIkey,0,strlen("XODA.GIFTCODE.USED"))=="XODA.GIFTCODE.USED" {
+						if int(INIvalue) {
+							sdim tmpunlockinfo
+							split INIkey,".",tmpunlockinfo
+							duio_idsWrite"_GiftCodeUsed."+tmpunlockinfo(3),"TRUE"
+						}
+					}
+
+					//譜面のアンロック
+					if strmid(INIkey,0,strlen("XODA.MAP.UNLOCK"))=="XODA.MAP.UNLOCK" {
+						if int(INIvalue) {
+							sdim tmpunlockinfo
+							split INIkey,".",tmpunlockinfo
+							duio_idsWrite"_MapUnlock."+tmpunlockinfo(3),"TRUE"
+						}
+					}
+
+					//カスタマイズパーツのアンロック
+					if strmid(INIkey,0,strlen("XODA.CUSTOMIZE.UNLOCK"))=="XODA.CUSTOMIZE.UNLOCK" {
+						if int(INIvalue) {
+							sdim tmpunlockinfo
+							split INIkey,".",tmpunlockinfo
+							duio_idsWrite"_Customize."+tmpunlockinfo(3),"TRUE"
+						}
+					}
+
+					//ミッションの進捗
+					if strmid(INIkey,0,strlen("XODA.MISSION.PROGRESS"))=="XODA.MISSION.PROGRESS" {
+						sdim tmpunlockinfo
+						split INIkey,".",tmpunlockinfo
+						duio_idsWrite"_Mission."+tmpunlockinfo(3),INIvalue
+					}
+				loop
+
+					if pfreg_dispname=="" :pfreg_dispname=PlayerID	//表示名が未設定の場合、IDをそのまま反映
+					pfreg_NumTickets+ExtraTicket
+
+				//自己ベスト記録
+					gosub*syncRecords
+
+			//カスタマイズスキン読み込み
+
+				sdim customize_idstmp
+				sdim customize_pricetmp
+				sdim customize_tmppath
+
+				//ノーツ
+				sdim customize_note_name		//カスタマイズ名
+				dim customize_note_hsingle	//シングルノーツの画像ハンドル
+				dim customize_note_hhold		//ホールドノーツの画像ハンドル
+				dim customize_note_price		//値段
+				dim customize_note_unlockflag	//アンロックフラグ
+				dim customize_note_max		//登録数
+				dim customize_tmpsizex
+				dim customize_tmpsizey
+				repeat
+					customize_idstmp=duio_idsGet("cpart.note@"+cnt)
+					if customize_idstmp=="" :break
+					split customize_idstmp,",",customize_note_name(cnt),customize_tmppath(0),customize_tmppath(1),customize_pricetmp
+					customize_note_hsingle(cnt)=LoadGraph("contents/graphic/"+customize_tmppath(0))
+					customize_note_hhold(cnt)=LoadGraph("contents/graphic/"+customize_tmppath(1))
+					customize_note_price(cnt)=int(customize_pricetmp)
+
+					cfunc64v GetGraphSize,customize_note_hsingle(cnt),varptr64(customize_tmpsizex),varptr64(customize_tmpsizey)
+					duio_idsWrite"playtheme_"+cnt+"_single_height",str(customize_tmpsizey)
+					
+					if duio_idsGet("_Customize.n"+cnt)=="TRUE"|customize_note_price(cnt)==0 {
+						customize_note_unlockflag(cnt)=TRUE
+					} else {
+						customize_note_unlockflag(cnt)=FALSE
+					}
+					customize_note_max++
+				loop
+
+				//背景
+				sdim customize_bg_name
+				dim customize_bg_himg
+				dim customize_bg_price
+				dim customize_bg_unlockflag
+				dim customize_bg_max
+				repeat
+					customize_idstmp=duio_idsGet("cpart.bg@"+cnt)
+					if customize_idstmp=="" :break
+					split customize_idstmp,",",customize_bg_name(cnt),customize_tmppath,customize_pricetmp
+					customize_bg_himg(cnt)=LoadGraph("contents/graphic/"+customize_tmppath)
+					customize_bg_price(cnt)=int(customize_pricetmp)
+
+					if duio_idsGet("_Customize.b"+cnt)=="TRUE"|customize_bg_price(cnt)==0 {
+						customize_bg_unlockflag(cnt)=TRUE
+					} else {
+						customize_bg_unlockflag(cnt)=FALSE
+					}
+					customize_bg_max++
+				loop
+
+			//ミッション読み込み
+				sdim mission_idstmp
+
+				sdim mission_playmap
+				sdim mission_type
+				sdim mission_typeprm
+				sdim mission_reward
+				dim mission_progress
+				dim mission_max
+
+				repeat
+					mission_idstmp=duio_idsGet("mission@"+cnt)
+					if mission_idstmp=="" :break
+					split mission_idstmp,",",mission_playmap(mission_max),mission_type(mission_max),mission_typeprm(mission_max),mission_reward(mission_max)
+					mission_progress(mission_max)=int(duio_idsGet("_Mission."+cnt))
+					mission_max++
+				loop
+
+				return 0
+			swbreak
+
+		swend
+
+		
+
+	return 0
+
+*UploadAllSavedata
+	if OnlineFlag {
+
+		//プロフィール保存
+		PortalWebSvc_mSendProfile_Init
+			PortalWebSvc_mSendProfile_Reg"DISP.NAME",pfreg_dispname
+			PortalWebSvc_mSendProfile_Reg"REG.DATE",pfreg_RegDate
+			PortalWebSvc_mSendProfile_Reg"EMAIL.ADDRESS",pfreg_EmailAddress
+			PortalWebSvc_mSendProfile_Reg"INVITATION",pfreg_InvitationCode
+			PortalWebSvc_mSendProfile_Reg"XODA.NEWDATA",str(pfreg_NewdataFlag)
+			PortalWebSvc_mSendProfile_Reg"XODA.NUMLILLY",str(pfreg_NumLilly)
+			PortalWebSvc_mSendProfile_Reg"XODA.NUMLEPUS",str(pfreg_NumLepus)
+			PortalWebSvc_mSendProfile_Reg"XODA.NUMFRAGMENTS",str(pfreg_NumFragments)
+			PortalWebSvc_mSendProfile_Reg"XODA.LEVEL",str(pfreg_Level)
+			PortalWebSvc_mSendProfile_Reg"XODA.EXP",str(pfreg_EXPvalue)
+			PortalWebSvc_mSendProfile_Reg"XODA.RATE",str(pfreg_PFpoint)
+			PortalWebSvc_mSendProfile_Reg"XODA.BADGE",pfreg_Badge
+			PortalWebSvc_mSendProfile_Reg"XODA.NUMTICKETS",str(pfreg_NumTickets)
+			PortalWebSvc_mSendProfile_Reg"XODA.OPTION.ADDSPEED",str(pfreg_AddSpeed)
+			PortalWebSvc_mSendProfile_Reg"XODA.OPTION.GAUGE",str(pfreg_GaugeType)
+			PortalWebSvc_mSendProfile_Reg"XODA.OPTION.PLACEMENT",str(pfreg_Placement)
+			PortalWebSvc_mSendProfile_Reg"XODA.OPTION.TARGET",str(pfreg_Target)
+			PortalWebSvc_mSendProfile_Reg"XODA.OPTION.JUDGEOFFSET",str(pfreg_JudgeOffset)
+			PortalWebSvc_mSendProfile_Reg"XODA.OPTION.DISPOFFSET",str(pfreg_DispOffset)
+			PortalWebSvc_mSendProfile_Reg"XODA.OPTION.LAYOUT",str(pfreg_WindowLayout)
+			PortalWebSvc_mSendProfile_Reg"XODA.VOLUME.BGM",str(volume_BGM)
+			PortalWebSvc_mSendProfile_Reg"XODA.VOLUME.SE",str(volume_SE)
+			PortalWebSvc_mSendProfile_Reg"XODA.VOLUME.PLAY",str(volume_PLAY)
+			PortalWebSvc_mSendProfile_Reg"XODAV2.CUSTOMIZE.NOTE",str(pfreg_CustomizeNote)
+			PortalWebSvc_mSendProfile_Reg"XODAV2.CUSTOMIZE.BACKGROUND",str(pfreg_CustomizeBackground)
+			PortalWebSvc_mSendProfile_Reg"XODAV2.SELECT.ITEM",str(curselect_item)
+			PortalWebSvc_mSendProfile_Reg"XODAV2.SELECT.LV",str(curselect_lv)
+		PortalWebSvc_SendProfile_Send PlayerID,PlayerPassword
+	}
+	return
+
+*DrawConnectingStatus
+	//接続中表示
+	SetDrawScreen DX_SCREEN_FRONT
+	DrawGraph DispWidth-320-16,DispHeight-105-16,hdximg(icommon_connecting),TRUE
+	WaitVSync
+	return

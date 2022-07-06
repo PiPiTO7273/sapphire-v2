@@ -1,3 +1,14 @@
 //cpart.note@[ID]>>[CUSTOMIZE NAME],[SINGLE NOTE IMGPATH],[HOLD NOTE IMGPATH],[PRICE (lepus)]
-ids<>:cpart.note@0>>デフォルト,gameplay_note_single_0.png,gameplay_note_hold_0.png,0
-ids<>:cpart.note@1>>てすと,gameplay_note_single_0.png,gameplay_note_hold_0.png,1000
+ids<>:cpart.note@0>>デフォルト,note/gameplay_note_single_0.png,note/gameplay_note_hold_0.png,0
+ids<>:cpart.note@1>>細いノーツ,note/gameplay_note_single_1.png,note/gameplay_note_hold_1.png,250
+ids<>:cpart.note@2>>ピンク,note/gameplay_note_single_2.png,note/gameplay_note_hold_2.png,250
+ids<>:cpart.note@3>>シンプル,note/gameplay_note_single_3.png,note/gameplay_note_hold_3.png,250
+ids<>:cpart.note@4>>金属,note/gameplay_note_single_4.png,note/gameplay_note_hold_4.png,500
+ids<>:cpart.note@5>>ポップ,note/gameplay_note_single_5.png,note/gameplay_note_hold_5.png,500
+ids<>:cpart.note@6>>クラシック,note/gameplay_note_single_6.png,note/gameplay_note_hold_6.png,500
+ids<>:cpart.note@7>>神秘,note/gameplay_note_single_7.png,note/gameplay_note_hold_7.png,500
+
+ids<>:cpart.bg@0>>デフォルト,background/gameplay_bg_effect_0.png,0
+ids<>:cpart.bg@1>>ナイトシティ,background/gameplay_bg_effect_1.png,500
+ids<>:cpart.bg@2>>電子回路,background/gameplay_bg_effect_2.png,500
+ids<>:cpart.bg@3>>時空,background/gameplay_bg_effect_3.png,500

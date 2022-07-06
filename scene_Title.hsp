@@ -1,0 +1,398 @@
+
+*scene_Title_Init
+
+	duio_InitAllCount"#Title"
+
+	dim SceneCount
+	dim DecideTime
+	sdim DecideJumpScene
+	dim DialogFlag
+	dim InputTextFocus
+	sdim InputTextCue
+	dim InputPasswordFlag
+	sdim AcceptAsciiTable
+	AcceptAsciiTable="abcdefghijklmnopqrstuvwxyz0123456789@."
+	InputTextFocus=-1
+	DecideTime=-1
+
+	duio_ChangeTextBody duio_TextID2UIsetID("title_systemversion"),"Ver 2.00"
+	if PlayerID=="" {
+		duio_ChangeTextBody duio_TextID2UIsetID("title_portalid"),"Portal ID : Not Available"
+	} else {
+		duio_ChangeTextBody duio_TextID2UIsetID("title_portalid"),"Portal ID : "+PlayerID
+	}
+
+	if duio_GetImageOutroFlag(duio_ImageID2UIsetID("shutter_00"))!TRUE :duio_PlaySound"shutter_out"
+	duio_SetAllImageOutro"#Shutter"
+
+	if BASS_ChannelIsActive(duio_GetHandle("main"))==BASS_ACTIVE_PLAYING {
+		duio_StopSound"main"
+	}
+
+	duio_ChangeTextBody duio_TextID2UIsetID("signin_inputbox_id_text"),PlayerID
+	duio_ChangeTextBody duio_TextID2UIsetID("signin_inputbox_password_text"),tohidden(PlayerPassword)
+
+	return
+
+*scene_Title
+
+	DrawCommonBackground FrameCount
+	duio_Draw"#Title"
+
+	SetDrawBlendMode DX_BLENDMODE_PMA_ALPHA,256
+	DrawGraph 190,280,hdximgarr_titlelogo(limit(SceneTime/(1000/60),0,119)),TRUE
+
+	if InputTextFocus>=0 {
+		//文字入力
+		repeat strlen(AcceptAsciiTable)
+			if strlen(InputTextCue)>=32 :break
+			if IsPushed(ToDxlibKeyCode(peek(AcceptAsciiTable,cnt))) {
+				if peek(AcceptAsciiTable,cnt)>=97&peek(AcceptAsciiTable,cnt)<=122 {
+					//A-Z
+					if KeyInputFlag(KEY_INPUT_LSHIFT)|KeyInputFlag(KEY_INPUT_RSHIFT) {
+						poke InputTextCue,strlen(InputTextCue),peek(AcceptAsciiTable,cnt)-32
+					} else {
+						poke InputTextCue,strlen(InputTextCue),peek(AcceptAsciiTable,cnt)
+					}
+				} else {
+					if peek(AcceptAsciiTable,cnt)>=49&peek(AcceptAsciiTable,cnt)<=57 {
+						//1-9
+						if KeyInputFlag(KEY_INPUT_LSHIFT)|KeyInputFlag(KEY_INPUT_RSHIFT) {
+							poke InputTextCue,strlen(InputTextCue),peek(AcceptAsciiTable,cnt)-16
+						} else {
+							poke InputTextCue,strlen(InputTextCue),peek(AcceptAsciiTable,cnt)
+						}
+					} else {
+						poke InputTextCue,strlen(InputTextCue),peek(AcceptAsciiTable,cnt)
+					}
+				}
+			}
+		loop
+		if IsPushed(KEY_INPUT_BACK)|(KeyInputTime(KEY_INPUT_BACK)>300&SceneCount\2==0) :InputTextCue=strmid(InputTextCue,0,strlen(InputTextCue)-1)
+		if IsPushed(KEY_INPUT_DELETE) :sdim InputTextCue
+
+		//カーソル点滅
+		if InputPasswordFlag {
+			if SceneCount/4\2==0 {
+				duio_ChangeTextBody InputTextFocus,tohidden(InputTextCue)+"_"
+			} else {
+				duio_ChangeTextBody InputTextFocus,tohidden(InputTextCue)
+			}
+		} else {
+			if SceneCount/4\2==0 {
+				duio_ChangeTextBody InputTextFocus,InputTextCue+"_"
+			} else {
+				duio_ChangeTextBody InputTextFocus,InputTextCue
+			}
+		}
+	}
+
+	if DialogFlag&1 {
+		duio_Draw"#Portal-Signin"
+		duio_Draw"#Portal-Signin-Failed"
+
+		if IsPushed(KEY_INPUT_TAB) {
+			if InputTextFocus==duio_TextID2UIsetID("signin_inputbox_id_text") :duio_SetEventStack"signin_password"
+			if InputTextFocus==duio_TextID2UIsetID("signin_inputbox_password_text") :duio_SetEventStack"signin_id"
+		}
+		if IsPushed(KEY_INPUT_RETURN) {
+			if InputTextFocus==duio_TextID2UIsetID("signin_inputbox_id_text") :duio_SetEventStack"signin_join"
+			if InputTextFocus==duio_TextID2UIsetID("signin_inputbox_password_text") :duio_SetEventStack"signin_join"
+			if duio_IsActiveScene("#Portal-Signin-Failed") :duio_SetEventStack"signin_failed_ok"
+		}
+	}
+	if DialogFlag&2 {
+		duio_Draw"#Portal-Signin-Create"
+		duio_Draw"#Portal-Signin-CreateError0"
+		duio_Draw"#Portal-Signin-CreateError1"
+		duio_Draw"#Portal-Signin-CreateError2"
+		duio_Draw"#Portal-Signin-CreateError3"
+
+		if duio_GetImageVisible(duio_ImageID2UIsetID("signin_create"))==FALSE :DialogFlag-2
+
+		if IsPushed(KEY_INPUT_TAB) {
+			if InputTextFocus==duio_TextID2UIsetID("signin_inputbox_create_id_text") :duio_SetEventStack"signin_create_password"
+			if InputTextFocus==duio_TextID2UIsetID("signin_inputbox_create_password_text") :duio_SetEventStack"signin_create_passwordconf"
+			if InputTextFocus==duio_TextID2UIsetID("signin_inputbox_create_passwordconf_text") :duio_SetEventStack"signin_create_email"
+			if InputTextFocus==duio_TextID2UIsetID("signin_inputbox_create_email_text") :duio_SetEventStack"signin_create_invite"
+			if InputTextFocus==duio_TextID2UIsetID("signin_inputbox_create_invite_text") :duio_SetEventStack"signin_create_id"
+		}
+		if IsPushed(KEY_INPUT_RETURN) {
+			if InputTextFocus==duio_TextID2UIsetID("signin_inputbox_create_id_text") :duio_SetEventStack"signin_create_join"
+			if InputTextFocus==duio_TextID2UIsetID("signin_inputbox_create_password_text") :duio_SetEventStack"signin_create_join"
+			if InputTextFocus==duio_TextID2UIsetID("signin_inputbox_create_passwordconf_text") :duio_SetEventStack"signin_create_join"
+			if InputTextFocus==duio_TextID2UIsetID("signin_inputbox_create_email_text") :duio_SetEventStack"signin_create_join"
+			if InputTextFocus==duio_TextID2UIsetID("signin_inputbox_create_invite_text") :duio_SetEventStack"signin_create_join"
+			if duio_IsActiveScene("#Portal-Signin-CreateError0") :duio_SetEventStack"signin_error0_ok"
+			if duio_IsActiveScene("#Portal-Signin-CreateError1") :duio_SetEventStack"signin_error1_ok"
+			if duio_IsActiveScene("#Portal-Signin-CreateError2") :duio_SetEventStack"signin_error2_ok"
+			if duio_IsActiveScene("#Portal-Signin-CreateError3") :duio_SetEventStack"signin_error3_ok"
+		}
+	}
+
+	duio_Draw"#Shutter"
+
+	if duio_GetButtonEventStack()!"" :gosub*scene_Title_eventstack
+	if DecideTime!-1 :DecideTime+FrameTime
+	if DecideTime>1000 {
+		switch DecideJumpScene
+			case"lobby"
+				//ロビーへ
+				gosub*scene_Lobby_Init
+				curSceneTag="#Lobby"
+			swbreak
+			case"config"
+				//システム設定を開く
+				gosub*scene_Config_Init
+				curSceneTag="#Config"
+				DecideJumpScene="from:title"
+			swbreak
+		swend
+		return
+	}
+
+	return
+
+*scene_Title_eventstack
+
+	switch duio_GetButtonEventStack()
+
+		case"decide"
+			if PlayerID!"" {
+				if DecideTime==-1 {
+					gosub*onshutter
+					DecideTime=0
+					DecideJumpScene="lobby"
+				}
+			} else {
+				//サインインウィンドウを有効化
+				DialogFlag=DialogFlag|1
+				duio_SetActiveScene"#Portal-Signin",TRUE
+				duio_SetActiveScene"#Title",FALSE
+				duio_SetAllButtonVisible"#Portal-Signin",TRUE
+				duio_SetAllImageVisible"#Portal-Signin",TRUE
+				duio_SetAllTextVisible"#Portal-Signin",TRUE
+			}
+		swbreak
+		case"openconfig"
+			if DecideTime==-1 {
+				gosub*onshutter
+				DecideTime=0
+				DecideJumpScene="config"
+			}
+		swbreak
+		case"game.exit":goto*Exit:swbreak
+
+		case"signin_id"
+			gosub*scene_Title_InputComplete
+			InputTextFocus=duio_TextID2UIsetID("signin_inputbox_id_text")
+			InputTextCue=PlayerID
+			InputPasswordFlag=FALSE
+		swbreak
+		case"signin_password"
+			gosub*scene_Title_InputComplete
+			InputTextFocus=duio_TextID2UIsetID("signin_inputbox_password_text")
+			InputTextCue=PlayerPassword
+			InputPasswordFlag=TRUE
+		swbreak
+		case"signin_join"
+			gosub*scene_Title_InputComplete
+			gosub*syncAllSavedata
+			if stat<0 {
+				duio_SetActiveScene"#Portal-Signin",FALSE
+				duio_SetActiveScene"#Portal-Signin-Failed",TRUE
+				duio_SetAllButtonVisible"#Portal-Signin-Failed",TRUE
+				duio_SetAllImageVisible"#Portal-Signin-Failed",TRUE
+				duio_SetAllTextVisible"#Portal-Signin-Failed",TRUE
+			} else {
+				duio_SetActiveScene"#Portal-Signin",FALSE
+				duio_SetActiveScene"#Title",TRUE
+				duio_SetAllButtonOutro"#Portal-Signin"
+				duio_SetAllImageOutro"#Portal-Signin"
+				duio_SetAllTextOutro"#Portal-Signin"
+
+				duio_ChangeTextBody duio_TextID2UIsetID("title_portalid"),"Portal ID : "+PlayerID
+
+				//セーブデータ更新
+				gosub*SaveClientData
+			}
+		swbreak
+
+		case"signin_failed_ok"
+			duio_SetActiveScene"#Portal-Signin-Failed",FALSE
+			duio_SetActiveScene"#Portal-Signin",TRUE
+			duio_SetAllButtonOutro"#Portal-Signin-Failed"
+			duio_SetAllImageOutro"#Portal-Signin-Failed"
+			duio_SetAllTextOutro"#Portal-Signin-Failed"
+		swbreak
+
+		case"signin_create"
+			DialogFlag=DialogFlag|2
+			duio_SetActiveScene"#Portal-Signin",FALSE
+			duio_SetActiveScene"#Portal-Signin-Create",TRUE
+			duio_InitAllCount"#Portal-Signin-Create"
+			duio_SetAllButtonVisible"#Portal-Signin-Create",TRUE
+			duio_SetAllImageVisible"#Portal-Signin-Create",TRUE
+			duio_SetAllTextVisible"#Portal-Signin-Create",TRUE
+
+			sdim genid_playerid
+			sdim genid_password
+			sdim genid_passwordconf
+			sdim genid_email
+			sdim genid_invite
+
+			duio_ChangeTextBody duio_TextID2UIsetID("signin_inputbox_create_id_text"),""
+			duio_ChangeTextBody duio_TextID2UIsetID("signin_inputbox_create_password_text"),""
+			duio_ChangeTextBody duio_TextID2UIsetID("signin_inputbox_create_passwordconf_text"),""
+			duio_ChangeTextBody duio_TextID2UIsetID("signin_inputbox_create_email_text"),""
+			duio_ChangeTextBody duio_TextID2UIsetID("signin_inputbox_create_invite_text"),""
+		swbreak
+		case"signin_create_back"
+			gosub*scene_Title_InputComplete
+			duio_SetActiveScene"#Portal-Signin",TRUE
+			duio_SetActiveScene"#Portal-Signin-Create",FALSE
+			duio_SetAllButtonOutro"#Portal-Signin-Create"
+			duio_SetAllImageOutro"#Portal-Signin-Create"
+			duio_SetAllTextOutro"#Portal-Signin-Create"
+		swbreak
+
+		case"signin_create_id"
+			gosub*scene_Title_InputComplete
+			InputTextFocus=duio_TextID2UIsetID("signin_inputbox_create_id_text")
+			InputTextCue=genid_playerid
+			InputPasswordFlag=FALSE
+		swbreak
+		case"signin_create_password"
+			gosub*scene_Title_InputComplete
+			InputTextFocus=duio_TextID2UIsetID("signin_inputbox_create_password_text")
+			InputTextCue=genid_password
+			InputPasswordFlag=TRUE
+		swbreak
+		case"signin_create_passwordconf"
+			gosub*scene_Title_InputComplete
+			InputTextFocus=duio_TextID2UIsetID("signin_inputbox_create_passwordconf_text")
+			InputTextCue=genid_passwordconf
+			InputPasswordFlag=TRUE
+		swbreak
+		case"signin_create_email"
+			gosub*scene_Title_InputComplete
+			InputTextFocus=duio_TextID2UIsetID("signin_inputbox_create_email_text")
+			InputTextCue=genid_email
+			InputPasswordFlag=FALSE
+		swbreak
+		case"signin_create_invite"
+			gosub*scene_Title_InputComplete
+			InputTextFocus=duio_TextID2UIsetID("signin_inputbox_create_invite_text")
+			InputTextCue=genid_invite
+			InputPasswordFlag=FALSE
+		swbreak
+		case"signin_create_join"
+			gosub*scene_Title_InputComplete
+			if genid_playerid==""|genid_password==""|genid_passwordconf=="" {
+				//入力項目の不足
+				duio_SetActiveScene"#Portal-Signin-Create",FALSE
+				duio_SetActiveScene"#Portal-Signin-CreateError1",TRUE
+				duio_SetAllButtonVisible"#Portal-Signin-CreateError1",TRUE
+				duio_SetAllImageVisible"#Portal-Signin-CreateError1",TRUE
+				duio_SetAllTextVisible"#Portal-Signin-CreateError1",TRUE
+			} else {
+				if genid_password!genid_passwordconf {
+					//パスワード照合エラー
+					duio_SetActiveScene"#Portal-Signin-Create",FALSE
+					duio_SetActiveScene"#Portal-Signin-CreateError2",TRUE
+					duio_SetAllButtonVisible"#Portal-Signin-CreateError2",TRUE
+					duio_SetAllImageVisible"#Portal-Signin-CreateError2",TRUE
+					duio_SetAllTextVisible"#Portal-Signin-CreateError2",TRUE
+				} else {
+					if strlen(genid_password)<4 {
+						//パスワードの文字数不足
+						duio_SetActiveScene"#Portal-Signin-Create",FALSE
+						duio_SetActiveScene"#Portal-Signin-CreateError0",TRUE
+						duio_SetAllButtonVisible"#Portal-Signin-CreateError0",TRUE
+						duio_SetAllImageVisible"#Portal-Signin-CreateError0",TRUE
+						duio_SetAllTextVisible"#Portal-Signin-CreateError0",TRUE
+					} else {
+						PortalWebSvc_Register genid_playerid,genid_password
+						if refstr=="ERROR_ALREADYEXIST" {
+							//既に存在するID
+							duio_SetActiveScene"#Portal-Signin-Create",FALSE
+							duio_SetActiveScene"#Portal-Signin-CreateError3",TRUE
+							duio_SetAllButtonVisible"#Portal-Signin-CreateError3",TRUE
+							duio_SetAllImageVisible"#Portal-Signin-CreateError3",TRUE
+							duio_SetAllTextVisible"#Portal-Signin-CreateError3",TRUE
+						} else {
+							//OK
+							duio_SetActiveScene"#Portal-Signin",TRUE
+							duio_SetActiveScene"#Portal-Signin-Create",FALSE
+							duio_SetAllButtonOutro"#Portal-Signin-Create"
+							duio_SetAllImageOutro"#Portal-Signin-Create"
+							duio_SetAllTextOutro"#Portal-Signin-Create"
+						}
+						PlayerID="":PlayerPassword=""
+					}
+				}
+			}
+		swbreak
+
+		case"signin_error0_ok"
+			duio_SetActiveScene"#Portal-Signin-CreateError0",FALSE
+			duio_SetActiveScene"#Portal-Signin-Create",TRUE
+			duio_SetAllButtonOutro"#Portal-Signin-CreateError0"
+			duio_SetAllImageOutro"#Portal-Signin-CreateError0"
+			duio_SetAllTextOutro"#Portal-Signin-CreateError0"
+		swbreak
+		case"signin_error1_ok"
+			duio_SetActiveScene"#Portal-Signin-CreateError1",FALSE
+			duio_SetActiveScene"#Portal-Signin-Create",TRUE
+			duio_SetAllButtonOutro"#Portal-Signin-CreateError1"
+			duio_SetAllImageOutro"#Portal-Signin-CreateError1"
+			duio_SetAllTextOutro"#Portal-Signin-CreateError1"
+		swbreak
+		case"signin_error2_ok"
+			duio_SetActiveScene"#Portal-Signin-CreateError2",FALSE
+			duio_SetActiveScene"#Portal-Signin-Create",TRUE
+			duio_SetAllButtonOutro"#Portal-Signin-CreateError2"
+			duio_SetAllImageOutro"#Portal-Signin-CreateError2"
+			duio_SetAllTextOutro"#Portal-Signin-CreateError2"
+		swbreak
+		case"signin_error3_ok"
+			duio_SetActiveScene"#Portal-Signin-CreateError3",FALSE
+			duio_SetActiveScene"#Portal-Signin-Create",TRUE
+			duio_SetAllButtonOutro"#Portal-Signin-CreateError3"
+			duio_SetAllImageOutro"#Portal-Signin-CreateError3"
+			duio_SetAllTextOutro"#Portal-Signin-CreateError3"
+		swbreak
+
+	swend
+
+	return
+
+*scene_Title_InputComplete
+	if InputPasswordFlag :duio_ChangeTextBody InputTextFocus,tohidden(InputTextCue):else:duio_ChangeTextBody InputTextFocus,InputTextCue
+	switch InputTextFocus
+		case duio_TextID2UIsetID("signin_inputbox_id_text")
+			PlayerID=InputTextCue
+		swbreak
+		case duio_TextID2UIsetID("signin_inputbox_password_text")
+			PlayerPassword=InputTextCue
+		swbreak
+
+		case duio_TextID2UIsetID("signin_inputbox_create_id_text")
+			genid_playerid=InputTextCue
+		swbreak
+		case duio_TextID2UIsetID("signin_inputbox_create_password_text")
+			genid_password=InputTextCue
+		swbreak
+		case duio_TextID2UIsetID("signin_inputbox_create_passwordconf_text")
+			genid_passwordconf=InputTextCue
+		swbreak
+		case duio_TextID2UIsetID("signin_inputbox_create_email_text")
+			genid_email=InputTextCue
+		swbreak
+		case duio_TextID2UIsetID("signin_inputbox_create_invite_text")
+			genid_invite=InputTextCue
+		swbreak
+	swend
+	sdim InputTextCue
+	InputTextFocus=-1
+	return

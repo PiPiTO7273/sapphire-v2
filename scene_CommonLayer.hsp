@@ -2,7 +2,7 @@
 //プロフィール情報の表示を更新
 #deffunc UpdateProfileDisp
 
-	duio_ChangeTextBody duio_TextID2UIsetID("common_profile_name"),PlayerID
+	duio_ChangeTextBody duio_TextID2UIsetID("common_profile_name"),pfreg_dispname
 	duio_ChangeTextBody duio_TextID2UIsetID("common_profile_badge"),pfreg_Badge
 	duio_ChangeTextBody duio_TextID2UIsetID("common_profile_pfpoint"),strf("%.2f pts",pfreg_PFpoint)
 	duio_ChangeTextBody duio_TextID2UIsetID("common_profile_numtickets"),"x"+str(pfreg_NumTickets)
@@ -49,6 +49,12 @@
 			giftres="{debug-code:デバッグモードを無効にしました。}"
 		swbreak
 
+		case"TEST"
+			debugcmdflag=TRUE
+			pfreg_NumFragments=10000
+			giftres="あ"
+		swbreak
+
 		default
 			//存在しないコード
 			return 2
@@ -68,6 +74,21 @@
 	UpdateProfileDisp
 
 	return 0
+
+*UpdatePreloader
+	if GetNowCount()-preloader_interval@>int(1000.0/ /*limitf(double(cfunc64f(GetFPS)),1.0,1000.0)*/ 30.0) {
+		preloader_interval@=GetNowCount()
+
+		if ProcessMessage()==-1 :DxLib_End:end
+		SetDrawScreen DX_SCREEN_BACK
+		ClearDrawScreen
+		SetDrawBlendMode DX_BLENDMODE_PMA_ALPHA,256
+		DrawGraph DispWidth@-300-32,DispHeight@-64-32,hdximg_preloader@(preloader_framecount@\90),TRUE
+		preloader_framecount@++
+
+		ScreenFlip
+	}
+	return
 
 *InitPlayOption
 	//オブジェクトの配置
@@ -113,6 +134,9 @@
 				case PLAYOPT_ID_TARGET_A_OLD:playoption_target_select=PLAYOPT_ID_TARGET_A:swbreak
 				case PLAYOPT_ID_TARGET_MYBEST_OLD:playoption_target_select=PLAYOPT_ID_TARGET_MYBEST:swbreak
 				case PLAYOPT_ID_TARGET_ONLINETOP_OLD:playoption_target_select=PLAYOPT_ID_TARGET_WR:swbreak
+				case PLAYOPT_ID_TARGET_MISSION
+					if curSceneTag!"#Mission" :playoption_target_select=PLAYOPT_ID_TARGET_MYBEST
+				swbreak
 			swend
 		//扱いやすいように-100
 			playoption_target_select-100
@@ -246,6 +270,8 @@
 
 *UpdatePlayOptionUI
 
+	if curSceneTag!"#Mission" :duio_SetButtonVisible duio_ButtonID2UIsetID("playoption_button_target_mission"),FALSE
+
 	//オブジェクトの配置
 		repeat 6
 			if playoption_objplace_select==cnt {
@@ -274,7 +300,7 @@
 		loop
 
 	//目標スコア
-		repeat 8
+		repeat 8+1
 			if playoption_target_select==cnt {
 				duio_ChangeButtonImage duio_ButtonID2UIsetID(playoption_target_buttonid(cnt)),playoption_target_hbuttonimg(cnt,1)
 			} else {
@@ -287,4 +313,56 @@
 	pfreg_WindowLayout=playoption_window_select
 	pfreg_Target=playoption_target_select+100
 
+	return
+
+*SaveClientData
+	exist"contents/savedata.bin"
+	randomize 8881109
+		repeat strsize
+			poke ClientSaveData,cnt,peek(ClientSaveData,cnt)^rnd(256)
+		loop
+	randomize
+
+	bsave"contents/savedata.bin",ClientSaveData
+
+	exist"contents/savedata.bin"
+	randomize 8881109
+		repeat strsize
+			poke ClientSaveData,cnt,peek(ClientSaveData,cnt)^rnd(256)
+		loop
+	randomize
+	return
+
+*ApplyClientConfig
+
+	dim DispWidth:dim DispHeight
+	switch csconf_DispResolution
+		case 0:DispWidth=800:DispHeight=600:swbreak
+		case 1:DispWidth=1024:DispHeight=768:swbreak
+		case 2:DispWidth=1280:DispHeight=720:swbreak
+		case 3:DispWidth=1366:DispHeight=768:swbreak
+		case 4:DispWidth=1920:DispHeight=1080:swbreak
+	swend
+
+	dim SubThreadLimit
+	switch csconf_SubThreadLimit
+		case 0:SubThreadLimit=1000:swbreak
+		case 1:SubThreadLimit=1:swbreak
+		case 2:SubThreadLimit=2:swbreak
+		case 3:SubThreadLimit=4:swbreak
+		case 4:SubThreadLimit=8:swbreak
+		case 5:SubThreadLimit=-2:swbreak
+		case 6:SubThreadLimit=-4:swbreak
+	swend
+
+	dim TexLv
+	TexLv=powf(2,csconf_TextureLevel)
+
+	dim MSAAflag
+	MSAAflag=csconf_Antialias
+	SetDrawMode MSAAflag
+
+	if csconf_proxyIP!"" {
+		if csconf_proxyPort=="" :setProxy csconf_proxyIP,"":else:setProxy csconf_proxyIP+":"+csconf_proxyPort,""
+	}
 	return

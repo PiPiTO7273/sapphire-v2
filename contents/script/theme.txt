@@ -10,12 +10,13 @@
 		#Common-Profile @image musicselect_profile graphic/musicselect_profile.png 759 0 &animation-in=fade,20,350,CUBIC_OUT &animation-in=move,20,350,128,0,CUBIC_OUT &layerlv=2
 		
 		rp:profile_text_animation>>&animation-in=fade,150,250,CUBIC_OUT &animation-in=move,150,250,-64,0,CUBIC_OUT &animation-in=random.text,150,250 &color=10,10,10 &layerlv=3
-		#Common-Profile @text common_profile_name * 820 29 ps24 profile_text_animation
+		#Common-Profile @text common_profile_name * 820 29 rom1cm20 profile_text_animation
 		#Common-Profile @text common_profile_badge * 820 10 rom1cm12 profile_text_animation
 		#Common-Profile @text common_profile_pfpoint * 1053 31 ps24 profile_text_animation &align-center-size=54
 		#Common-Profile @text common_profile_numtickets * 1340 12 ps16 profile_text_animation
 		#Common-Profile @text common_profile_numfragments * 1340 40 ps16 profile_text_animation
 		#Common-Profile @text common_profile_numlepus * 1522 12 ps16 profile_text_animation
+		#Common-Profile @text common_unlimitedtime * 1476 38 rom1cm16 profile_text_animation &color=36,229,196
 
 		#Common-Profile @button common_exit graphic/common_exit.png 1860 22 25 25 &animation-in=fade,150,200,CUBIC_OUT &animation-in=zoom,150,200,1.2,CUBIC_OUT &layerlv=3 &event=game.exit &pushsound=pushbutton
 
@@ -193,6 +194,7 @@
 		#PlayOption @button playoption_button_target_100 graphic/playoption_button_target_100.png 506 704 120 35 &animation-in=zoom,600,250,0.4,CUBIC_OUT &animation-in=fade,600,250,CUBIC_OUT playoption_style
 		#PlayOption @button playoption_button_target_mybest graphic/playoption_button_target_mybest.png 370 747 180 35 &animation-in=zoom,650,250,0.4,CUBIC_OUT &animation-in=fade,650,250,CUBIC_OUT playoption_style
 		#PlayOption @button playoption_button_target_wr graphic/playoption_button_target_wr.png 370 790 180 35 &animation-in=zoom,650,250,0.4,CUBIC_OUT &animation-in=fade,650,250,CUBIC_OUT playoption_style
+		#PlayOption @button playoption_button_target_mission graphic/playoption_button_target_mission.png 370 833 180 35 &animation-in=zoom,700,250,0.4,CUBIC_OUT &animation-in=fade,700,250,CUBIC_OUT playoption_style &hide
 
 		////// sound volume //////
 		#PlayOption @button playoption_button_volbgm_left graphic/playoption_button_left.png 140 826 50 35 &animation-in=zoom,500,250,0.4,CUBIC_OUT &animation-in=fade,500,250,CUBIC_OUT playoption_style &event=playoption_volbgm_left
@@ -350,6 +352,9 @@
 		#Gameplay @image gameplay_gauge_bg * 348 330 &layerlv=2 &imgwidth=50 &imgheight=320
 		#Gameplay @image gameplay_gauge * 358 330 &layerlv=3 &imgwidth=50 &imgheight=320
 
+	////// Unlimited //////
+		#Gameplay @text gameplay_unlimitedtime * 1630 10 rom1cm16 &animation-in=fade,300,400,LINEAR &color=36,229,196
+
 	////// Skin //////
 		ids<>:playtheme_0_name>>デフォルト
 		ids<>:playtheme_0_single_height>>32
@@ -368,7 +373,7 @@
 
 	////// metadata,gauge graph //////
 		#Result @image result_bg_artwork graphic/result_bg_artwork.png 210 154 &animation-in=move,600,250,4,-4,CUBIC_OUT &animation-in=fade,600,100,CUBIC_OUT
-		#Result @image result_artwork * 214 150 &imgwidth=200 &imgheight=200 &animation-in=fade,200,250,CUBIC_OUT &animation-in=move,200,250,-64,0,CUBIC_OUT &animation-in=zoom,200,250,1.3,CUBIC_OUT
+		#Result @image result_artwork * 214 150 &imgwidth=200 &imgheight=200 &animation-in=fade,200,250,CUBIC_OUT &animation-in=move,200,250,-64,0,CUBIC_OUT &animation-in=zoom,200,250,1.3,CUBIC_OUT &disable-imgalpha
 
 		#Result @text result_meta_title * 446 185 rom1cm28 &animation-in=random.text,350,500 &animation-in=fade,350,200,CUBIC_OUT &animation-in=move,350,200,-64,0,CUBIC_OUT &layerlv=2 &color=0,0,0
 		#Result @text result_meta_artist * 446 228 rom1cm16 &animation-in=random.text,400,400 &animation-in=fade,400,200,CUBIC_OUT &animation-in=move,400,200,-64,0,CUBIC_OUT &layerlv=2 &color=0,0,0
@@ -444,6 +449,15 @@
 	////// status //////
 		#Result @image result_status_load * 1200 830 &animation-in=zoom,1200,250,0,CUBIC_OUT &imgwidth=80 &imgheight=80
 		#Result @text result_status スコアを送信中・・・ 1300 853 rom1cm24 &animation-in=fade,1400,200,CUBIC_OUT &animation-in=move,1400,250,64,0,CUBIC_OUT result_text_style
+
+	////// mission //////
+		#Result-MissionReward @image result_missionreward_bg graphic/result_missionreward_bg.png 40 40 &animation-in=fade,500,250,CUBIC_OUT &animation-in=move,500,500,-40-550,0,CUBIC_OUT
+		#Result-MissionReward @image result_missionreward_img1 * 60 80 &animation-in=fade,800,300,CUBIC_OUT &animation-in=zoom,800,350,1.2,CUBIC_OUT &imgwidth=120 &imgheight=120
+		#Result-MissionReward @image result_missionreward_img2 * 116 167 &animation-in=fade,900,250,CUBIC_OUT &animation-in=move,900,250,0,-32,CUBIC_OUT &imgwidth=64 &imgheight=33
+		#Result-MissionReward @text result_missionreward_title * 200 95 rom1cm20 &animation-in=fade,900,250,CUBIC_OUT &animation-in=random.text,900,500 &color=0,0,0
+		#Result-MissionReward @text result_missionreward_type * 200 128 rom1cm14 &animation-in=fade,950,250,CUBIC_OUT &animation-in=random.text,950,400 &color=248,61,148
+		#Result-MissionReward @text result_missionreward_msg おめでとうございマス！ミッションの報酬を獲得しまシタ！ 200 168 rom1cm14 &animation-in=fade,1100,250,CUBIC_OUT &animation-in=random.text,1100,600 &color=80,80,80
+		#Result-MissionReward @button result_missionreward_close graphic/common_exit.png 545 70 25 25 &animation-in=fade,800,300,LINEAR &event=missionreward_close
 
 //----- Shutter -----//
 		#Shutter @image shutter_10 graphic/shutter_10.png 0 0 &animation-in=move,200,600,-1920,1080,CUBIC_OUT &hide
@@ -550,3 +564,199 @@
 		#Mission @text mission_numticket_value * 290 520 rom1cm32 &animation-in=fade,450,250,CUBIC_OUT &animation-in=move,450,300,-64,0,CUBIC_OUT &animation-in=increase.text,450,600,-1 &extratext={*sp}枚 &color=255,255,255
 
 		#Mission @button mission_button_option graphic/musicselect_button_option.png 120 620 250 50 &animation-in=fade,500,300,CUBIC_OUT &animation-in=zoom,500,300,0.8,CUBIC_OUT &pushsound=pushbutton &event=mission_option
+
+	////// Dialog //////
+		#Mission-NoTicket @image mission_dialog_noticket graphic/mission_dialog_noticket.png 0 302 &animation-in=zoom,0,250,1.2,CUBIC_OUT &animation-in=fade,0,200,CUBIC_OUT &hide
+		#Mission-NoTicket @button mission_noticket_ok graphic/store_button_ok.png 870 600 180 50 &animation-in=zoom,200,250,0,CUBIC_OUT &animation-in=fade,200,200,CUBIC_OUT &event=mission_noticket_ok &pushsound=cancel &hide
+
+	////// Ticket //////
+		#Mission-UseTicket @image mission_useticket graphic/mission_useticket.png 40 40 &animation-in=fade,100,150,CUBIC_OUT &animation-in=move,100,400,-40-310,0,CUBIC_OUT
+		#Mission-UseTicket @text mission_useticket_n * 180 128 rom1cm32 &animation-in=fade,100,400,CUBIC_OUT &animation-in=move,100,400,-40-310,0,CUBIC_OUT &color=0,0,0
+
+//----- Unlimited -----//
+	////// base //////
+		#Dialog-Unlimited @image unlimited_dialog graphic/unlimited_dialog.png 0 302 &animation-in=zoom,0,250,1.2,CUBIC_OUT &animation-in=fade,0,200,CUBIC_OUT &hide
+		#Dialog-Unlimited @button unlimited_5m graphic/unlimited_5m.png 640+134*0 490 104 154 &animation-in=zoom,150,300,0.5,CUBIC_OUT &animation-in=fade,150,250,CUBIC_OUT &event=unlimited_5m &hide &pushsound=decide
+		#Dialog-Unlimited @button unlimited_10m graphic/unlimited_10m.png 640+134*1 490 104 154 &animation-in=zoom,200,300,0.5,CUBIC_OUT &animation-in=fade,200,250,CUBIC_OUT &event=unlimited_10m &hide &pushsound=decide
+		#Dialog-Unlimited @button unlimited_15m graphic/unlimited_15m.png 640+134*2 490 104 154 &animation-in=zoom,250,300,0.5,CUBIC_OUT &animation-in=fade,250,250,CUBIC_OUT &event=unlimited_15m &hide &pushsound=decide
+		#Dialog-Unlimited @button unlimited_30m graphic/unlimited_30m.png 640+134*3 490 104 154 &animation-in=zoom,300,300,0.5,CUBIC_OUT &animation-in=fade,300,250,CUBIC_OUT &event=unlimited_30m &hide &pushsound=decide
+		#Dialog-Unlimited @button unlimited_cancel graphic/unlimited_cancel.png 640+134*4 490 104 154 &animation-in=zoom,350,300,0.5,CUBIC_OUT &animation-in=fade,350,250,CUBIC_OUT &event=unlimited_cancel &hide &pushsound=cancel
+
+	////// error //////
+		#Dialog-Unlimited-NoFragment @image unlimited_error_nofragment graphic/unlimited_error_nofragment.png 0 302 &animation-in=zoom,0,250,1.2,CUBIC_OUT &animation-in=fade,0,200,CUBIC_OUT &hide
+		#Dialog-Unlimited-NoFragment @button unlimited_nofragment_ok graphic/store_button_ok.png 870 600 180 50 &animation-in=zoom,200,250,0,CUBIC_OUT &animation-in=fade,200,200,CUBIC_OUT &event=unlimited_nofragment_ok &pushsound=cancel &hide
+
+		#Dialog-Unlimited-Already @image unlimited_error_already graphic/unlimited_error_already.png 0 302 &animation-in=zoom,0,250,1.2,CUBIC_OUT &animation-in=fade,0,200,CUBIC_OUT &hide
+		#Dialog-Unlimited-Already @button unlimited_already_ok graphic/store_button_ok.png 870 600 180 50 &animation-in=zoom,200,250,0,CUBIC_OUT &animation-in=fade,200,200,CUBIC_OUT &event=unlimited_already_ok &pushsound=cancel &hide
+
+//----- embedded video player -----//
+	////// base //////
+		#EmbVideo @image embvideo_title_bg graphic/gameplay_title.png 310 0 &animation-in=move,0,300,0,-40,CUBIC_OUT
+		#EmbVideo @text embvideo_title_text * 890 6 rom1cm20 &animation-in=move,0,300,0,-40,CUBIC_OUT &align-center-size=140 &color=255,255,255
+
+	////// controller //////
+		rp:embvideo_btmstyle>>&animation-in=move,0,300,0,60,CUBIC_OUT
+		#EmbVideo @image embvideo_controller graphic/embvideo_control.png 0 1020 embvideo_btmstyle
+		#EmbVideo @button embvideo_back graphic/embvideo_back.png 30 1030 88 40 embvideo_btmstyle &event=backscene
+		#EmbVideo @text embvideo_time * 170 1038 ps20 embvideo_btmstyle &color=255,255,255
+		#EmbVideo @text embvideo_time_length * 1600 1038 ps20 embvideo_btmstyle &color=255,255,255
+		#EmbVideo @image embvideo_seek * 270 1045 embvideo_btmstyle &imgwidth=1280 &imgheight=10
+
+//----- Title -----//
+	////// base //////
+		#Title @image title_bg graphic/title_bg.png 0 0 &animation-in=zoom,1000,300,1.2,CUBIC_OUT &animation-in=fade,1000,300,CUBIC_OUT
+		#Title @image title_bar_0 graphic/title_bar_0.png 0 720 &animation-in=move,1000,400,-1920,0,CUBIC_OUT
+		#Title @image title_bar_1 graphic/title_bar_1.png 0 780 &animation-in=move,1200,400,1920,0,CUBIC_OUT
+		#Title @image title_copyright graphic/title_copyright.png 96 860 &animation-in=zoom,1500,300,0.6,CUBIC_OUT &animation-in=fade,1500,300,CUBIC_OUT
+		#Title @text title_text_0 画面をクリックしてスタート 300 732 rom1cm24 &color=255,255,255 &animation-in=fade,1300,500,LINEAR+LOOP
+		#Title @text title_text_1 Copyright{*sp}(c){*sp}2022{*sp}puoro. 796 790 rom1cm16 &color=255,255,255 &animation-in=fade,1300,300,CUBIC_OUT &align-right-size=1104
+		#Title @image title_logo_portal graphic/logo_portal.png 1620 50 &animation-in=fade,1800,300,LINEAR
+		#Title @text title_systemversion * 1837 16 ps16 &align-right-size=63 &animation-in=fade,1800,300,LINEAR &color=0,0,0
+		#Title @text title_portalid * 1837 39 ps16 &align-right-size=63 &animation-in=fade,1800,300,LINEAR &color=0,0,0
+
+		#Title @button title_button_exit graphic/common_button_exit.png 0 1020 240 60 &animation-in=fade,1200,300,CUBIC_OUT &animation-in=move,1200,300,-128,0,CUBIC_OUT &pushsound=pushbutton &event=game.exit
+		#Title @button title_decide * 0 0 1920 1080-60 &event=decide &pushsound=!silent
+		#Title @button title_decide * 510 1080-60 1920-510 60 &event=decide &pushsound=!silent
+		#Title @button title_button_openconfig graphic/title_button_openconfig.png 260 1025 250 50 &animation-in=fade,1300,300,CUBIC_OUT &animation-in=zoom,1300,300,0.5,CUBIC_OUT &pushsound=pushbutton &event=openconfig
+
+	////// signin //////
+		#Portal-Signin @image signin_bg graphic/signin_bg.png 0 0 &animation-in=fade,0,200,LINEAR
+		#Portal-Signin @image signin_window graphic/signin_window.png 454 340 &animation-in=zoom,0,300,0.5,CUBIC_OUT &animation-in=fade,0,250,CUBIC_OUT
+		#Portal-Signin @text signin_window_text Portalアカウントにサインインしましょう 592 431 rom1cm20 &color=0,0,0 &animation-in=random.text,200,500 &animation-in=fade,200,250,LINEAR
+		#Portal-Signin @button signin_inputbox_id graphic/signin_inputbox.png 720 494 400 40 &animation-in=zoom,200,250,0.7,CUBIC_OUT &animation-in=fade,200,250,CUBIC_OUT &event=signin_id
+		#Portal-Signin @button signin_inputbox_password graphic/signin_inputbox.png 720 557 400 40 &animation-in=zoom,250,250,0.7,CUBIC_OUT &animation-in=fade,250,250,CUBIC_OUT &event=signin_password
+
+		#Portal-Signin @button signin_button_create graphic/signin_button_create.png 526 658 250 50 &animation-in=zoom,200,300,0.5,CUBIC_OUT &animation-in=fade,200,300,CUBIC_OUT &event=signin_create
+		//#Portal-Signin @button signin_button_guest graphic/signin_button_guest.png 801 658 250 50 &animation-in=zoom,250,300,0.5,CUBIC_OUT &animation-in=fade,250,300,CUBIC_OUT &event=signin_guest
+		#Portal-Signin @button signin_button_join graphic/signin_button_join.png 1164 516 200 60 &animation-in=zoom,300,300,0.5,CUBIC_OUT &animation-in=fade,300,300,CUBIC_OUT &event=signin_join
+
+		#Portal-Signin @text signin_inputbox_id_text * 736 502 ps20 &color=0,0,0 &layerlv=1 &animation-in=fade,0,1,LINEAR
+		#Portal-Signin @text signin_inputbox_password_text * 736 564 ps20 &color=0,0,0 &layerlv=1 &animation-in=fade,0,1,LINEAR
+
+		#Portal-Signin-Failed @image signin_failed_dialog graphic/signin_dialog.png 720-10 450-10 &animation-in=zoom,0,300,0.6,CUBIC_OUT &animation-in=fade,0,250,CUBIC_OUT &hide
+		#Portal-Signin-Failed @text signin_failed_text サインインに失敗しました。\n\nIDとパスワードをもう一度確認してください。 800 490 rom1cm16 &align-center-size=320 &animation-in=fade,150,150,CUBIC_OUT &animation-in=move,150,200,0,16,CUBIC_OUT &hide &color=0,0,0
+		#Portal-Signin-Failed @button signin_failed_ok graphic/signin_dialog_ok.png 885 560 150 40 &animation-in=zoom,150,250,0.7,CUBIC_OUT &animation-in=fade,150,250,CUBIC_OUT &event=signin_failed_ok &hide
+
+		#Portal-Signin-CreateError0 @image signin_error0_dialog graphic/signin_dialog.png 720-10 450-10 &animation-in=zoom,0,300,0.6,CUBIC_OUT &animation-in=fade,0,250,CUBIC_OUT &hide
+		#Portal-Signin-CreateError0 @text signin_error0_text パスワードは4～32文字の間で設定してください 800 510 rom1cm16 &align-center-size=320 &animation-in=fade,150,150,CUBIC_OUT &animation-in=move,150,200,0,16,CUBIC_OUT &hide &color=0,0,0
+		#Portal-Signin-CreateError0 @button signin_error0_ok graphic/signin_dialog_ok.png 885 560 150 40 &animation-in=zoom,150,250,0.7,CUBIC_OUT &animation-in=fade,150,250,CUBIC_OUT &event=signin_error0_ok &hide
+
+		#Portal-Signin-CreateError1 @image signin_error1_dialog graphic/signin_dialog.png 720-10 450-10 &animation-in=zoom,0,300,0.6,CUBIC_OUT &animation-in=fade,0,250,CUBIC_OUT &hide
+		#Portal-Signin-CreateError1 @text signin_error1_text ＊印がついている項目は必ず入力してください 800 510 rom1cm16 &align-center-size=320 &animation-in=fade,150,150,CUBIC_OUT &animation-in=move,150,200,0,16,CUBIC_OUT &hide &color=0,0,0
+		#Portal-Signin-CreateError1 @button signin_error1_ok graphic/signin_dialog_ok.png 885 560 150 40 &animation-in=zoom,150,250,0.7,CUBIC_OUT &animation-in=fade,150,250,CUBIC_OUT &event=signin_error1_ok &hide
+
+		#Portal-Signin-CreateError2 @image signin_error2_dialog graphic/signin_dialog.png 720-10 450-10 &animation-in=zoom,0,300,0.6,CUBIC_OUT &animation-in=fade,0,250,CUBIC_OUT &hide
+		#Portal-Signin-CreateError2 @text signin_error2_text パスワードの確認をもう一度正しく入力してください 800 513 rom1cm16 &align-center-size=320 &animation-in=fade,150,150,CUBIC_OUT &animation-in=move,150,200,0,16,CUBIC_OUT &hide &color=0,0,0
+		#Portal-Signin-CreateError2 @button signin_error2_ok graphic/signin_dialog_ok.png 885 560 150 40 &animation-in=zoom,150,250,0.7,CUBIC_OUT &animation-in=fade,150,250,CUBIC_OUT &event=signin_error2_ok &hide
+
+		#Portal-Signin-CreateError3 @image signin_error3_dialog graphic/signin_dialog.png 720-10 450-10 &animation-in=zoom,0,300,0.6,CUBIC_OUT &animation-in=fade,0,250,CUBIC_OUT &hide
+		#Portal-Signin-CreateError3 @text signin_error3_text 既に登録されているプレイヤーIDです 800 513 rom1cm16 &align-center-size=320 &animation-in=fade,150,150,CUBIC_OUT &animation-in=move,150,200,0,16,CUBIC_OUT &hide &color=0,0,0
+		#Portal-Signin-CreateError3 @button signin_error3_ok graphic/signin_dialog_ok.png 885 560 150 40 &animation-in=zoom,150,250,0.7,CUBIC_OUT &animation-in=fade,150,250,CUBIC_OUT &event=signin_error3_ok &hide
+
+		#Portal-Signin-Create @image signin_create graphic/signin_create.png 454 234 &animation-in=zoom,0,300,0.5,CUBIC_OUT &animation-in=fade,0,250,CUBIC_OUT
+		#Portal-Signin-Create @text signin_create_text Portalアカウントを新規登録しましょう 592 325 rom1cm20 &color=0,0,0 &animation-in=random.text,200,500 &animation-in=fade,200,250,LINEAR
+		#Portal-Signin-Create @button signin_inputbox_create_id graphic/signin_inputbox.png 720 388 400 40 &animation-in=zoom,200,250,0.7,CUBIC_OUT &animation-in=fade,200,250,CUBIC_OUT &event=signin_create_id
+		#Portal-Signin-Create @button signin_inputbox_create_password graphic/signin_inputbox.png 720 451 400 40 &animation-in=zoom,250,250,0.7,CUBIC_OUT &animation-in=fade,250,250,CUBIC_OUT &event=signin_create_password
+		#Portal-Signin-Create @button signin_inputbox_create_passwordconf graphic/signin_inputbox.png 720 513 400 40 &animation-in=zoom,300,250,0.7,CUBIC_OUT &animation-in=fade,300,250,CUBIC_OUT &event=signin_create_passwordconf
+		#Portal-Signin-Create @button signin_inputbox_create_email graphic/signin_inputbox.png 720 575 400 40 &animation-in=zoom,350,250,0.7,CUBIC_OUT &animation-in=fade,350,250,CUBIC_OUT &event=signin_create_email
+		#Portal-Signin-Create @button signin_inputbox_create_invite graphic/signin_inputbox.png 720 641 400 40 &animation-in=zoom,400,250,0.7,CUBIC_OUT &animation-in=fade,400,250,CUBIC_OUT &event=signin_create_invite
+		#Portal-Signin-Create @button signin_button_create_back graphic/signin_button_back.png 526 736 250 50 &animation-in=zoom,450,250,0.7,CUBIC_OUT &animation-in=fade,450,250,CUBIC_OUT &event=signin_create_back
+		#Portal-Signin-Create @button signin_button_create_join graphic/signin_button_create.png 801 736 250 50 &animation-in=zoom,500,250,0.7,CUBIC_OUT &animation-in=fade,500,250,CUBIC_OUT &event=signin_create_join
+
+		#Portal-Signin-Create @text signin_inputbox_create_id_text * 736 502-106 ps20 &color=0,0,0 &layerlv=1 &animation-in=fade,0,1,LINEAR
+		#Portal-Signin-Create @text signin_inputbox_create_password_text * 736 502+62*1-106 ps20 &color=0,0,0 &layerlv=1 &animation-in=fade,0,1,LINEAR
+		#Portal-Signin-Create @text signin_inputbox_create_passwordconf_text * 736 502+62*2-106 ps20 &color=0,0,0 &layerlv=1 &animation-in=fade,0,1,LINEAR
+		#Portal-Signin-Create @text signin_inputbox_create_email_text * 736 502+62*3-106 ps20 &color=0,0,0 &layerlv=1 &animation-in=fade,0,1,LINEAR
+		#Portal-Signin-Create @text signin_inputbox_create_invite_text * 736 502+62*4-106 ps20 &color=0,0,0 &layerlv=1 &animation-in=fade,0,1,LINEAR
+
+//----- Profile -----//
+	////// base //////
+		#Profile @image profile_bg graphic/common_bg.png 0 0 &animation-in=zoom,0,350,1.2,CUBIC_OUT &animation-in=fade,0,350,CUBIC_OUT
+
+		#Profile @image profile_title graphic/profile_title.png 0 0 &animation-in=fade,0,350,CUBIC_OUT &animation-in=move,0,350,-128,0,CUBIC_OUT &layerlv=2
+		#Profile @text profile_text_guide プロフィールを変更したりプレイ環境をカスタマイズできマス！ 112 152 rom1cm16 &animation-in=fade,50,350,CUBIC_OUT &animation-in=move,50,350,-128,0,CUBIC_OUT &animation-in=random.text,50,1000 &color=255,255,255 &layerlv=2
+
+		#Profile @button profile_button_back graphic/common_button_back.png 0 1020 240 60 &animation-in=fade,200,300,CUBIC_OUT &animation-in=move,200,300,-128,0,CUBIC_OUT &pushsound=pushbutton &event=backscene
+
+		#Profile @image profile_text graphic/profile_text.png 120 149 &animation-in=fade,250,300,CUBIC_OUT &animation-in=move,250,250,-64,0,CUBIC_OUT
+
+		#Profile @image profile_account graphic/profile_account.png 60 200 &animation-in=zoom,250,300,0.6,CUBIC_OUT &animation-in=fade,250,300,CUBIC_OUT
+		#Profile @text profile_account_name * 160 300 rom1cm32 &animation-in=fade,400,250,CUBIC_OUT &animation-in=random.text,400,500 &color=255,255,255
+		#Profile @text profile_account_comment * 170 373 rom1cm20 &animation-in=fade,450,250,CUBIC_OUT &animation-in=random.text,450,500 &color=255,255,255
+
+		#Profile @button profile_button_changename graphic/profile_button_changename.png 120 533 250 50 &animation-in=zoom,450,250,0.7,CUBIC_OUT &animation-in=fade,450,250,CUBIC_OUT &event=profile_changename
+		#Profile @button profile_button_changecomment graphic/profile_button_changecomment.png 120 599 250 50 &animation-in=zoom,500,250,0.7,CUBIC_OUT &animation-in=fade,500,250,CUBIC_OUT &event=profile_changecomment
+		#Profile @button profile_button_deleteaccount graphic/profile_button_deleteaccount.png 120 709 250 50 &animation-in=zoom,550,250,0.7,CUBIC_OUT &animation-in=fade,550,250,CUBIC_OUT &event=profile_deleteaccount
+
+		#Profile @text profile_note_curset * 880 170 rom1cm24 &color=255,255,255 &animation-in=fade,400,300,LINEAR
+		#Profile @text profile_note_changeset * 1136 170 rom1cm24 &color=255,255,255 &animation-in=fade,400,300,LINEAR
+
+		#Profile @text profile_bg_curset * 880 470 rom1cm24 &color=255,255,255 &animation-in=fade,400,300,LINEAR
+		#Profile @text profile_bg_changeset * 1136 470 rom1cm24 &color=255,255,255 &animation-in=fade,400,300,LINEAR
+
+//----- System Config -----//
+	////// base //////
+		#Config @image config_bg graphic/common_bg.png 0 0 &animation-in=zoom,0,350,1.2,CUBIC_OUT &animation-in=fade,0,350,CUBIC_OUT
+
+		#Config @image config_title graphic/config_title.png 0 0 &animation-in=fade,0,350,CUBIC_OUT &animation-in=move,0,350,-128,0,CUBIC_OUT &layerlv=2
+		#Config @text config_text_guide ゲームシステムの設定を変更シマス！ 112 152 rom1cm16 &animation-in=fade,50,350,CUBIC_OUT &animation-in=move,50,350,-128,0,CUBIC_OUT &animation-in=random.text,50,1000 &color=255,255,255 &layerlv=2
+
+		#Config @text config_text_screenmode 画面モード 240 238 rom1cm24 &color=255,255,255 &animation-in=fade,200,250,CUBIC_OUT &animation-in=move,200,300,-64,0,CUBIC_OUT &animation-in=random.text,200,500
+		#Config @text config_text_screenmode_ad 変更にはゲームの再起動が必要です。 240 288 rom1cm14 &color=251,64,182 &animation-in=fade,200,250,CUBIC_OUT &animation-in=move,200,300,-64,0,CUBIC_OUT
+
+		#Config @text config_text_screensize 画面解像度の設定 240 338 rom1cm24 &color=255,255,255 &animation-in=fade,250,250,CUBIC_OUT &animation-in=move,250,300,-64,0,CUBIC_OUT &animation-in=random.text,250,500
+		#Config @text config_text_screensize_ad 変更にはゲームの再起動が必要です。 240 288 rom1cm14 &color=251,64,182 &animation-in=fade,250,250,CUBIC_OUT &animation-in=move,200,300,-64,0,CUBIC_OUT
+
+		#Config @text config_text_subthread サブスレッド処理回数 240 460 rom1cm20 &color=255,255,255 &animation-in=fade,300,250,CUBIC_OUT &animation-in=move,300,300,-64,0,CUBIC_OUT &animation-in=random.text,300,500
+		#Config @text config_text_texture テクスチャ画質 240 578 rom1cm24 &color=255,255,255 &animation-in=fade,350,250,CUBIC_OUT &animation-in=move,350,300,-64,0,CUBIC_OUT &animation-in=random.text,350,500
+		#Config @text config_text_antialias アンチエイリアス 240 676 rom1cm24 &color=255,255,255 &animation-in=fade,400,250,CUBIC_OUT &animation-in=move,400,300,-64,0,CUBIC_OUT &animation-in=random.text,400,500
+		#Config @text config_text_proxy プロキシ設定 240 774 rom1cm24 &color=255,255,255 &animation-in=fade,450,250,CUBIC_OUT &animation-in=move,450,300,-64,0,CUBIC_OUT &animation-in=random.text,450,500
+
+		#Config @image config_shape_category_0 graphic/config_category.png 500 243 &animation-in=fade,250,250,CUBIC_OUT &animation-in=move,250,300,-32,0,CUBIC_OUT
+		#Config @image config_shape_category_1 graphic/config_category.png 500 343 &animation-in=fade,300,250,CUBIC_OUT &animation-in=move,300,300,-32,0,CUBIC_OUT
+		#Config @image config_shape_category_2 graphic/config_category.png 500 462 &animation-in=fade,350,250,CUBIC_OUT &animation-in=move,350,300,-32,0,CUBIC_OUT
+		#Config @image config_shape_category_3 graphic/config_category.png 500 580 &animation-in=fade,400,250,CUBIC_OUT &animation-in=move,400,300,-32,0,CUBIC_OUT
+		#Config @image config_shape_category_4 graphic/config_category.png 500 678 &animation-in=fade,450,250,CUBIC_OUT &animation-in=move,450,300,-32,0,CUBIC_OUT
+		#Config @image config_shape_category_5 graphic/config_category.png 500 776 &animation-in=fade,500,250,CUBIC_OUT &animation-in=move,500,300,-32,0,CUBIC_OUT
+
+		#Config @button config_button_screenmode_0 graphic/config_button_screenmode_0.png 610 230 180 50 &animation-in=zoom,300,250,0.6,CUBIC_OUT &animation-in=fade,300,250,CUBIC_OUT &event=screenmode_0
+		#Config @button config_button_screenmode_1 graphic/config_button_screenmode_1.png 810 230 180 50 &animation-in=zoom,350,250,0.6,CUBIC_OUT &animation-in=fade,350,250,CUBIC_OUT &event=screenmode_1
+		#Config @button config_button_screenmode_2 graphic/config_button_screenmode_2.png 1010 230 180 50 &animation-in=zoom,400,250,0.6,CUBIC_OUT &animation-in=fade,400,250,CUBIC_OUT &event=screenmode_2
+
+		#Config @button config_button_screensize_0 graphic/config_button_screensize_0.png 610+200*0 330 180 50 &animation-in=zoom,350,250,0.6,CUBIC_OUT &animation-in=fade,350,250,CUBIC_OUT &event=screensize_0
+		#Config @button config_button_screensize_1 graphic/config_button_screensize_1.png 610+200*1 330 180 50 &animation-in=zoom,400,250,0.6,CUBIC_OUT &animation-in=fade,400,250,CUBIC_OUT &event=screensize_1
+		#Config @button config_button_screensize_2 graphic/config_button_screensize_2.png 610+200*2 330 180 50 &animation-in=zoom,450,250,0.6,CUBIC_OUT &animation-in=fade,450,250,CUBIC_OUT &event=screensize_2
+		#Config @button config_button_screensize_3 graphic/config_button_screensize_3.png 610+200*3 330 180 50 &animation-in=zoom,500,250,0.6,CUBIC_OUT &animation-in=fade,500,250,CUBIC_OUT &event=screensize_3
+		#Config @button config_button_screensize_4 graphic/config_button_screensize_4.png 610+200*4 330 180 50 &animation-in=zoom,550,250,0.6,CUBIC_OUT &animation-in=fade,550,250,CUBIC_OUT &event=screensize_4
+
+		#Config @image config_info_screensize_0 graphic/config_info_screensize_0.png 610 387 &animation-in=fade,600,250,CUBIC_OUT &animation-in=move,600,300,0,32,CUBIC_OUT
+		#Config @image config_info_screensize_1 graphic/config_info_screensize_1.png 1548 387 &animation-in=fade,700,250,CUBIC_OUT &animation-in=move,700,300,0,32,CUBIC_OUT
+
+		#Config @button config_button_subthread_0 graphic/config_button_subthread_0.png 610 449 140 50 &animation-in=zoom,400,250,0.6,CUBIC_OUT &animation-in=fade,400,250,CUBIC_OUT &event=subthread_0
+		#Config @button config_button_subthread_1 graphic/config_button_subthread_1.png 770 449 100 50 &animation-in=zoom,450,250,0.6,CUBIC_OUT &animation-in=fade,450,250,CUBIC_OUT &event=subthread_1
+		#Config @button config_button_subthread_2 graphic/config_button_subthread_2.png 890 449 100 50 &animation-in=zoom,500,250,0.6,CUBIC_OUT &animation-in=fade,500,250,CUBIC_OUT &event=subthread_2
+		#Config @button config_button_subthread_3 graphic/config_button_subthread_3.png 1010 449 100 50 &animation-in=zoom,550,250,0.6,CUBIC_OUT &animation-in=fade,550,250,CUBIC_OUT &event=subthread_3
+		#Config @button config_button_subthread_4 graphic/config_button_subthread_4.png 1130 449 100 50 &animation-in=zoom,600,250,0.6,CUBIC_OUT &animation-in=fade,600,250,CUBIC_OUT &event=subthread_4
+		#Config @button config_button_subthread_5 graphic/config_button_subthread_5.png 1250 449 160 50 &animation-in=zoom,650,250,0.6,CUBIC_OUT &animation-in=fade,650,250,CUBIC_OUT &event=subthread_5
+		#Config @button config_button_subthread_6 graphic/config_button_subthread_6.png 1430 449 160 50 &animation-in=zoom,700,250,0.6,CUBIC_OUT &animation-in=fade,700,250,CUBIC_OUT &event=subthread_6
+
+		#Config @image config_info_subthread graphic/config_info_subthread.png 1250 506 &animation-in=fade,800,250,CUBIC_OUT &animation-in=move,800,300,0,32,CUBIC_OUT
+
+		#Config @button config_button_texture_0 graphic/config_button_texture_0.png 610 567 180 50 &animation-in=zoom,450,250,0.6,CUBIC_OUT &animation-in=fade,450,250,CUBIC_OUT &event=texture_0
+		#Config @button config_button_texture_1 graphic/config_button_texture_1.png 810 567 180 50 &animation-in=zoom,500,250,0.6,CUBIC_OUT &animation-in=fade,500,250,CUBIC_OUT &event=texture_1
+		#Config @button config_button_texture_2 graphic/config_button_texture_2.png 1010 567 180 50 &animation-in=zoom,550,250,0.6,CUBIC_OUT &animation-in=fade,550,250,CUBIC_OUT &event=texture_2
+		#Config @button config_button_texture_3 graphic/config_button_texture_3.png 1210 567 180 50 &animation-in=zoom,600,250,0.6,CUBIC_OUT &animation-in=fade,600,250,CUBIC_OUT &event=texture_3
+
+		#Config @button config_button_antialias_0 graphic/config_button_antialias_0.png 610 665 180 50 &animation-in=zoom,500,250,0.6,CUBIC_OUT &animation-in=fade,500,250,CUBIC_OUT &event=antialias_0
+		#Config @button config_button_antialias_1 graphic/config_button_antialias_1.png 810 665 180 50 &animation-in=zoom,550,250,0.6,CUBIC_OUT &animation-in=fade,550,250,CUBIC_OUT &event=antialias_1
+
+		#Config @text config_text_proxyip サーバーのIPアドレス 610 764 rom1cm14 &color=255,255,255 &animation-in=fade,550,250,CUBIC_OUT
+		#Config @text config_text_proxyport ポート番号 926 764 rom1cm14 &color=255,255,255 &animation-in=fade,600,250,CUBIC_OUT
+
+		#Config @button config_inputbox_proxyip graphic/config_inputbox_proxyip.png 610 793 300 50 &animation-in=zoom,550,250,0.6,CUBIC_OUT &animation-in=fade,550,250,CUBIC_OUT &event=proxyip
+		#Config @button config_inputbox_proxyport graphic/config_inputbox_proxyport.png 926 793 100 50 &animation-in=zoom,600,250,0.6,CUBIC_OUT &animation-in=fade,600,250,CUBIC_OUT &event=proxyport
+
+		#Config @text config_current_proxyip * 630 806 ps20 &animation-in=fade,600,250,LINEAR &color=0,0,0
+		#Config @text config_current_proxyport * 946 806 ps20 &animation-in=fade,650,250,LINEAR &color=0,0,0
+
+		#Config @button config_button_back graphic/common_button_back.png 0 1020 240 60 &animation-in=fade,200,300,CUBIC_OUT &animation-in=move,200,300,-128,0,CUBIC_OUT &pushsound=pushbutton &event=backscene

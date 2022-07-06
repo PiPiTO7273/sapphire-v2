@@ -263,7 +263,16 @@
 			case'7':return KEY_INPUT_7:swbreak
 			case'8':return KEY_INPUT_8:swbreak
 			case'9':return KEY_INPUT_9:swbreak
+			case'@':return KEY_INPUT_AT:swbreak
+			case'.':return KEY_INPUT_PERIOD:swbreak
 		swend
 		return
+
+	#defcfunc tohidden str _x
+		sdim tmp
+		repeat strlen(_x)
+			tmp+"*"
+		loop
+		return tmp
 
 #global

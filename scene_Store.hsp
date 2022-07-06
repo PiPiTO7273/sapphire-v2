@@ -1,6 +1,8 @@
  
 *scene_Store_Init
 
+	gosub*UploadAllSavedata
+
 	//duio_SetAllImageOutro"#Shutter"
 	duio_InitAllCount"#Store"
 	duio_SetAllButtonVisible"#Store",TRUE
@@ -256,6 +258,17 @@
 								PortalWebSvc_SendProfile PlayerID,PlayerPassword,"XODA.CUSTOMIZE.UNLOCK.n"+itempush_event,"1"
 							}
 						swbreak
+						case"b"
+							strrep itempush_event,"b",""
+							if pfreg_NumLepus<customize_bg_price(int(itempush_event)) {
+								ShowLepusError customize_bg_price(int(itempush_event))
+							} else {
+								pfreg_NumLepus-customize_bg_price(int(itempush_event))
+								customize_bg_unlockflag(int(itempush_event))=TRUE
+								duio_idsWrite"_Customize.b"+itempush_event,"TRUE"
+								PortalWebSvc_SendProfile PlayerID,PlayerPassword,"XODA.CUSTOMIZE.UNLOCK.b"+itempush_event,"1"
+							}
+						swbreak
 					swend
 				swbreak
 			swend
@@ -382,6 +395,25 @@
 							duio_ChangeTextBody duio_TextID2UIsetID("store_confirm_price"),str(customize_note_price(int(itempush_event)))
 						swbreak
 
+						case"b"
+							strrep itempush_event,"b",""
+							if customize_bg_unlockflag(int(itempush_event)) :return
+
+							//アイコン生成
+							SetDrawScreen hdximg(istore_icon_tmp)
+							ClearDrawScreen
+								SetDrawBlendMode DX_BLENDMODE_PMA_ALPHA,256
+								DrawRectExtendGraph 561-550,410-410,561+128-550,410+150-410,0,256,256,1024-256,customize_bg_himg(int(itempush_event)),TRUE
+		
+							duio_ChangeTextBody duio_TextID2UIsetID("store_confirm_type"),"カスタマイズパーツ"
+							duio_ChangeImage duio_ImageID2UIsetID("store_confirm_img"),hdximg(istore_icon_tmp)
+							duio_ChangeTextBody duio_TextID2UIsetID("store_confirm_prm0"),customize_bg_name(int(itempush_event))
+							duio_ChangeTextBody duio_TextID2UIsetID("store_confirm_prm1"),"背景"
+							duio_ChangeTextBody duio_TextID2UIsetID("store_confirm_prm2"),""
+		
+							duio_ChangeTextBody duio_TextID2UIsetID("store_confirm_price"),str(customize_bg_price(int(itempush_event)))
+						swbreak
+
 					swend
 				swbreak
 			swend
@@ -499,7 +531,7 @@
 						DrawExtendGraph 806-760,354-318,806-760+64,354-318+64,customize_note_hhold(cnt),TRUE
 						DrawExtendGraph 806-760,354-318+64,806-760+64,354-318+64+16,customize_note_hsingle(cnt),TRUE
 
-						//曲名
+						//名前
 						SetDrawBlendMode DX_BLENDMODE_ALPHA,256
 						DrawStringToHandle 904-760,53,customize_note_name(cnt),$000000,duio_GetFontHandle("rom1cm20")
 
@@ -520,6 +552,51 @@
 						duio_SetButtonPushSound mapitem_uisetid(mapitem_max),"pushbutton"
 
 						if customize_note_unlockflag(cnt) {
+							duio_SetButtonEnable mapitem_uisetid(mapitem_max),FALSE
+						} else {
+							duio_SetButtonEnable mapitem_uisetid(mapitem_max),TRUE
+						}
+
+						mapitem_max++
+					}
+				}
+
+			loop
+
+			repeat customize_bg_max
+
+				if customize_bg_price(cnt)>0 {
+					if customize_bg_unlockflag(cnt)==FALSE|show_purchased {
+						//ボタン画像作成
+						mapitem_himg(mapitem_max)=MakeScreen(478,192,TRUE)
+						SetDrawScreen mapitem_himg(mapitem_max)
+
+						//背景・ジャケット画像
+						SetDrawBlendMode DX_BLENDMODE_PMA_ALPHA,256
+						DrawGraph 0,0,hdximg(istore_item_customize_note),TRUE
+						DrawRectExtendGraph 98-60,72-46,98-60+80,72-46+100,0,256,256,1024-256,customize_bg_himg(cnt),TRUE
+
+						//名前
+						SetDrawBlendMode DX_BLENDMODE_ALPHA,256
+						DrawStringToHandle 904-760,53,customize_bg_name(cnt),$000000,duio_GetFontHandle("rom1cm20")
+
+						//値段
+						DrawStringToHandle 1115-760,145,str(customize_bg_price(cnt))+" Lepus",$000000,duio_GetFontHandle("ps16")
+
+						//購入済み
+						if customize_bg_unlockflag(cnt) {
+							SetDrawBlendMode DX_BLENDMODE_PMA_ALPHA,256
+							DrawGraph 1100-760,20,hdximg(istore_item_purchased),TRUE
+						}
+
+						//duioに登録
+						duio_CreateButton"#Store","2@b"+cnt,mapitem_himg(mapitem_max),760+500*(mapitem_max\2),159+210*(mapitem_max/2),478,192
+						mapitem_uisetid(mapitem_max)=stat
+						duio_AddInButtonAnimation_Zoom mapitem_uisetid(mapitem_max),300+35*mapitem_max,350,0,ease_cubic_out
+						duio_SetButtonEvent mapitem_uisetid(mapitem_max),"2@b"+cnt
+						duio_SetButtonPushSound mapitem_uisetid(mapitem_max),"pushbutton"
+
+						if customize_bg_unlockflag(cnt) {
 							duio_SetButtonEnable mapitem_uisetid(mapitem_max),FALSE
 						} else {
 							duio_SetButtonEnable mapitem_uisetid(mapitem_max),TRUE

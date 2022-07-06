@@ -1,6 +1,8 @@
 
 *scene_Gameplay_Init
 
+	gosub*UploadAllSavedata
+
 	logmes GetTimeStamp()+" [gameplay] Initializing ..."
 
 	cfunc64v BASS_GetInfo,varptr64(struct_BASS_INFO)
@@ -446,7 +448,7 @@
 			ClearDrawScreen
 			SetDrawBlendMode DX_BLENDMODE_PMA_ALPHA,256
 			repeat LaneHeight/128
-				DrawExtendGraph 0,cnt*128,LaneWidth,(cnt+1)*128,hdximg(igameplay_note_hold_0),TRUE
+				DrawExtendGraph 0,cnt*128,LaneWidth,(cnt+1)*128,customize_note_hhold(pfreg_CustomizeNote),TRUE
 			loop
 
 	//スキン情報読み込み
@@ -481,8 +483,6 @@
 				if cnt==0 :n+score_AddBonusScore
 			}
 
-			targetscore=n
-
 			switch pfreg_Target
 				case PLAYOPT_ID_TARGET_EX:n+int(double(score_AddObjScore)*0.9):swbreak
 				case PLAYOPT_ID_TARGET_S:n+int(double(score_AddObjScore)*0.8):swbreak
@@ -490,8 +490,29 @@
 				case PLAYOPT_ID_TARGET_AA:n+int(double(score_AddObjScore)*0.6):swbreak
 				case PLAYOPT_ID_TARGET_A:n+int(double(score_AddObjScore)*0.5):swbreak
 				case PLAYOPT_ID_TARGET_100:n+score_AddObjScore:swbreak
+				case PLAYOPT_ID_TARGET_MISSION
+					if mission_type(currentSetMission)=="SCORE" {
+						n+int(double(score_AddObjScore)*(double(mission_typeprm(currentSetMission))/10000000.0))
+					}
+				swbreak
 			swend
 		loop
+
+		switch pfreg_Target
+			case PLAYOPT_ID_TARGET_EX:targetscore=9000000:swbreak
+			case PLAYOPT_ID_TARGET_S:targetscore=8000000:swbreak
+			case PLAYOPT_ID_TARGET_AAA:targetscore=7000000:swbreak
+			case PLAYOPT_ID_TARGET_AA:targetscore=6000000:swbreak
+			case PLAYOPT_ID_TARGET_A:targetscore=5000000:swbreak
+			case PLAYOPT_ID_TARGET_100:targetscore=10000000:swbreak
+			case PLAYOPT_ID_TARGET_MISSION
+				if mission_type(currentSetMission)=="SCORE" {
+					targetscore=int(mission_typeprm(currentSetMission))
+				}
+			swbreak
+			case PLAYOPT_ID_TARGET_MYBEST:targetscore=mapdb_mybest_score(curselect_item,curselect_lv):swbreak
+			case PLAYOPT_ID_TARGET_WR:targetscore=mapdb_ir_score(item,lv,0):swbreak
+		swend
 
 		//スコア・ゲージ記録
 		dim scorecapture_buf,objmax
@@ -624,6 +645,7 @@
 		DrawGraph 0,0,hdximg(icommon_bglayer),TRUE
 
 		duio_Draw"#MusicSelect-Decide"
+		if GameplayMode==GAMEMODE_MISSION :duio_Draw"#Mission-UseTicket"
 
 		setease 0,256,ease_linear
 		SetDrawBlendMode DX_BLENDMODE_ALPHA,getease(SceneTime,500)
@@ -800,7 +822,7 @@
 						obj_holdstartid=i
 					}
 
-					DrawExtendGraph LaneWidth*objChannel(i),LaneHeight+ObjPosition(i),LaneWidth*(objChannel(i)+1),LaneHeight+ObjPosition(i)+playtheme_noteheight,hdximg(igameplay_note_single_0),TRUE
+					DrawExtendGraph LaneWidth*objChannel(i),LaneHeight+ObjPosition(i),LaneWidth*(objChannel(i)+1),LaneHeight+ObjPosition(i)+playtheme_noteheight,customize_note_hsingle(pfreg_CustomizeNote),TRUE
 
 					if objType(i)==ID_OBJTYPE_HOLDEND {
 						obj_holddrawheight=ObjPosition(i-1)-ObjPosition(i)
@@ -835,8 +857,8 @@
 	//背景
 		SetDrawScreen hdximg(igameplay_bg_sidelr)
 			ClearDrawScreen
-			DrawGraph 0,-1024+(double(SceneCount)*double(FrameTime)*0.8)\1024,hdximg(igameplay_bgorg_side_0),TRUE
-			DrawGraph 0,-1024+(double(SceneCount)*double(FrameTime)*0.8)\1024+1024,hdximg(igameplay_bgorg_side_0),TRUE
+			DrawGraph 0,-1024+(double(SceneCount)*double(FrameTime)*1.0)\1024,customize_bg_himg(pfreg_CustomizeBackground),TRUE
+			DrawGraph 0,-1024+(double(SceneCount)*double(FrameTime)*1.0)\1024+1024,customize_bg_himg(pfreg_CustomizeBackground),TRUE
 
 		SetDrawScreen hdximg(igameplay_bg_grid)
 			ClearDrawScreen
@@ -1080,6 +1102,8 @@
 
 	if SndEventThread==0 :gosub*scene_Gameplay_PlaySoundEvent
 
+	if IsPushed(KEY_INPUT_ESCAPE) :duio_SetEventStack"gameplay_event_retire"
+
 	if duio_GetButtonEventStack()!"" :gosub*scene_Gameplay_eventstack
 
 	return
@@ -1088,11 +1112,18 @@
 
 	switch duio_GetButtonEventStack()
 
+		case"gameplay_event_restart"
+			gosub*scene_Gameplay_free
+			gosub*scene_Gameplay_Init
+		swbreak
+
 		case"gameplay_event_retire"
-			mapconfig_finishflag=TRUE:duio_SetActiveScene"#Gameplay",FALSE
-			mapconfig_finishtime=2000:mapconfig_compeff_shutterflag=TRUE
-			curGauge=0.0
-			gosub*onshutter
+			if mapconfig_finishflag==FALSE {
+				mapconfig_finishflag=TRUE:duio_SetActiveScene"#Gameplay",FALSE
+				mapconfig_finishtime=2000:mapconfig_compeff_shutterflag=TRUE
+				curGauge=0.0
+				gosub*onshutter
+			}
 		swbreak
 
 	swend
@@ -1271,6 +1302,7 @@
 	DrawGraph 0,0,hdximg(icommon_bglayer),TRUE
 
 	duio_Draw"#MusicSelect-Decide"
+	if GameplayMode==GAMEMODE_MISSION :duio_Draw"#Mission-UseTicket"
 
 	SetDrawScreen DX_SCREEN_BACK
 	ClearDrawScreen

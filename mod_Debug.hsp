@@ -30,9 +30,12 @@
 	split dirlist_buf,"\n",imgbank_path
 	dim imgbank_handle,length(imgbank_path)
 
+	preloader_interval@=GetNowCount()
 	repeat length(imgbank_path)
 		imgbank_handle(cnt)=__LoadGraph(imgbank_path(cnt))
 		logmes GetTimeStamp()+" [duio-imgbank] LOAD "+imgbank_path(cnt)+" [handle="+imgbank_handle(cnt)+"]"
+
+		gosub*UpdatePreloader@
 	loop
 
 	return

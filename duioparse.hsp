@@ -275,6 +275,10 @@
 
 		logmes GetTimeStamp()+" [duio-build-ac] process 2-1 > Parsing syntax..."
 		repeat length(UIsetscript_linearr)
+
+			//プリローダー
+			gosub*UpdatePreloader
+
 			if strmid(UIsetscript_linearr(cnt),0,2)=="//" :continue	//コメント行を無視
 			if strmid(UIsetscript_linearr(cnt),0,3)=="rp:" {	//置換ワード
 				strrep UIsetscript_linearr(cnt),"rp:",""
@@ -302,6 +306,7 @@
 
 				repeat length(UIsetscript_linediv)
 					strrep UIsetscript_linediv(cnt),"{*sp}"," "
+					strrep UIsetscript_linediv(cnt),"\\n","\n"
 				loop
 
 				if length(UIsetscript_linediv)==1 :end
@@ -418,11 +423,15 @@
 										UIset_Button_EnableAlpha(UIset_Button_max)=FALSE
 									swbreak
 									case"0x0013"	//pushsound
-										repeat length(commonsndDB_Key)
-											if commonsndDB_Key(cnt)==UIsetscript_ExtraParam {
-												UIset_Button_hPushSound(UIset_Button_max)=commonsndDB_hChannel(cnt)
-											}
-										loop
+										if UIsetscript_ExtraParam=="!silent" {
+											UIset_Button_hPushSound(UIset_Button_max)=-2
+										} else {
+											repeat length(commonsndDB_Key)
+												if commonsndDB_Key(cnt)==UIsetscript_ExtraParam {
+													UIset_Button_hPushSound(UIset_Button_max)=commonsndDB_hChannel(cnt)
+												}
+											loop
+										}
 									swbreak
 								swend
 							loop
@@ -904,7 +913,7 @@
 					UIset_Button_hoverCount(i)+1000/int(CurDUIObasedFPS)
 
 					if UIset_Button_bfhoverStatus(i)==0 {
-						if UIset_Button_HoverSound!"" :duio_PlaySound UIset_Button_HoverSound
+						if UIset_Button_HoverSound!""&UIset_Button_hPushSound(i)!-2 :;duio_PlaySound UIset_Button_HoverSound
 						UIset_Button_bfhoverStatus(i)=1
 					}
 
@@ -1091,15 +1100,24 @@
 							UIset_Text_drawOffsetY(i)=getease(UIset_Text_count(i)*(1000/int(CurDUIObasedFPS))-UIset_Text_EaseIn_Move_Delay(i),UIset_Text_EaseIn_Move_Length(i))
 						}
 						if UIset_Text_In_Mode(i)&UI_EASEIN_RANDOMTEXT {
-							setease strlen(UIset_Text_Body(i)),0,ease_linear
+							/*setease strlen(UIset_Text_Body(i)),0,ease_linear
 							UIset_Text_RandomLevel=getease(UIset_Text_count(i)*(1000/int(CurDUIObasedFPS))-UIset_Text_EaseIn_Random_Delay(i),UIset_Text_EaseIn_Random_Length(i))
 
 							if UIset_Text_RandomLevel!0 {
 								UIset_Text_drawBody(i)=strmid(UIset_Text_Body(i),0,strlen(UIset_Text_Body(i))-UIset_Text_RandomLevel)
-								repeat UIset_Text_RandomLevel/2
-									UIset_Text_drawBody(i)+strmid(UIset_Text_RandomString,rnd(UIset_Text_RandomString_Length-1),1)
-								loop
-								UIset_Text_drawBody(i)+UIset_Text_Extra(i)
+								;repeat UIset_Text_RandomLevel/2
+								;	UIset_Text_drawBody(i)+strmid(UIset_Text_RandomString,rnd(UIset_Text_RandomString_Length-1),1)
+								;loop
+								;UIset_Text_drawBody(i)+UIset_Text_Extra(i)
+							}*/
+							setease 0,strlen(UIset_Text_Body(i)),ease_linear
+							if getease(UIset_Text_count(i)*(1000/int(CurDUIObasedFPS))-UIset_Text_EaseIn_Random_Delay(i),UIset_Text_EaseIn_Random_Length(i))==strlen(UIset_Text_Body(i)) {
+								UIset_Text_drawBody(i)=UIset_Text_Body(i)
+							} else {
+								UIset_Text_drawBody(i)=""
+								memset UIset_Text_drawBody(i),0,varsize(UIset_Text_drawBody(i)),0
+								memcpy UIset_Text_drawBody(i),UIset_Text_Body(i),getease(UIset_Text_count(i)*(1000/int(CurDUIObasedFPS))-UIset_Text_EaseIn_Random_Delay(i),UIset_Text_EaseIn_Random_Length(i)),0,0
+								;UIset_Text_drawBody(i)=strmid(UIset_Text_Body(i),0,getease(UIset_Text_count(i)*(1000/int(CurDUIObasedFPS))-UIset_Text_EaseIn_Random_Delay(i),UIset_Text_EaseIn_Random_Length(i))-1)
 							}
 						}
 						if UIset_Text_In_Mode(i)&UI_EASEIN_INCREASETEXT {
@@ -1228,9 +1246,16 @@
 	return
 
 #deffunc duio_idsWrite str _key,str _value
-	idsDB_Key(idsDB_max)=_key
-	idsDB_Value(idsDB_max)=_value
-	idsDB_max++
+	//重複チェック
+	dim overrideflag
+	repeat idsDB_max
+		if idsDB_Key(cnt)==_key :idsDB_Value(cnt)=_value:overrideflag=TRUE
+	loop
+	if overrideflag==FALSE {
+		idsDB_Key(idsDB_max)=_key
+		idsDB_Value(idsDB_max)=_value
+		idsDB_max++
+	}
 	return
 
 #defcfunc duio_idsGet str _key
@@ -1345,6 +1370,10 @@
 	UIset_Button_Y(_uisetid)=_value
 	return
 
+#deffunc duio_SetButtonAlpha int _uisetid,int _value
+	UIset_Button_Alpha(_uisetid)=_value
+	return
+
 #defcfunc duio_GetButtonPositionX int _uisetid
 	return UIset_Button_X(_uisetid)
 
@@ -1406,6 +1435,9 @@
 	}
 	UIset_Text_Body(_uisetid)=_body
 	return
+
+#defcfunc duio_GetTextBody int _uisetid
+	return UIset_Text_Body(_uisetid)
 
 #deffunc duio_SetButtonCount int _uisetid,int _count
 	UIset_Button_count(_uisetid)=_count/(1000/int(CurDUIObasedFPS))
@@ -1599,6 +1631,10 @@
 
 #defcfunc duio_GetHoverButtonUIsetID
 	return UIset_Button_curHover
+
+#deffunc duio_InitHoverButton
+	UIset_Button_curHover=-1
+	return
 
 #deffunc duio_ExportAllButton
 	logmes GetTimeStamp()+" [duio-debug] Export All Button Information >>"

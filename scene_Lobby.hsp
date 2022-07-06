@@ -1,15 +1,19 @@
 
 *scene_Lobby_Init
 
+	gosub*UploadAllSavedata
+
 	dim SceneCount
 	dim SceneTime
 	sdim DecideJumpScene
 	dim DecideTime
 	dim AcceptGiftCodeFlag
 	sdim InputGiftCode
-	dim AcceptAsciiTable
+	sdim AcceptAsciiTable
 	AcceptAsciiTable="abcdefghijklmnopqrstuvwxyz0123456789"
 	DecideTime=-1
+
+	dim unlimited_dialogmode
 
 	duio_InitAllCount"#Lobby"
 
@@ -87,14 +91,32 @@
 		if IsPushed(KEY_INPUT_RETURN) :duio_PlaySound"decide":duio_SetEventStack"giftcode_ok"
 	}
 
+	//Unlimitedモード
+	duio_Draw"#Dialog-Unlimited"
+	duio_Draw"#Dialog-Unlimited-NoFragment"
+	duio_Draw"#Dialog-Unlimited-Already"
+
 	DecideTime+FrameTime
 
 	//シャッター演出あり
 	if DecideTime>1000 {
 		switch DecideJumpScene
 			case"freeplay"
-				gosub*scene_MusicSelect_Init
 				curSceneTag="#MusicSelect"
+				gosub*scene_MusicSelect_Init
+			swbreak
+			case"tutorial"
+				curSceneTag="#Tutorial"
+				gosub*scene_Tutorial_Init
+			swbreak
+			case"title"
+				curSceneTag="#Title"
+				gosub*scene_Title_Init
+			swbreak
+			case"systemconfig"
+				curSceneTag="#Config"
+				gosub*scene_Config_Init
+				DecideJumpScene="from:lobby"
 			swbreak
 		swend
 	}
@@ -108,6 +130,10 @@
 			case"store"
 				gosub*scene_Store_Init
 				curSceneTag="#Store"
+			swbreak
+			case"profile"
+				gosub*scene_Profile_Init
+				curSceneTag="#Profile"
 			swbreak
 		swend
 	}
@@ -156,8 +182,125 @@
 			DecideJumpScene="store"
 		swbreak
 
+		case"profile"
+			;gosub*onshutter
+			DecideTime=0
+
+			duio_SetAllButtonOutro"#Lobby"
+			duio_SetAllImageOutro"#Lobby"
+			duio_SetAllTextOutro"#Lobby"
+
+			DecideJumpScene="profile"
+		swbreak
+
+		case"unlimited"
+			if UnlimitedTime==0 {
+				//有効
+				duio_SetActiveScene"#Lobby",FALSE
+				duio_SetActiveScene"#Dialog-Unlimited",TRUE
+				duio_InitAllCount"#Dialog-Unlimited"
+				duio_SetAllButtonVisible"#Dialog-Unlimited",TRUE
+				duio_SetAllImageVisible"#Dialog-Unlimited",TRUE
+				duio_SetAllTextVisible"#Dialog-Unlimited",TRUE
+			} else {
+				//既に有効（エラー）
+				duio_SetActiveScene"#Lobby",FALSE
+				duio_SetActiveScene"#Dialog-Unlimited-Already",TRUE
+				duio_InitAllCount"#Dialog-Unlimited-Already"
+				duio_SetAllButtonVisible"#Dialog-Unlimited-Already",TRUE
+				duio_SetAllImageVisible"#Dialog-Unlimited-Already",TRUE
+				duio_SetAllTextVisible"#Dialog-Unlimited-Already",TRUE
+			}
+		swbreak
+
+		case"unlimited_nofragment_ok"
+			duio_SetActiveScene"#Lobby",TRUE
+			duio_SetActiveScene"#Dialog-Unlimited-NoFragment",FALSE
+			duio_SetAllButtonOutro"#Dialog-Unlimited-NoFragment"
+			duio_SetAllImageOutro"#Dialog-Unlimited-NoFragment"
+			duio_SetAllTextOutro"#Dialog-Unlimited-NoFragment"
+		swbreak
+
+		case"unlimited_already_ok"
+			duio_SetActiveScene"#Lobby",TRUE
+			duio_SetActiveScene"#Dialog-Unlimited-Already",FALSE
+			duio_SetAllButtonOutro"#Dialog-Unlimited-Already"
+			duio_SetAllImageOutro"#Dialog-Unlimited-Already"
+			duio_SetAllTextOutro"#Dialog-Unlimited-Already"
+		swbreak
+
+		case"unlimited_5m"
+			gosub*scene_Lobby_CloseUnlimited
+			if pfreg_NumFragments<5 {
+				gosub*scene_Lobby_OpenUnlimitedNoFragment
+			} else {
+				pfreg_NumFragments-5
+				UnlimitedTime=5*60*1000
+				UpdateProfileDisp
+			}
+		swbreak
+
+		case"unlimited_10m"
+			gosub*scene_Lobby_CloseUnlimited
+			if pfreg_NumFragments<10 {
+				gosub*scene_Lobby_OpenUnlimitedNoFragment
+			} else {
+				pfreg_NumFragments-10
+				UnlimitedTime=10*60*1000
+				UpdateProfileDisp
+			}
+		swbreak
+
+		case"unlimited_15m"
+			gosub*scene_Lobby_CloseUnlimited
+			if pfreg_NumFragments<15 {
+				gosub*scene_Lobby_OpenUnlimitedNoFragment
+			} else {
+				pfreg_NumFragments-15
+				UnlimitedTime=15*60*1000
+				UpdateProfileDisp
+			}
+		swbreak
+
+		case"unlimited_30m"
+			gosub*scene_Lobby_CloseUnlimited
+			if pfreg_NumFragments<30 {
+				gosub*scene_Lobby_OpenUnlimitedNoFragment
+			} else {
+				pfreg_NumFragments-30
+				UnlimitedTime=30*60*1000
+				UpdateProfileDisp
+			}
+		swbreak
+
+		case"unlimited_cancel"
+			gosub*scene_Lobby_CloseUnlimited
+		swbreak
+
+		case"tutorial"
+			gosub*onshutter
+			DecideTime=0
+
+			duio_SetAllButtonOutro"#Lobby"
+			duio_SetAllImageOutro"#Lobby"
+			duio_SetAllTextOutro"#Lobby"
+
+			DecideJumpScene="tutorial"
+		swbreak
+
 		case"openweb"
 			exec"http://"+duio_idsGet("Server"),16
+		swbreak
+
+		case"systemconfig"
+			gosub*onshutter
+			DecideTime=0
+			
+			duio_SetAllButtonOutro"#Lobby"
+			duio_SetAllImageOutro"#Lobby"
+			duio_SetAllTextOutro"#Lobby"
+
+			DecideJumpScene="systemconfig"
 		swbreak
 
 		case"gift"
@@ -222,6 +365,32 @@
 			AcceptGiftCodeFlag=FALSE
 		swbreak
 
+		case"title"
+			gosub*onshutter
+			DecideTime=0
+
+			duio_SetAllButtonOutro"#Lobby"
+			duio_SetAllImageOutro"#Lobby"
+			duio_SetAllTextOutro"#Lobby"
+
+			DecideJumpScene="title"
+		swbreak
+
+		case"signout"
+
+			PlayerID="":PlayerPassword=""
+			gosub*SaveClientData
+
+			gosub*onshutter
+			DecideTime=0
+
+			duio_SetAllButtonOutro"#Lobby"
+			duio_SetAllImageOutro"#Lobby"
+			duio_SetAllTextOutro"#Lobby"
+
+			DecideJumpScene="title"
+		swbreak
+
 		case"game.exit"
 			goto*Exit
 		swbreak
@@ -244,4 +413,21 @@
 
 	swend
 
+	return
+
+*scene_Lobby_CloseUnlimited
+	duio_SetActiveScene"#Lobby",TRUE
+	duio_SetActiveScene"#Dialog-Unlimited",FALSE
+	duio_SetAllButtonOutro"#Dialog-Unlimited"
+	duio_SetAllImageOutro"#Dialog-Unlimited"
+	duio_SetAllTextOutro"#Dialog-Unlimited"
+	return
+
+*scene_Lobby_OpenUnlimitedNoFragment
+	duio_SetActiveScene"#Lobby",FALSE
+	duio_SetActiveScene"#Dialog-Unlimited-NoFragment",TRUE
+	duio_InitAllCount"#Dialog-Unlimited-NoFragment"
+	duio_SetAllButtonVisible"#Dialog-Unlimited-NoFragment",TRUE
+	duio_SetAllImageVisible"#Dialog-Unlimited-NoFragment",TRUE
+	duio_SetAllTextVisible"#Dialog-Unlimited-NoFragment",TRUE
 	return

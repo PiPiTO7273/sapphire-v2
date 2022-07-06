@@ -1,11 +1,16 @@
 
 *scene_Mission_Init
 
+	gosub*UploadAllSavedata
+
 	duio_InitAllCount"#Mission"
 	duio_SetAllButtonVisible"#Mission",TRUE
 	duio_SetAllImageVisible"#Mission",TRUE
 	duio_SetAllTextVisible"#Mission",TRUE
 	duio_SetActiveScene"#Mission",TRUE
+	duio_InitAllCount"#MusicSelect-Decide"
+
+	duio_InitAllCount"#Mission-UseTicket"
 
 	if BASS_ChannelIsActive(duio_GetHandle("main"))!BASS_ACTIVE_PLAYING {
 		duio_PlaySound"main"
@@ -16,11 +21,14 @@
 	duio_SetButtonEnable duio_ButtonID2UIsetID("playoption_mission_dummy"),TRUE
 	duio_SetImageVisible duio_ImageID2UIsetID("playoption_mission_img"),TRUE
 
+	dim SceneCount
 	dim decidecount
+	sdim DecideJumpScene
 	dim mapitem_max
 	dim optionwindowflag
 	dim optionwindowclosecount
 	sdim helpscene
+	dim currentSetMission
 	decidecount=-1
 
 	gosub*scene_Mission_InitItem
@@ -52,11 +60,36 @@
 		//条件
 			dim item:dim lv
 			SearchDBfromUUID mission_playmap(cnt),item,lv
+
+			if IsUnlocked(item,lv)==FALSE :continue		//そもそも課題曲が未解禁なら無視
+
 			mapitem_tmptitle=mapdb_title(item,lv)+" ["
 			mapitem_tmptitle+difid2difstr(lv)+"] を\n"
 			if mission_type(cnt)=="SCORE" {
 				//スコア基準
 				mapitem_tmptitle+"スコア "+strf("%08d",mission_typeprm(cnt))+"以上でクリア"
+			}
+			if mission_type(cnt)=="CLEAR" {
+				switch mission_typeprm(cnt)
+					case"ALL-EXCELLENT"
+						mapitem_tmptitle+"全てEXCELLENT判定でクリア"
+					swbreak
+					case"FULLCOMBO"
+						mapitem_tmptitle+"フルコンボでクリア"
+					swbreak
+					case"CLEAR"
+						mapitem_tmptitle+"通常のゲージでクリア"
+					swbreak
+					case"ASSIST-CLEAR"
+						mapitem_tmptitle+"アシスト付きゲージでクリア"
+					swbreak
+					case"EXPERT-CLEAR"
+						mapitem_tmptitle+"EXPERTゲージでクリア"
+					swbreak
+					case"MADNESS-CLEAR"
+						mapitem_tmptitle+"MADNESSゲージでクリア"
+					swbreak
+				swend
 			}
 
 		//報酬
@@ -84,7 +117,7 @@
 			duio_AddInButtonAnimation_Zoom mapitem_uisetid(mapitem_max),200+50*mapitem_max,350,0.6,ease_cubic_out
 			duio_AddInButtonAnimation_Fade mapitem_uisetid(mapitem_max),200+50*mapitem_max,300,ease_cubic_out
 			duio_SetButtonEvent mapitem_uisetid(mapitem_max),"mission@"+cnt
-			duio_SetButtonPushSound mapitem_uisetid(mapitem_max),"pushbutton"
+			duio_SetButtonPushSound mapitem_uisetid(mapitem_max),"decide"
 
 		//強制クリア
 			forcedop_himg(mapitem_max)=MakeScreen(200,104,TRUE)
@@ -95,9 +128,15 @@
 			DrawExtendGraph 20,71,20+int(160.0*(double(5-mission_progress(mapitem_max))/5.0)),71+16,hdximg(imission_forced_gauge),FALSE
 
 			SetDrawBlendMode DX_BLENDMODE_ALPHA,256
-			DrawStringToHandle 20,21,"挑戦回数",$FFFFFF,duio_GetFontHandle("rom1cm14")
-			DrawStringXAlignRightToHandle 152,21,str(mission_progress(mapitem_max))+"回",23,$FFFFFF,duio_GetFontHandle("rom1cm14")
-			DrawStringToHandle 20,48,"残り"+(5-mission_progress(mapitem_max))+"回で強制クリア",$FFFFFF,duio_GetFontHandle("rom1cm14")
+			if mission_progress(cnt)!5 {
+				DrawStringToHandle 20,21,"挑戦回数",$FFFFFF,duio_GetFontHandle("rom1cm14")
+				DrawStringXAlignRightToHandle 152,21,str(mission_progress(mapitem_max))+"回",23,$FFFFFF,duio_GetFontHandle("rom1cm14")
+				DrawStringToHandle 20,48,"残り"+(5-mission_progress(mapitem_max))+"回で強制クリア",$FFFFFF,duio_GetFontHandle("rom1cm14")
+				duio_SetButtonEnable mapitem_uisetid(mapitem_max),TRUE
+			} else {
+				DrawStringToHandle 20,26,"ミッション達成済",$FFFFFF,duio_GetFontHandle("rom1cm16")
+				duio_SetButtonEnable mapitem_uisetid(mapitem_max),FALSE
+			}
 
 			//duioに登録
 			duio_CreateButton"#Mission","mission.forced@"+cnt,forcedop_himg(mapitem_max),1420,150+180*mapitem_max,200,104
@@ -105,13 +144,9 @@
 			duio_AddInButtonAnimation_Zoom forcedop_uisetid(mapitem_max),250+50*mapitem_max,350,0.6,ease_cubic_out
 			duio_AddInButtonAnimation_Fade forcedop_uisetid(mapitem_max),250+50*mapitem_max,300,ease_cubic_out
 			duio_SetButtonEvent forcedop_uisetid(mapitem_max),"mission.forced@"+cnt
-			duio_SetButtonPushSound forcedop_uisetid(mapitem_max),"pushbutton"
+			duio_SetButtonPushSound forcedop_uisetid(mapitem_max),"decide"
 
-			if (5-mission_progress(mapitem_max))==0 {
-				duio_SetButtonEnable forcedop_uisetid(mapitem_max),TRUE
-			} else {
-				duio_SetButtonEnable forcedop_uisetid(mapitem_max),FALSE
-			}
+			duio_SetButtonEnable forcedop_uisetid(mapitem_max),FALSE
 
 		mapitem_max++
 	loop
@@ -122,19 +157,47 @@
 
 *scene_Mission
 
+	//UIパーツ
+	if decidecount!-1 {
+		switch DecideJumpScene
+			case"play"
+
+				DrawCommonBackground FrameCount
+
+				SetDrawBlendMode DX_BLENDMODE_PMA_ALPHA,256
+				DrawGraph 0,0,hdximg(icommon_bglayer),TRUE
+
+				setease 0,BufWidth,ease_cubic_out
+				SetDrawBlendMode DX_BLENDMODE_ALPHA,100
+				DrawBox getease(decidecount-250,400),0,BufWidth,BufHeight,$65FAFF,TRUE
+				SetDrawBlendMode DX_BLENDMODE_ALPHA,80
+				DrawBox getease(decidecount-250,320),0,BufWidth,BufHeight,$FF58E9,TRUE
+				SetDrawBlendMode DX_BLENDMODE_ALPHA,50
+				DrawBox getease(decidecount-220,400),0,BufWidth,BufHeight,$FFFFFF,TRUE
+				SetDrawBlendMode DX_BLENDMODE_ALPHA,256
+				DrawBox getease(decidecount-200,300),0,BufWidth,BufHeight,$FFFFFF,TRUE
+
+				SetDrawScreen hdximg(itmplayer)
+
+			swbreak
+		swend
+	}
+
 	DrawCommonBackground FrameCount
 
 	SetDrawBlendMode DX_BLENDMODE_PMA_ALPHA,256
 	DrawGraph 0,0,hdximg(icommon_bglayer),TRUE
 
-	//鉄骨ライン
-		dim shapemovepos:shapemovepos=-(1000.0/duio_GetFPS()*FrameCount)/15
-		SetDrawBlendMode DX_BLENDMODE_PMA_ALPHA,256
-		DrawGraph shapemovepos\1920,20,hdximg(icommon_ironline),TRUE
-		DrawGraph shapemovepos\1920+1920,20,hdximg(icommon_ironline),TRUE
+	if decidecount<1000 {
+		//鉄骨ライン
+			dim shapemovepos:shapemovepos=-(1000.0/duio_GetFPS()*FrameCount)/15
+			SetDrawBlendMode DX_BLENDMODE_PMA_ALPHA,256
+			DrawGraph shapemovepos\1920,20,hdximg(icommon_ironline),TRUE
+			DrawGraph shapemovepos\1920+1920,20,hdximg(icommon_ironline),TRUE
 
-	duio_Draw"#Mission"
-	duio_Draw"#Common-Profile"
+		duio_Draw"#Mission"
+		duio_Draw"#Common-Profile"
+	}
 
 	if (159+180*mapitem_max)>BufHeight-64-157 {
 		if insquare(cursorPosX,cursorPosY,760,0,BufWidth,BufHeight)&mapitem_max!0 {
@@ -189,9 +252,74 @@
 	}
 	if helpscene!"" :duio_Draw helpscene
 
+	if decidecount!-1 {
+		if DecideJumpScene=="play" {
+			SetDrawScreen hcommonLayer
+
+			dim EaseWidth:dim EaseHeight:dim EasePosX:dim EasePosY
+			setease 1,1.2,ease_cubic_out
+			EaseWidth=int(double(geteasef(decidecount,400))*double(BufWidth))
+			EaseHeight=int(double(geteasef(decidecount,400))*double(BufHeight))
+			EasePosX=BufWidth/2-EaseWidth/2
+			EasePosY=BufHeight/2-EaseHeight/2
+
+			setease 256,0,ease_cubic_out
+			SetDrawBlendMode DX_BLENDMODE_PMA_ALPHA,getease(decidecount,400)
+			DrawExtendGraph EasePosX,EasePosY,EasePosX+EaseWidth,EasePosY+EaseHeight,hdximg(itmplayer),TRUE
+
+			setease 0,40,ease_cubic_out
+			duio_ChangeTextBody duio_TextID2UIsetID("musicdecide_loadprogress"),str(getease(decidecount*FrameTime,1500))
+
+			duio_Draw"#MusicSelect-Decide"
+			duio_Draw"#Mission-UseTicket"
+
+			if decidecount>800 {
+				duio_ChangeTextBody duio_TextID2UIsetID("mission_useticket_n"),str(pfreg_NumTickets)+"枚"
+
+				dim EaseWidth:dim EaseHeight:dim EasePosX:dim EasePosY
+				setease 1,2,ease_cubic_out
+				EaseWidth=int(double(geteasef(decidecount-800,700))*150.0)
+				EaseHeight=int(double(geteasef(decidecount-800,700))*150.0)
+				EasePosX=40+150/2-EaseWidth/2
+				EasePosY=50+150/2-EaseHeight/2
+
+				setease 256,0,ease_cubic_out
+				SetDrawBlendMode DX_BLENDMODE_PMA_ALPHA,getease(decidecount-800,700)
+				DrawExtendGraph EasePosX,EasePosY,EasePosX+EaseWidth,EasePosY+EaseHeight,hdximg(istore_icon_ticket),TRUE
+			} else {
+				duio_ChangeTextBody duio_TextID2UIsetID("mission_useticket_n"),str(pfreg_NumTickets+1)+"枚"
+			}
+
+			if decidecount>2000 {
+
+				//オプション設定
+				pfreg_Placement=PLAYOPT_ID_OBJPLACE_NORMAL
+				if mission_type(currentSetMission)=="CLEAR" {
+					switch mission_typeprm(currentSetMission)
+						case"ASSIST":pfreg_GaugeType=PLAYOPT_ID_GAUGE_ASSIST:swbreak
+						case"NORMAL":pfreg_GaugeType=PLAYOPT_ID_GAUGE_NORMAL:swbreak
+						case"EXPERT":pfreg_GaugeType=PLAYOPT_ID_GAUGE_EXPERT:swbreak
+						case"MADNESS":pfreg_GaugeType=PLAYOPT_ID_GAUGE_MADNESS:swbreak
+						case"FULLCOMBO":pfreg_GaugeType=PLAYOPT_ID_GAUGE_AR_FC:swbreak
+						case"ALLEXCELLENT":pfreg_GaugeType=PLAYOPT_ID_GAUGE_AR_ALLEX:swbreak
+					swend
+				}
+
+				ClearMapItem
+				GameplayMode=GAMEMODE_MISSION
+				gosub*scene_Mission_ClearForcedOpButton
+				gosub*scene_Gameplay_Init
+				curSceneTag="#Gameplay"
+			}
+		}
+	}
+
+	duio_Draw"#Mission-NoTicket"
+	duio_Draw"#Shutter"
+
 	if duio_GetButtonEventStack()!"" :gosub*scene_Mission_eventstack
 	if decidecount!-1 :decidecount+FrameTime
-	if decidecount>300 {
+	if decidecount>300&DecideJumpScene=="backscene" { 
 		gosub*scene_Mission_ClearForcedOpButton
 		ClearMapItem
 		gosub*scene_Lobby_Init
@@ -217,6 +345,8 @@
 
 			duio_SetActiveScene"#PlayOption",TRUE
 			duio_SetActiveScene"#Mission",FALSE
+
+			gosub*UpdatePlayOptionUI
 		swbreak
 
 		case"playoption_close"
@@ -233,8 +363,17 @@
 			duio_SetActiveScene"#PlayOption",FALSE
 		swbreak
 
+		case"mission_noticket_ok"
+			duio_SetActiveScene"#Mission-NoTicket",FALSE
+			duio_SetActiveScene"#Mission",TRUE
+			duio_SetAllButtonOutro"#Mission-NoTicket"
+			duio_SetAllImageOutro"#Mission-NoTicket"
+			duio_SetAllTextOutro"#Mission-NoTicket"
+		swbreak
+
 		case"backscene"
 			decidecount=0
+			DecideJumpScene="backscene"
 			duio_SetAllButtonOutro"#Mission"
 			duio_SetAllImageOutro"#Mission"
 			duio_SetAllTextOutro"#Mission"
@@ -246,6 +385,59 @@
 
 	gosub*PlayOption_EventStack
 
+	sdim mission_itemevent
+	mission_itemevent=duio_GetButtonEventStack()
+	if strmid(mission_itemevent,0,strlen("mission@"))=="mission@" {
+		if pfreg_NumTickets==0 {
+			//チケット不足
+			duio_InitAllCount"#Mission-NoTicket"
+			duio_SetActiveScene"#Mission-NoTicket",TRUE
+			duio_SetActiveScene"#Mission",FALSE
+			duio_SetAllButtonVisible"#Mission-NoTicket",TRUE
+			duio_SetAllImageVisible"#Mission-NoTicket",TRUE
+			duio_SetAllTextVisible"#Mission-NoTicket",TRUE
+		} else {
+			//チケット消費
+			pfreg_NumTickets--
+
+			//プレー開始
+			decidecount=0
+			DecideJumpScene="play"
+			duio_SetAllButtonOutro"#Mission"
+			duio_SetAllImageOutro"#Mission"
+			duio_SetAllTextOutro"#Mission"
+
+			strrep mission_itemevent,"mission@",""
+
+			//UUIDから検索
+				SearchDBfromUUID mission_playmap(int(mission_itemevent)),curselect_item,curselect_lv
+
+			//プレビュー再生
+				duio_StopSound"main"
+				cfunc64v BASS_ChannelSetPosition,mapdb_hpreview(curselect_item,curselect_lv),0,0
+				cfunc64v BASS_ChannelPlay,mapdb_hpreview(curselect_item,curselect_lv)
+				curPlayhPreview=mapdb_hpreview(curselect_item,curselect_lv)
+
+			//UI初期化
+				duio_ChangeImage duio_ImageID2UIsetID("musicdecide_artwork"),mapdb_hartwork(curselect_item,curselect_lv)
+
+				duio_ChangeTextBody duio_TextID2UIsetID("musicdecide_title"),mapdb_title(curselect_item,curselect_lv)
+				duio_ChangeTextBody duio_TextID2UIsetID("musicdecide_artist"),mapdb_artist(curselect_item,curselect_lv)+" / from "+mapdb_source(curselect_item,curselect_lv)+" / Map by "+mapdb_mapdesign(curselect_item,curselect_lv)
+				duio_ChangeTextBody duio_TextID2UIsetID("musicdecide_level"),str(mapdb_level(curselect_item,curselect_lv))
+				if mapdb_defbpm(curselect_item,curselect_lv)==mapdb_minbpm(curselect_item,curselect_lv)&mapdb_defbpm(curselect_item,curselect_lv)==mapdb_maxbpm(curselect_item,curselect_lv) {
+					duio_ChangeTextBody duio_TextID2UIsetID("musicdecide_bpm"),strf("%.2f",mapdb_defbpm(curselect_item,curselect_lv))
+				} else {
+					duio_ChangeTextBody duio_TextID2UIsetID("musicdecide_bpm"),strf("%.2f (%.2f - %.2f)",mapdb_defbpm(curselect_item,curselect_lv),mapdb_minbpm(curselect_item,curselect_lv),mapdb_maxbpm(curselect_item,curselect_lv))
+				}
+				duio_ChangeTextBody duio_TextID2UIsetID("musicdecide_totalnotes"),str(mapdb_totalnotes(curselect_item,curselect_lv))
+
+				duio_ChangeImage duio_ImageID2UIsetID("musicdecide_level_img"),hdximg(imusicselect_item_normal+curselect_lv)
+
+			//ミッションを設定
+				currentSetMission=int(mission_itemevent)
+		}
+	}
+
 	return
 
 *scene_Mission_ClearForcedOpButton
@@ -253,4 +445,25 @@
 		DeleteGraph forcedop_himg(cnt)
 		duio_DeleteButton forcedop_uisetid(0)
 	loop
+	return
+
+*scene_Mission_GetReward
+
+	dim item:dim lv
+	SearchDBfromUUID mission_reward(currentSetMission),item,lv
+	duio_ChangeImage duio_ImageID2UIsetID("result_missionreward_img1"),mapdb_hartwork(item,lv)
+	duio_ChangeImage duio_ImageID2UIsetID("result_missionreward_img2"),hdximg(imusicselect_item_normal+lv)
+	duio_ChangeTextBody duio_TextID2UIsetID("result_missionreward_title"),mapdb_title(item,lv)
+	duio_ChangeTextBody duio_TextID2UIsetID("result_missionreward_type"),"楽曲/譜面難易度"
+
+	duio_idsWrite"_MapUnlock."+mission_reward(currentSetMission),"TRUE"
+	PortalWebSvc_SendProfile PlayerID,PlayerPassword,"XODA.MAP.UNLOCK."+mission_reward(currentSetMission),"1"
+
+	mission_progress(currentSetMission)=5
+
+	duio_InitAllCount"#Result-MissionReward"
+	duio_SetAllButtonVisible"#Result-MissionReward",TRUE
+	duio_SetAllImageVisible"#Result-MissionReward",TRUE
+	duio_SetAllTextVisible"#Result-MissionReward",TRUE
+
 	return

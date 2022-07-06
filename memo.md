@@ -83,3 +83,13 @@ https://icons8.com/icon/EHyUO6ZGSRkX/lock
 https://icons8.com/icon/17333/diamond
 
 https://icons8.com/icon/kLORTzuNOM2d/wrapped-gift
+
+[Star Avenue](https://www.1001freefonts.com/star-avenue.font) - [Dirt2](https://www.1001freefonts.com/designer-dirt2-fontlisting.php)
+
+[Earth Orbiter](https://www.1001freefonts.com/earth-orbiter.font) - [Iconian Fonts](https://www.1001freefonts.com/designer-iconian-fonts-fontlisting.php)
+
+[Pier Sans](https://befonts.com/pier-sans-font-family.html) - [Hamilton](https://befonts.com/author/hamilton)
+
+[é©â∆êª Rounded M+](http://jikasei.me/font/rounded-mplus/about.html) - [é©â∆êªÉtÉHÉìÉgçHñ[](http://jikasei.me/) , [M+ OUTLINE FONTS](http://mplus-fonts.osdn.jp/)
+
+https://booth.pm/ja/items/935237

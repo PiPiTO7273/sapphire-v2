@@ -1,0 +1,213 @@
+
+*scene_Config_Init
+
+	duio_InitAllCount"#Config"
+
+	dim DecideTime
+	dim proxyIP_hInput
+	dim proxyPort_hInput
+	DecideTime=-1
+
+	duio_ChangeTextBody duio_TextID2UIsetID("config_current_proxyip"),csconf_proxyIP
+	duio_ChangeTextBody duio_TextID2UIsetID("config_current_proxyport"),csconf_proxyPort
+
+	gosub*scene_Config_UpdateButtons
+
+	if duio_GetImageOutroFlag(duio_ImageID2UIsetID("shutter_00"))!TRUE :duio_PlaySound"shutter_out"
+	duio_SetAllImageOutro"#Shutter"
+
+	return
+
+*scene_Config
+
+	DrawCommonBackground FrameCount
+	SetDrawBlendMode DX_BLENDMODE_PMA_ALPHA,256
+	DrawGraph 0,0,hdximg(icommon_bglayer),TRUE
+
+	duio_Draw"#Config"
+
+	if CheckKeyInput(proxyIP_hInput)==0 {
+		//文字列を取得
+			cfunc64v GetKeyInputString,varptr64(csconf_proxyIP),proxyIP_hInput
+			csconf_proxyIP=cnvatos(csconf_proxyIP)
+
+		//IMEのUIを設定
+			SetKeyInputStringColor2 DX_KEYINPSTRCOLOR_NORMAL_STR,$000000
+			SetKeyInputStringFont duio_GetFontHandle("ps20")
+
+		//入力中の文字列を描画
+			SetDrawBlendMode DX_BLENDMODE_ALPHA,256
+			DrawKeyInputString 630,806,proxyIP_hInput
+
+		//改行コードを検出（ENTER）
+			if checkLF(csconf_proxyIP) {
+				delLF csconf_proxyIP
+				DeleteKeyInput proxyIP_hInput
+
+				duio_ChangeTextBody duio_TextID2UIsetID("config_current_proxyip"),csconf_proxyIP
+			}
+
+		//カーソル点滅
+			if SceneCount/8\2==0 :SetKeyInputStringColor2 DX_KEYINPSTRCOLOR_NORMAL_CURSOR,$000000:else:SetKeyInputStringColor2 DX_KEYINPSTRCOLOR_NORMAL_CURSOR,$FFFFFF
+	} else {
+		//入力終了
+		if CheckKeyInput(proxyIP_hInput)!-1 {
+			DeleteKeyInput proxyIP_hInput
+
+			duio_ChangeTextBody duio_TextID2UIsetID("config_current_proxyip"),csconf_proxyIP
+		}
+	}
+	if CheckKeyInput(proxyPort_hInput)==0 {
+		//文字列を取得
+			cfunc64v GetKeyInputString,varptr64(csconf_proxyPort),proxyPort_hInput
+			csconf_proxyPort=cnvatos(csconf_proxyPort)
+
+		//IMEのUIを設定
+		SetKeyInputStringColor2 DX_KEYINPSTRCOLOR_NORMAL_STR,$000000
+			SetKeyInputStringFont duio_GetFontHandle("ps20")
+
+		//入力中の文字列を描画
+			SetDrawBlendMode DX_BLENDMODE_ALPHA,256
+			DrawKeyInputString 946,806,proxyPort_hInput
+
+		//改行コードを検出（ENTER）
+			if checkLF(csconf_proxyPort) {
+				delLF csconf_proxyPort
+				DeleteKeyInput proxyPort_hInput
+
+				duio_ChangeTextBody duio_TextID2UIsetID("config_current_proxyport"),csconf_proxyPort
+			}
+
+		//カーソル点滅
+			if SceneCount/8\2==0 :SetKeyInputStringColor2 DX_KEYINPSTRCOLOR_NORMAL_CURSOR,$000000:else:SetKeyInputStringColor2 DX_KEYINPSTRCOLOR_NORMAL_CURSOR,$FFFFFF
+	} else {
+		//入力終了
+		if CheckKeyInput(proxyPort_hInput)!-1 {
+			DeleteKeyInput proxyPort_hInput
+
+			duio_ChangeTextBody duio_TextID2UIsetID("config_current_proxyport"),csconf_proxyPort
+		}
+	}
+
+	duio_Draw"#Shutter"
+
+	if DecideTime!-1 :DecideTime+FrameTime
+	if DecideTime>1000 {
+		switch DecideJumpScene
+			case"from:title"
+				curSceneTag="#Title"
+				gosub*scene_Title_Init
+			swbreak
+			case"from:lobby"
+				gosub*scene_Lobby_Init
+				curSceneTag="#Lobby"
+			swbreak
+		swend
+	}
+
+	if duio_GetButtonEventStack()!"" :gosub*scene_Config_eventstack
+
+	return
+
+*scene_Config_eventstack
+
+	switch duio_GetButtonEventStack()
+		case"proxyip"
+			if CheckKeyInput(proxyPort_hInput)==0 {
+				DeleteKeyInput proxyPort_hInput
+				duio_ChangeTextBody duio_TextID2UIsetID("config_current_proxyport"),csconf_proxyPort
+				gosub*SaveClientData
+			}
+			if CheckKeyInput(proxyIP_hInput)==0 {
+				DeleteKeyInput proxyIP_hInput
+				duio_ChangeTextBody duio_TextID2UIsetID("config_current_proxyip"),csconf_proxyIP
+				gosub*SaveClientData
+			} else {
+				proxyIP_hInput=MakeKeyInput(32,TRUE,TRUE,FALSE)
+				SetActiveKeyInput proxyIP_hInput
+				SetKeyInputString csconf_proxyIP,proxyIP_hInput
+				duio_ChangeTextBody duio_TextID2UIsetID("config_current_proxyip"),""
+			}
+		swbreak
+		case"proxyport"
+			if CheckKeyInput(proxyIP_hInput)==0 {
+				DeleteKeyInput proxyIP_hInput
+				duio_ChangeTextBody duio_TextID2UIsetID("config_current_proxyip"),csconf_proxyIP
+				gosub*SaveClientData
+			}
+			if CheckKeyInput(proxyPort_hInput)==0 {
+				DeleteKeyInput proxyPort_hInput
+				duio_ChangeTextBody duio_TextID2UIsetID("config_current_proxyport"),csconf_proxyPort
+				gosub*SaveClientData
+			} else {
+				proxyPort_hInput=MakeKeyInput(8,TRUE,TRUE,TRUE)
+				SetActiveKeyInput proxyPort_hInput
+				SetKeyInputString csconf_proxyPort,proxyPort_hInput
+				duio_ChangeTextBody duio_TextID2UIsetID("config_current_proxyport"),""
+			}
+		swbreak
+		case"backscene"
+			DecideTime=0
+			gosub*onshutter
+		swbreak
+	swend
+
+	repeat 3
+		if duio_GetButtonEventStack()=="screenmode_"+cnt :csconf_ScreenMode=cnt
+	loop
+	repeat 5
+		if duio_GetButtonEventStack()=="screensize_"+cnt :csconf_DispResolution=cnt
+	loop
+	repeat 7
+		if duio_GetButtonEventStack()=="subthread_"+cnt :csconf_SubThreadLimit=cnt
+	loop
+	repeat 4
+		if duio_GetButtonEventStack()=="texture_"+cnt :csconf_TextureLevel=cnt
+	loop
+	repeat 2
+		if duio_GetButtonEventStack()=="antialias_"+cnt :csconf_Antialias=cnt
+	loop
+
+	gosub*scene_Config_UpdateButtons
+
+	return
+
+*scene_Config_UpdateButtons
+	repeat 3
+		if csconf_ScreenMode==cnt {
+			duio_SetButtonAlpha duio_ButtonID2UIsetID("config_button_screenmode_"+cnt),255
+		} else {
+			duio_SetButtonAlpha duio_ButtonID2UIsetID("config_button_screenmode_"+cnt),100
+		}
+	loop
+	repeat 5
+		if csconf_DispResolution==cnt {
+			duio_SetButtonAlpha duio_ButtonID2UIsetID("config_button_screensize_"+cnt),255
+		} else {
+			duio_SetButtonAlpha duio_ButtonID2UIsetID("config_button_screensize_"+cnt),100
+		}
+	loop
+	repeat 7
+		if csconf_SubThreadLimit==cnt {
+			duio_SetButtonAlpha duio_ButtonID2UIsetID("config_button_subthread_"+cnt),255
+		} else {
+			duio_SetButtonAlpha duio_ButtonID2UIsetID("config_button_subthread_"+cnt),100
+		}
+	loop
+	repeat 4
+		if csconf_TextureLevel==cnt {
+			duio_SetButtonAlpha duio_ButtonID2UIsetID("config_button_texture_"+cnt),255
+		} else {
+			duio_SetButtonAlpha duio_ButtonID2UIsetID("config_button_texture_"+cnt),100
+		}
+	loop
+	repeat 2
+		if csconf_Antialias==cnt {
+			duio_SetButtonAlpha duio_ButtonID2UIsetID("config_button_antialias_"+cnt),255
+		} else {
+			duio_SetButtonAlpha duio_ButtonID2UIsetID("config_button_antialias_"+cnt),100
+		}
+	loop
+
+	gosub*SaveClientData
+	return

@@ -101,6 +101,7 @@ goto*Startup
 		dupptr csconf_proxyIP,varptr64(ClientSaveData)+308,64,vartype("str")
 		dupptr csconf_proxyPort,varptr64(ClientSaveData)+372,64,vartype("str")
 
+		dim hdximg,iBuffer_Max
 		gosub*ApplyClientConfig
 
 		logmes GetTimeStamp()+" Loading system settings..."
@@ -197,7 +198,6 @@ goto*Startup
 	//âÊëúì«Ç›çûÇ›
 		SetDXArchiveExtension"bin"
 		dim hcommonLayer:hcommonLayer=MakeScreen(BufWidth,BufHeight,TRUE)
-		dim hdximg
 		hdximg(ibg_common)=LoadGraph("contents/video/background.ogv")
 
 		hdximg(itmplayer)=MakeScreen(BufWidth,BufHeight,TRUE)

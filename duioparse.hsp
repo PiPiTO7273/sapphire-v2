@@ -964,7 +964,7 @@
 								setease 0,UIset_Image_Alpha(i),UIset_Image_EaseIn_Fade_EaseFunc(i)
 							}
 							if UIset_Image_count(i)*(1000/int(CurDUIObasedFPS))>=UIset_Image_EaseIn_Fade_Delay(i) {
-								SetDrawBlendMode DX_BLENDMODE_PMA_ALPHA,getease(UIset_Image_count(i)*(1000/int(CurDUIObasedFPS))-UIset_Image_EaseIn_Fade_Delay(i),UIset_Image_EaseIn_Fade_Length(i))
+								SetDrawBlendMode DX_BLENDMODE_PMA_ALPHA,getease(limit(UIset_Image_count(i)*(1000/int(CurDUIObasedFPS))-UIset_Image_EaseIn_Fade_Delay(i),0),UIset_Image_EaseIn_Fade_Length(i))
 							} else {
 								SetDrawBlendMode DX_BLENDMODE_PMA_ALPHA,0
 							}
@@ -1037,7 +1037,7 @@
 							} else {
 								setease 0,UIset_Button_Alpha(i),UIset_Button_EaseIn_Fade_EaseFunc(i)
 							}
-							SetDrawBlendMode DX_BLENDMODE_PMA_ALPHA,getease(UIset_Button_count(i)*(1000/int(CurDUIObasedFPS))-UIset_Button_EaseIn_Fade_Delay(i),UIset_Button_EaseIn_Fade_Length(i))
+							SetDrawBlendMode DX_BLENDMODE_PMA_ALPHA,getease(limit(UIset_Button_count(i)*(1000/int(CurDUIObasedFPS))-UIset_Button_EaseIn_Fade_Delay(i),0),UIset_Button_EaseIn_Fade_Length(i))
 						}
 						if UIset_Button_In_Mode(i)&UI_EASEIN_MOVE {
 							if UIset_Button_Outroflag(i) {
@@ -1083,7 +1083,7 @@
 							} else {
 								setease 0,UIset_Text_Alpha(i),UIset_Text_EaseIn_Fade_EaseFunc(i)
 							}
-							SetDrawBlendMode DX_BLENDMODE_ALPHA,getease(UIset_Text_count(i)*(1000/int(CurDUIObasedFPS))-UIset_Text_EaseIn_Fade_Delay(i),UIset_Text_EaseIn_Fade_Length(i))
+							SetDrawBlendMode DX_BLENDMODE_ALPHA,getease(limit(UIset_Text_count(i)*(1000/int(CurDUIObasedFPS))-UIset_Text_EaseIn_Fade_Delay(i),0),UIset_Text_EaseIn_Fade_Length(i))
 						}
 						if UIset_Text_In_Mode(i)&UI_EASEIN_MOVE {
 							if UIset_Text_Outroflag(i) {

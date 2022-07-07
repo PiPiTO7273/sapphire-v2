@@ -190,6 +190,8 @@
 
 #enum icommon_connecting
 
+#enum iBuffer_Max
+
 #const MAPITEM_TYPE_GROUP		0
 #const MAPITEM_TYPE_SINGLE		1
 

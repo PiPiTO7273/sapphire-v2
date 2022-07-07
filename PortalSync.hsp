@@ -88,6 +88,10 @@
 	gosub*DrawConnectingStatus@
 	return WebAPI_Get("http://"+duio_idsGet("Server")+"/apiv2/API-RegisterUser.php?key="+duio_idsGet("_keymac_APIkey_RegisterUser")+"&id="+_id+"&pass="+_password+"&passconf="+_password)
 
+#defcfunc PortalWebSvc_CheckConnection
+	if WebAPI_Get("http://"+duio_idsGet("Server")+"/apiv2/connection.php")==duio_idsGet("ACCKEY") :return TRUE
+	return FALSE
+
 #global
 
 *syncAllSavedata

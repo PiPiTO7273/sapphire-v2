@@ -344,6 +344,10 @@
 		case 4:DispWidth=1920:DispHeight=1080:swbreak
 	swend
 
+	gosub*__ApplyClientConfig
+	return
+
+*__ApplyClientConfig
 	dim SubThreadLimit
 	switch csconf_SubThreadLimit
 		case 0:SubThreadLimit=1000:swbreak
@@ -365,4 +369,16 @@
 	if csconf_proxyIP!"" {
 		if csconf_proxyPort=="" :setProxy csconf_proxyIP,"":else:setProxy csconf_proxyIP+":"+csconf_proxyPort,""
 	}
+
+	DeleteGraph hdximg(igameplay_lane)
+	DeleteGraph hdximg(igameplay_sidelane_l)
+	DeleteGraph hdximg(igameplay_sidelane_r)
+	DeleteGraph hdximg(igameplay_note_hold_long)
+	DeleteGraph hdximg(igameplay_copybuf)
+	hdximg(igameplay_lane)=MakeScreen(512/TexLv,2048/TexLv,TRUE)
+	hdximg(igameplay_sidelane_l)=MakeScreen(128/TexLv,2048/TexLv,TRUE)
+	hdximg(igameplay_sidelane_r)=MakeScreen(128/TexLv,2048/TexLv,TRUE)
+	hdximg(igameplay_note_hold_long)=MakeScreen(128/TexLv,2048/TexLv,TRUE)
+	hdximg(igameplay_copybuf)=MakeScreen((128+512+128)/TexLv,2048/TexLv,TRUE)
+
 	return

@@ -32,6 +32,18 @@
 	duio_ChangeTextBody duio_TextID2UIsetID("signin_inputbox_id_text"),PlayerID
 	duio_ChangeTextBody duio_TextID2UIsetID("signin_inputbox_password_text"),tohidden(PlayerPassword)
 
+	if PortalWebSvc_CheckConnection() {
+		duio_ChangeTextBody duio_TextID2UIsetID("title_text_0"),"画面をクリックしてスタート"
+		duio_SetTextColor duio_TextID2UIsetID("title_text_0"),$FFFFFF
+		duio_SetButtonEnable duio_ButtonID2UIsetID("title_decide_0"),TRUE
+		duio_SetButtonEnable duio_ButtonID2UIsetID("title_decide_1"),TRUE
+	} else {
+		duio_ChangeTextBody duio_TextID2UIsetID("title_text_0"),"ネットワーク接続エラー:サーバーと接続できません。プロキシサーバーの設定は下部の「システム設定を開く」から開くことができます。"
+		duio_SetTextColor duio_TextID2UIsetID("title_text_0"),$FF0077
+		duio_SetButtonEnable duio_ButtonID2UIsetID("title_decide_0"),FALSE
+		duio_SetButtonEnable duio_ButtonID2UIsetID("title_decide_1"),FALSE
+	}
+
 	return
 
 *scene_Title

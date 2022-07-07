@@ -169,7 +169,6 @@ return httpres
 	header+="Content-type: application/x-www-form-urlencoded\n\n"
 	sdim rhead,1024
 	sdim httpres, 1024*1024
-	setProxy httpproxy@,""		//プロキシのアドレス:ポート , bypass
 	setHeader header,""
 	if openHttp("puoro.sapphire/*",geturl_server(_url),80)==0 {
 		if httpRequest(geturl_withoutserver(_url),dpost,0)==0 {
@@ -185,7 +184,6 @@ return httpres
 	header+="Connection: close\n"
 	sdim rhead,1024
 	sdim httpres,1024*1024
-	setProxy httpproxy@,""		//プロキシのアドレス:ポート , bypass
 	setHeader header,""
 	if openHttp("puoro.sapphire/*",geturl_server(_url),80)==0 {
 		if httpRequest(geturl_withoutserver(_url),dpost,0)==0 {
@@ -211,7 +209,6 @@ return len
 	header+="Content-type: application/x-www-form-urlencoded\n\n"
 	sdim rhead,1024
 	sdim httpres, 1024*1024
-	setProxy httpproxy@,""		//プロキシのアドレス:ポート , bypass
 	setHeader header,""
 	if openHttp("puoro.sapphire/*",geturl_server(_url),80)==0 {
 		if httpRequest(geturl_withoutserver(_url),dpost,1)==0 {

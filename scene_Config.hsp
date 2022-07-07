@@ -93,6 +93,7 @@
 
 	if DecideTime!-1 :DecideTime+FrameTime
 	if DecideTime>1000 {
+		gosub*__ApplyClientConfig
 		switch DecideJumpScene
 			case"from:title"
 				curSceneTag="#Title"

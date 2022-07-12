@@ -202,9 +202,6 @@
 	//”wŒi“®‰æ
 	if GetMovieStateToGraph(hdximg(ibg_common))==0 :PlayMovieToGraph hdximg(ibg_common),DX_PLAYTYPE_LOOP
 
-	curselect_item=limit(curselect_item,0,length(curselect_item))
-	curselect_lv=limit(curselect_item,0,length2(curselect_lv))
-
 	return
 
 *scene_MusicSelect

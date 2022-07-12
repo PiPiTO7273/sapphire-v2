@@ -5,6 +5,7 @@
 
 	dim SceneCount
 	dim DecideTime
+	sdim DecideJumpScene
 	dim ChangeName_hInput
 	dim ChangeComment_hInput
 	DecideTime=-1
@@ -108,6 +109,7 @@
 
 	duio_Draw"#Profile"
 	duio_Draw"#Common-Profile"
+	duio_Draw"#Profile-DeleteAccount"
 
 	if CheckKeyInput(ChangeName_hInput)==0 {
 		//文字列を取得
@@ -204,12 +206,20 @@
 		}
 	loop
 
+	duio_Draw"#Shutter"
+
 	if DecideTime!-1 :DecideTime+FrameTime
-	if DecideTime>300 { 
+	if DecideTime>300&DecideJumpScene=="lobby" { 
 		ClearMapItem
 		gosub*scene_Lobby_Init
 		curSceneTag="#Lobby"
 		return
+	}
+	if DecideTime>1000&DecideJumpScene=="title" {
+		PlayerID="":PlayerPassword=""
+		gosub*SaveClientData
+		curSceneTag="#Title"
+		gosub*scene_Title_Init
 	}
 	if duio_GetButtonEventStack()!"" :gosub*scene_Profile_eventstack
 
@@ -221,6 +231,7 @@
 
 		case"backscene"
 			DecideTime=0
+			DecideJumpScene="lobby"
 			duio_SetAllButtonOutro"#Profile"
 			duio_SetAllImageOutro"#Profile"
 			duio_SetAllTextOutro"#Profile"
@@ -260,6 +271,40 @@
 				SetKeyInputString pfreg_Badge,ChangeComment_hInput
 				duio_ChangeTextBody duio_TextID2UIsetID("profile_account_comment"),""
 			}
+		swbreak
+
+		case"profile_deleteaccount"
+			duio_InitAllCount"#Profile-DeleteAccount"
+			duio_SetActiveScene"#Profile",FALSE
+			duio_SetActiveScene"#Profile-DeleteAccount",TRUE
+			duio_SetAllButtonVisible"#Profile-DeleteAccount",TRUE
+			duio_SetAllImageVisible"#Profile-DeleteAccount",TRUE
+			duio_SetAllTextVisible"#Profile-DeleteAccount",TRUE
+		swbreak
+
+		case"deleteaccount_ok"
+			duio_SetActiveScene"#Profile",TRUE
+			duio_SetActiveScene"#Profile-DeleteAccount",FALSE
+			duio_SetAllButtonOutro"#Profile-DeleteAccount"
+			duio_SetAllImageOutro"#Profile-DeleteAccount"
+			duio_SetAllTextOutro"#Profile-DeleteAccount"
+
+			PortalWebSvc_DeleteAccount PlayerID
+
+			//アカウント削除
+			DecideTime=0
+			DecideJumpScene="title"
+			duio_SetAllButtonOutro"#Profile"
+			duio_SetAllImageOutro"#Profile"
+			duio_SetAllTextOutro"#Profile"
+			gosub*onshutter
+		swbreak
+		case"deleteaccount_cancel"
+			duio_SetActiveScene"#Profile",TRUE
+			duio_SetActiveScene"#Profile-DeleteAccount",FALSE
+			duio_SetAllButtonOutro"#Profile-DeleteAccount"
+			duio_SetAllImageOutro"#Profile-DeleteAccount"
+			duio_SetAllTextOutro"#Profile-DeleteAccount"
 		swbreak
 
 		case"game.exit":goto*Exit:swbreak

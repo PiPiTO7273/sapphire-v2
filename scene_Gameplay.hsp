@@ -154,7 +154,7 @@
 			mapconfig_sndmode=1
 		}
 
-		mapconfig_flag=lpeek(tmpmapbuf,4)
+		mapconfig_flag=peek(tmpmapbuf,4)
 		if mapconfig_flag&1 {
 			mapconfig_sidenoteflag=TRUE
 		}
@@ -253,6 +253,7 @@
 					sndDB_regnum=wpeek(tmpmapbuf,binpos+5)
 					if sndDB_regnum>=length(sndDB_hchannel) {
 						logmes GetTimeStamp()+" [Warning] Failed to load event (ID="+sndDB_regnum+")"
+						sndPlayEvent_hchannel(sndPlayEvent_max)=0
 					} else {
 						sndPlayEvent_hchannel(sndPlayEvent_max)=sndDB_hchannel(sndDB_regnum)
 					}
@@ -378,6 +379,7 @@
 				objplacement_map=0,1,2,3,4,5
 			swbreak
 			case PLAYOPT_ID_OBJPLACE_RANDOM
+				PlayOptionList+"RANDOM"
 				dim objrndretry
 				repeat
 					objplacement_map(i+1)=1+rnd(4)
@@ -401,12 +403,15 @@
 				}
 			swbreak
 			case PLAYOPT_ID_OBJPLACE_MIRROR
+				PlayOptionList+"MIRROR"
 				objplacement_map=5,4,3,2,1,0
 			swbreak
 			case PLAYOPT_ID_OBJPLACE_HALF
+				PlayOptionList+"HALF-HALF"
 				objplacement_map=0,1,2,4,3,5
 			swbreak
 			case PLAYOPT_ID_OBJPLACE_SMIRROR
+				PlayOptionList+"S-MIRROR"
 				objplacement_map=5,1,2,3,4,0
 			swbreak
 		swend
@@ -857,13 +862,13 @@
 	//îwåi
 		SetDrawScreen hdximg(igameplay_bg_sidelr)
 			ClearDrawScreen
-			DrawGraph 0,-1024+(double(SceneCount)*double(FrameTime)*1.0)\1024,customize_bg_himg(pfreg_CustomizeBackground),TRUE
-			DrawGraph 0,-1024+(double(SceneCount)*double(FrameTime)*1.0)\1024+1024,customize_bg_himg(pfreg_CustomizeBackground),TRUE
+			DrawGraph 0,-1024+(double(SceneCount)*double(FrameTime)*1.4)\1024,customize_bg_himg(pfreg_CustomizeBackground),TRUE
+			DrawGraph 0,-1024+(double(SceneCount)*double(FrameTime)*1.4)\1024+1024,customize_bg_himg(pfreg_CustomizeBackground),TRUE
 
 		SetDrawScreen hdximg(igameplay_bg_grid)
 			ClearDrawScreen
-			DrawGraph 0,-1024+(double(SceneCount)*double(FrameTime)*0.3)\1024,hdximg(igameplay_bgorg_grid_0),TRUE
-			DrawGraph 0,-1024+(double(SceneCount)*double(FrameTime)*0.3)\1024+1024,hdximg(igameplay_bgorg_grid_0),TRUE
+			DrawGraph 0,-1024+(double(SceneCount)*double(FrameTime)*0.4)\1024,hdximg(igameplay_bgorg_grid_0),TRUE
+			DrawGraph 0,-1024+(double(SceneCount)*double(FrameTime)*0.4)\1024+1024,hdximg(igameplay_bgorg_grid_0),TRUE
 
 		SetDrawScreen hcommonLayer
 

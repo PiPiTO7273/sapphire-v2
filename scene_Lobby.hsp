@@ -288,6 +288,9 @@
 			DecideJumpScene="tutorial"
 		swbreak
 
+		case"copyright"
+			exec"http://piyastorage.ml/embdoc/sapphirev2/copyright/index.html",16
+		swbreak
 		case"openweb"
 			exec"http://"+duio_idsGet("Server"),16
 		swbreak

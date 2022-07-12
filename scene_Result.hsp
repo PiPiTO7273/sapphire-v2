@@ -437,6 +437,28 @@
 			duio_SetAllTextOutro"#Result-MissionReward"
 		swbreak
 
+		//もう一度
+		case"retry"
+			curSceneTag="#Gameplay"
+			gosub*scene_Gameplay_free
+			gosub*scene_Gameplay_Init
+		swbreak
+
+		//スクショ
+		case"savepicture"
+			sdim savepic_path:savepic_path="sapphire-screenshot-"+strf("%04d%02d%02d%02d%02d%02d",gettime(0),gettime(1),gettime(3),gettime(4),gettime(5),gettime(6))+".png"
+			chdir dir_desktop
+			SetDrawScreen hcommonLayer
+			SaveDrawScreenToPNG 0,0,BufWidth,BufHeight,savepic_path
+			exec savepic_path,16
+			chdir dir_default
+		swbreak
+
+		//Twitterシェア
+		case"twitter"
+			exec"http://twitter.com/share?text="+pfreg_dispname+"さんが楽曲「"+mapdb_title(curselect_item,curselect_lv)+"」の難易度"+difid2difstr(curselect_lv)+"でスコア"+strf("%08d",curScore)+"を獲得しました！%0a%0aあなたもSapphireをプレイしてみませんか？%0a%23sapphire%0a&url=http://puoro.ml",16
+		swbreak
+
 		//ゲーム終了
 		case"game.exit":goto*Exit:swbreak
 

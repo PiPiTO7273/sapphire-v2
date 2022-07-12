@@ -480,7 +480,7 @@
 		#Lobby @image lobby_link graphic/lobby_item_link.png 1370 210 &animation-in=zoom,450,300,0.4,CUBIC_OUT &animation-in=fade,450,250,CUBIC_OUT
 
 		#Lobby @button lobby_link_title graphic/lobby_link_title.png 1400 249+34*0 112+14 24 &animation-in=move,550,250,64,0,CUBIC_OUT &animation-in=fade,550,250,CUBIC_OUT &event=title &pushsound=pushbutton &disable
-		#Lobby @button lobby_link_information graphic/lobby_link_information.png 1400 249+34*1 64+14 24 &animation-in=move,575,250,64,0,CUBIC_OUT &animation-in=fade,575,250,CUBIC_OUT &event=information &pushsound=pushbutton &disable
+		//#Lobby @button lobby_link_information graphic/lobby_link_information.png 1400 249+34*1 64+14 24 &animation-in=move,575,250,64,0,CUBIC_OUT &animation-in=fade,575,250,CUBIC_OUT &event=information &pushsound=pushbutton &disable
 		#Lobby @button lobby_link_systemconfig graphic/lobby_link_systemconfig.png 1400 249+34*2 144+14 24 &animation-in=move,600,250,64,0,CUBIC_OUT &animation-in=fade,600,250,CUBIC_OUT &event=systemconfig &pushsound=pushbutton &disable
 		#Lobby @button lobby_link_openweb graphic/lobby_link_openweb.png 1400 249+34*3 183+14 24 &animation-in=move,625,250,64,0,CUBIC_OUT &animation-in=fade,625,250,CUBIC_OUT &event=openweb &pushsound=pushbutton
 		#Lobby @button lobby_link_copyright graphic/lobby_link_copyright.png 1400 249+34*4 208+14 24 &animation-in=move,650,250,64,0,CUBIC_OUT &animation-in=fade,650,250,CUBIC_OUT &event=copyright &pushsound=pushbutton &disable
@@ -633,6 +633,8 @@
 		#Portal-Signin @text signin_inputbox_id_text * 736 502 ps20 &color=0,0,0 &layerlv=1 &animation-in=fade,0,1,LINEAR
 		#Portal-Signin @text signin_inputbox_password_text * 736 564 ps20 &color=0,0,0 &layerlv=1 &animation-in=fade,0,1,LINEAR
 
+		#Portal-Signin @button signin_button_exit graphic/common_button_exit.png 0 1020 240 60 &animation-in=fade,100,300,CUBIC_OUT &animation-in=move,100,300,-128,0,CUBIC_OUT &pushsound=pushbutton &event=game.exit
+
 		#Portal-Signin-Failed @image signin_failed_dialog graphic/signin_dialog.png 720-10 450-10 &animation-in=zoom,0,300,0.6,CUBIC_OUT &animation-in=fade,0,250,CUBIC_OUT &hide
 		#Portal-Signin-Failed @text signin_failed_text サインインに失敗しました。\n\nIDとパスワードをもう一度確認してください。 800 490 rom1cm16 &align-center-size=320 &animation-in=fade,150,150,CUBIC_OUT &animation-in=move,150,200,0,16,CUBIC_OUT &hide &color=0,0,0
 		#Portal-Signin-Failed @button signin_failed_ok graphic/signin_dialog_ok.png 885 560 150 40 &animation-in=zoom,150,250,0.7,CUBIC_OUT &animation-in=fade,150,250,CUBIC_OUT &event=signin_failed_ok &hide &pushsound=cancel
@@ -693,6 +695,10 @@
 
 		#Profile @text profile_bg_curset * 880 470 rom1cm24 &color=255,255,255 &animation-in=fade,400,300,LINEAR
 		#Profile @text profile_bg_changeset * 1136 470 rom1cm24 &color=255,255,255 &animation-in=fade,400,300,LINEAR
+
+		#Profile-DeleteAccount @image profile_dialog_deleteaccount graphic/profile_dialog_deleteaccount.png 0 302 &animation-in=zoom,0,250,1.2,CUBIC_OUT &animation-in=fade,0,200,CUBIC_OUT &hide
+		#Profile-DeleteAccount @button profile_button_deleteaccount_ok graphic/profile_button_deleteaccount_ok.png 970 600 180 50 &animation-in=zoom,400,250,0,CUBIC_OUT &animation-in=fade,400,200,CUBIC_OUT &event=deleteaccount_ok &pushsound=decide &hide
+		#Profile-DeleteAccount @button profile_button_deleteaccount_cancel graphic/store_button_cancel.png 770 600 180 50 &animation-in=zoom,370,250,0,CUBIC_OUT &animation-in=fade,370,200,CUBIC_OUT &event=deleteaccount_cancel &pushsound=cancel &hide
 
 //----- System Config -----//
 	////// base //////

@@ -92,6 +92,9 @@
 	if WebAPI_Get("http://"+duio_idsGet("Server")+"/apiv2/connection.php")==duio_idsGet("ACCKEY") :return TRUE
 	return FALSE
 
+#deffunc PortalWebSvc_DeleteAccount str _name
+	return WebAPI_Get("http://"+duio_idsGet("Server")+"/apiv2/API-DeleteAccount.php?key="+duio_idsGet("_keymac_APIkey_DeleteAccount")+"&name="+_name)
+
 #global
 
 *syncAllSavedata

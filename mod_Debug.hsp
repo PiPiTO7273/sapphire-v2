@@ -1,7 +1,7 @@
 
-;#undef logmes
+#undef logmes
 #module
-/*#deffunc logmes str p1
+#deffunc logmes str p1
 	#ifdef _debug
 	if (hStd==0) {
 		AllocConsole
@@ -13,7 +13,7 @@
 	#endif
 	if vartype(__globallog)==4 :sdim __globallog
 	__globallog+s
-	return*/
+	return
 
 #defcfunc GetTimeStamp
 	return strf("[%04d/%02d/%02d %02d:%02d:%02d.%03d]",gettime(0),gettime(1),gettime(3),gettime(4),gettime(5),gettime(6),gettime(7))

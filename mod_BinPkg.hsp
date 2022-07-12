@@ -56,7 +56,7 @@
 
 		dim ResIndexID:ResIndexID=-1
 		repeat pkgIndexMax
-			if pkgFileName(cnt)==_pkgfilename {
+			if getpath(pkgFileName(cnt),16)==getpath(_pkgfilename,16) {
 				ResIndexID=cnt
 				break
 			}

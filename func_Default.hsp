@@ -275,4 +275,37 @@
 		loop
 		return tmp
 
+	#deffunc CreateDefaultSaveData
+
+		sdim savedata_stringdata
+		savedata_stringdata="contents/scene.dat",""
+
+		sdim savedataBuf,512
+		poke savedataBuf,0,'s'
+		poke savedataBuf,1,'2'
+		poke savedataBuf,2,'s'
+		poke savedataBuf,3,'*'
+		lpoke savedataBuf,4,1920
+		lpoke savedataBuf,8,1080
+		lpoke savedataBuf,12,1920
+		lpoke savedataBuf,16,1080
+		memcpy savedataBuf,savedata_stringdata(0),64,32,0
+		memcpy savedataBuf,savedata_stringdata(1),64,96,0
+		memcpy savedataBuf,savedata_stringdata(1),64,160,0
+		memcpy savedataBuf,savedata_stringdata(1),64,224,0
+		lpoke savedataBuf,288,1
+		lpoke savedataBuf,292,4
+		lpoke savedataBuf,300,1
+		lpoke savedataBuf,304,1
+
+		randomize 8881109
+
+		repeat 512
+			poke savedataBuf,cnt,peek(savedataBuf,cnt)^rnd(256)
+		loop
+
+		bsave"contents/savedata.bin",savedataBuf
+
+		return
+
 #global

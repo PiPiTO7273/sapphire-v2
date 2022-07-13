@@ -62,8 +62,7 @@ goto*Startup
 		logmes GetTimeStamp()+" Loading savedata \""+"contents/savedata.bin"+"\""
 		exist"contents/savedata.bin"
 		if strsize==-1 {
-			OpenErrorDialog"S2S0000"
-			end
+			CreateDefaultSaveData
 		}
 		sdim ClientSaveData,strsize
 		bload"contents/savedata.bin",ClientSaveData

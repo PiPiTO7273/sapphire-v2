@@ -59,8 +59,10 @@
 	return __MakeScreen(_x,_y,_flag)
 
 #deffunc ExportDebugLog
+	#ifdef _debug
 	notesel __globallog
 	notesave"contents/duio-log.txt"
+	#endif
 	return
 
 #global

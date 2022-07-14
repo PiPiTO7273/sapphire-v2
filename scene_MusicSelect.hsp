@@ -202,6 +202,8 @@
 	//”wŒi“®‰æ
 	if GetMovieStateToGraph(hdximg(ibg_common))==0 :PlayMovieToGraph hdximg(ibg_common),DX_PLAYTYPE_LOOP
 
+	duio_PlaySound"voice_anyselect"
+
 	return
 
 *scene_MusicSelect
@@ -898,6 +900,8 @@
 	duio_ChangeTextBody duio_TextID2UIsetID("musicdecide_totalnotes"),str(mapdb_totalnotes(curselect_item,curselect_lv))
 
 	duio_ChangeImage duio_ImageID2UIsetID("musicdecide_level_img"),hdximg(imusicselect_item_normal+curselect_lv)
+
+	duio_PlaySound"voice_start_"+rnd(3)
 
 	return
 

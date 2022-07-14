@@ -139,6 +139,7 @@
 			dim mapconfig_compefftime
 			dim mapconfig_hcompeff
 			dim mapconfig_compeff_shutterflag
+			dim mapconfig_retryflag
 			mapconfig_finishtime=-1
 			mapconfig_compefftime=-1
 
@@ -446,7 +447,7 @@
 			logmes GetTimeStamp()+" [Warning] Failed to load audio channel (\""+bgaudio_path+"\",Code="+BASS_ErrorGetCode()+")"
 		}
 
-		BASS_ChannelSetAttribute bgaudio_hchannel,BASS_ATTRIB_VOL,d2f(double(volume_BGM)/100.0)
+		BASS_ChannelSetAttribute bgaudio_hchannel,BASS_ATTRIB_VOL,d2f(double(volume_BGM)/100.0*0.7)
 
 	//ノーツ画像素材
 		SetDrawScreen hdximg(igameplay_note_hold_long)
@@ -1061,11 +1062,13 @@
 				mapconfig_finishflag=TRUE:duio_SetActiveScene"#Gameplay",FALSE
 				gosub*onshutter
 				mapconfig_finishtime=2000:mapconfig_compeff_shutterflag=TRUE
+				mapconfig_retryflag=TRUE
 			}
 			if pfreg_GaugeType==PLAYOPT_ID_GAUGE_AR_ALLEX&(curJudge(JUDGEID_EARLY)!0|curJudge(JUDGEID_LATE)!0) {	//ALLEXチャレンジ
 				mapconfig_finishflag=TRUE:duio_SetActiveScene"#Gameplay",FALSE
 				gosub*onshutter
 				mapconfig_finishtime=2000:mapconfig_compeff_shutterflag=TRUE
+				mapconfig_retryflag=TRUE
 			}
 		}
 
@@ -1091,14 +1094,23 @@
 		//リソース解放
 		gosub*scene_Gameplay_free
 
-		if AutoPlayFlag {
-			gosub*syncIR
-			gosub*scene_MusicSelect_Init
-			curSceneTag="#MusicSelect"
+		if mapconfig_retryflag {
+			duio_SetAllImageOutro"#Shutter"
+			duio_PlaySound"shutter_out"
+			repeat int(1000.0/double(duio_GetFPS()))
+				gosub*scene_Gameplay_UpdateLoadScreen
+			loop
+			gosub*scene_Gameplay_Init
 		} else {
-			//リザルト画面に移動
-			gosub*scene_Result_Init
-			curSceneTag="#Result"
+			if AutoPlayFlag {
+				gosub*syncIR
+				gosub*scene_MusicSelect_Init
+				curSceneTag="#MusicSelect"
+			} else {
+				//リザルト画面に移動
+				gosub*scene_Result_Init
+				curSceneTag="#Result"
+			}
 		}
 		return
 	}
@@ -1161,6 +1173,18 @@
 					cfunc64v BASS_ChannelSetAttribute,sndDB_hchannel(objhSndDB(cnt)),BASS_ATTRIB_VOL,d2f((double(volume_PLAY)/100.0)*objVolume(cnt))
 					cfunc64v BASS_ChannelSetPosition,sndDB_hchannel(objhSndDB(cnt)),0,0,0
 					cfunc64v BASS_ChannelPlay,sndDB_hchannel(objhSndDB(cnt))
+				} else {
+					if mapconfig_sndmode==0 {
+						if objChannel(cnt)==0|objChannel(cnt)==5 {
+							cfunc64v BASS_ChannelSetAttribute,duio_GetHandle("keysnd_s"+objChannel(cnt)),BASS_ATTRIB_VOL,d2f((double(volume_PLAY)/100.0))
+							cfunc64v BASS_ChannelSetPosition,duio_GetHandle("keysnd_s"+objChannel(cnt)),0,0,0
+							cfunc64v BASS_ChannelPlay,duio_GetHandle("keysnd_s"+objChannel(cnt))
+						} else {
+							cfunc64v BASS_ChannelSetAttribute,duio_GetHandle("keysnd_"+objChannel(cnt)),BASS_ATTRIB_VOL,d2f((double(volume_PLAY)/100.0))
+							cfunc64v BASS_ChannelSetPosition,duio_GetHandle("keysnd_"+objChannel(cnt)),0,0,0
+							cfunc64v BASS_ChannelPlay,duio_GetHandle("keysnd_"+objChannel(cnt))
+						}
+					}
 				}
 			}
 		loop
@@ -1224,6 +1248,18 @@
 							cfunc64v BASS_ChannelSetAttribute,sndDB_hchannel(objhSndDB(KeyAssignID(ProgLaneID))),BASS_ATTRIB_VOL,d2f((double(volume_PLAY)/100.0)*objVolume(KeyAssignID(ProgLaneID)))
 							cfunc64v BASS_ChannelSetPosition,sndDB_hchannel(objhSndDB(KeyAssignID(ProgLaneID))),0,0,0
 							cfunc64v BASS_ChannelPlay,sndDB_hchannel(objhSndDB(KeyAssignID(ProgLaneID)))
+						} else {
+							if mapconfig_sndmode==0 {
+								if (ProgLaneID==0|ProgLaneID==5)&NearNoteGap(ProgLaneID)<=jWid_Good {
+									cfunc64v BASS_ChannelSetAttribute,duio_GetHandle("keysnd_s"+ProgLaneID),BASS_ATTRIB_VOL,d2f((double(volume_PLAY)/100.0))
+									cfunc64v BASS_ChannelSetPosition,duio_GetHandle("keysnd_s"+ProgLaneID),0,0,0
+									cfunc64v BASS_ChannelPlay,duio_GetHandle("keysnd_s"+ProgLaneID)
+								} else {
+									cfunc64v BASS_ChannelSetAttribute,duio_GetHandle("keysnd_"+ProgLaneID),BASS_ATTRIB_VOL,d2f((double(volume_PLAY)/100.0))
+									cfunc64v BASS_ChannelSetPosition,duio_GetHandle("keysnd_"+ProgLaneID),0,0,0
+									cfunc64v BASS_ChannelPlay,duio_GetHandle("keysnd_"+ProgLaneID)
+								}
+							}
 						}
 					}
 					if NearNoteID(ProgLaneID)!-1 {
@@ -1314,6 +1350,8 @@
 
 	SetDrawBlendMode DX_BLENDMODE_PMA_ALPHA,256
 	DrawExtendGraph 0,0,DispWidth,DispHeight,hcommonLayer,TRUE
+
+	duio_Draw"#Shutter"
 
 	FrameCount++
 

@@ -18,6 +18,9 @@
 #include"mod_strmidfix.hsp"	//strmid命令の高速化
 #include"dirlist2.hsp"		//hspextのdirlist2を再現
 
+#uselib "user32.dll"
+#func EnumDisplaySettings "EnumDisplaySettingsA" sptr,sptr,sptr
+
 goto*Startup
 
 #include"mod_Debug.hsp"				//デバッグ関連
@@ -381,6 +384,17 @@ goto*Startup
 
 		hdximg(iresult_gaugegraph)=MakeScreen(700,100,TRUE)
 
+		hdximg(iresult_rank_ex)=LoadGraph("contents/package/res_scorerank/Result_rank_ex.png")
+		hdximg(iresult_rank_s)=LoadGraph("contents/package/res_scorerank/Result_rank_s.png")
+		hdximg(iresult_rank_aaa)=LoadGraph("contents/package/res_scorerank/Result_rank_aaa.png")
+		hdximg(iresult_rank_aa)=LoadGraph("contents/package/res_scorerank/Result_rank_aa.png")
+		hdximg(iresult_rank_a)=LoadGraph("contents/package/res_scorerank/Result_rank_a.png")
+		hdximg(iresult_rank_b)=LoadGraph("contents/package/res_scorerank/Result_rank_b.png")
+		hdximg(iresult_rank_c)=LoadGraph("contents/package/res_scorerank/Result_rank_c.png")
+		hdximg(iresult_rank_d)=LoadGraph("contents/package/res_scorerank/Result_rank_d.png")
+		hdximg(iresult_rank_e)=LoadGraph("contents/package/res_scorerank/Result_rank_e.png")
+		hdximg(iresult_rank_f)=LoadGraph("contents/package/res_scorerank/Result_rank_f.png")
+
 		hdximg(iprofile_customize_bg_0)=LoadGraph("contents/graphic/profile_customize_bg_0.png")
 		hdximg(iprofile_customize_bg_1)=LoadGraph("contents/graphic/profile_customize_bg_1.png")
 
@@ -664,7 +678,7 @@ goto*Startup
 					mapdb_hpreview_smp(item,lv)=cfunc64i(BASS_SampleLoad,FALSE,"contents/maps/"+mapdb_resource(item,lv)+"/preview.wav",0,0,16,0)
 					if mapdb_hpreview_smp(item,lv)==0 :mapdb_hpreview_smp(item,lv)=cfunc64i(BASS_SampleLoad,FALSE,"contents/maps/"+mapdb_resource(item,lv)+"/preview.ogg",0,0,16,0)
 					mapdb_hpreview(item,lv)=cfunc64i(BASS_SampleGetChannel,mapdb_hpreview_smp(item,lv),0)
-					cfunc64v BASS_ChannelSetAttribute,mapdb_hpreview(item,lv),BASS_ATTRIB_VOL,d2f(0.6)
+					cfunc64v BASS_ChannelSetAttribute,mapdb_hpreview(item,lv),BASS_ATTRIB_VOL,d2f(0.5)
 				}
 			loop
 		loop
@@ -706,6 +720,10 @@ goto*Startup
 
 	//FPS測定初期化
 		duio_Draw""
+
+		dim DEVMODE,156/4
+		cfunc64v EnumDisplaySettings,0,-1,varptr64(DEVMODE)
+		duio_SetFPS DEVMODE(30)
 
 	curSceneTag="#Title"
 	gosub*scene_Title_Init
@@ -749,16 +767,12 @@ goto*Startup
 
 	//Unlimitedモード時間
 		if UnlimitedTime!0 {
-			if curSceneTag=="#Gameplay" {
-				UnlimitedTime_textUIsetID=duio_TextID2UIsetID("gameplay_unlimitedtime")
-			} else {
-				UnlimitedTime_textUIsetID=duio_TextID2UIsetID("common_unlimitedtime")
-			}
-
-			duio_ChangeTextBody UnlimitedTime_textUIsetID,strf("Unlimited Mode - 残り%d分%02d秒",UnlimitedTime/1000/60,UnlimitedTime/1000\60)
+			duio_ChangeTextBody duio_TextID2UIsetID("gameplay_unlimitedtime"),strf("Unlimited Mode - 残り%d分%02d秒",UnlimitedTime/1000/60,UnlimitedTime/1000\60)
+			duio_ChangeTextBody duio_TextID2UIsetID("common_unlimitedtime"),strf("Unlimited Mode - 残り%d分%02d秒",UnlimitedTime/1000/60,UnlimitedTime/1000\60)
 			UnlimitedTime-FrameTime
 			if UnlimitedTime<=0 {
-				duio_ChangeTextBody UnlimitedTime_textUIsetID,""
+				duio_ChangeTextBody duio_TextID2UIsetID("gameplay_unlimitedtime"),""
+				duio_ChangeTextBody duio_TextID2UIsetID("common_unlimitedtime"),""
 				UnlimitedTime=0
 			}
 		}
@@ -775,36 +789,16 @@ goto*Startup
 
 	//シーン別
 		switch curSceneTag
-			case"#Title"
-				gosub*scene_Title
-			swbreak
-			case"#Lobby"
-				gosub*scene_Lobby
-			swbreak
-			case"#MusicSelect"
-				gosub*scene_MusicSelect
-			swbreak
-			case"#Gameplay"
-				gosub*scene_Gameplay
-			swbreak
-			case"#Result"
-				gosub*scene_Result
-			swbreak
-			case"#Store"
-				gosub*scene_Store
-			swbreak
-			case"#Mission"
-				gosub*scene_Mission
-			swbreak
-			case"#Tutorial"
-				gosub*scene_Tutorial
-			swbreak
-			case"#Profile"
-				gosub*scene_Profile
-			swbreak
-			case"#Config"
-				gosub*scene_Config
-			swbreak
+			case"#Title":gosub*scene_Title:swbreak
+			case"#Lobby":gosub*scene_Lobby:swbreak
+			case"#MusicSelect":gosub*scene_MusicSelect:swbreak
+			case"#Gameplay":gosub*scene_Gameplay:swbreak
+			case"#Result":gosub*scene_Result:swbreak
+			case"#Store":gosub*scene_Store:swbreak
+			case"#Mission":gosub*scene_Mission:swbreak
+			case"#Tutorial":gosub*scene_Tutorial:swbreak
+			case"#Profile":gosub*scene_Profile:swbreak
+			case"#Config":gosub*scene_Config:swbreak
 		swend
 
 	//マウスカーソル

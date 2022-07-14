@@ -43,6 +43,8 @@
 	}
 	duio_SetVolume"main",1.0
 
+	duio_PlaySound"voice_lobby"
+
 	return
 
 *scene_Lobby

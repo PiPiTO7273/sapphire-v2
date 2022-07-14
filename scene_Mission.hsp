@@ -34,6 +34,8 @@
 	gosub*scene_Mission_InitItem
 	gosub*InitPlayOption
 
+	duio_PlaySound"voice_anyselect"
+
 	return
 
 *scene_Mission_InitItem
@@ -435,6 +437,9 @@
 
 			//ミッションを設定
 				currentSetMission=int(mission_itemevent)
+
+			//ボイス
+				duio_PlaySound"voice_start_"+rnd(3)
 		}
 	}
 

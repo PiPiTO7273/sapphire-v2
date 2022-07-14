@@ -868,8 +868,7 @@
 
 #deffunc duio_Draw str _scenetag
 
-	;CurDUIObasedFPS=limitf(double(cfunc64f(GetFPS)),1.0)
-	CurDUIObasedFPS=60
+	if CurDUIObasedFPS==0 :CurDUIObasedFPS=limitf(double(cfunc64f(GetFPS)),1.0)
 
 	dim UIset_tagactiveflag
 	repeat UIset_tag_max
@@ -1670,6 +1669,10 @@
 
 #defcfunc duio_GetFPS
 	return limit(CurDUIObasedFPS,1,1000)
+
+#deffunc duio_SetFPS int _x
+	CurDUIObasedFPS=_x
+	return
 
 #deffunc duio_SetButtonPushSound int _uisetid,str _key
 	repeat length(commonsndDB_Key)

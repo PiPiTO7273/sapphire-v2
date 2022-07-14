@@ -10,8 +10,6 @@ ids<>:map@3>>cd2037a3-9b33-36a8-412e-624e52cd3ba2,05192b33-5c78-09f9-ae89-992694
 ids<>:map@4>>0cdaf088-caa9-db1c-d47c-2bbad453c480,98b0147e-830f-db89-6f3d-b79afb7d7e40,53dbeb27-d57f-0cd4-6655-c9892ccd1a39
 //Chronomia
 ids<>:map@5>>9ac465a0-3df5-1d7f-4277-67fa9b781b34,7c91a55e-5a61-0ce2-0518-6c914d1f483c,76af826d-01ef-182e-be25-2700d5ca72bf
-//FREEDOM DiVE(権利関係が怪しいので念のため削除)
-//ids<>:map@6>>8344efd9-920f-29f0-9b35-e57cc9e99a9a,48064ffe-e192-d884-48a1-a32c2b5425a3,11ddb24e-eb5d-d4ff-8f2b-873860fdcb51
 //もぺもぺ
 ids<>:map@6>>d807f2d9-a366-1e8b-83e4-6fd1d1e75bd4,10efb7cf-e481-f620-86f3-5adf15c71c97,66a25799-da35-4903-c352-79859f9ad28a
 //GOODRAGE
@@ -27,4 +25,4 @@ ids<>:map@11>>4226db88-dc97-2da5-9ffa-dddece4452e5,51f526a9-64cf-5787-1772-8fa2e
 //Replica
 ids<>:map@12>>*,*,7f3768c6-9567-338c-aada-126e08c7864d
 //キミとボクへの葬送歌
-ids<>:map@13>>*,bea3c5c1-ee52-f154-5550-b92c0bddb156,f2829224-2b4f-4f54-1a70-2aa4d2ed7c84
+ids<>:map@13>>2313e51f-337e-4439-85b3-8c11d698ae56,bea3c5c1-ee52-f154-5550-b92c0bddb156,f2829224-2b4f-4f54-1a70-2aa4d2ed7c84

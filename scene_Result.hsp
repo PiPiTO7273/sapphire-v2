@@ -293,6 +293,9 @@
 		PortalWebSvc_SendProfile PlayerID,PlayerPassword,"XODA.MISSION.PROGRESS."+currentSetMission,str(mission_progress(currentSetMission))
 	}
 
+	//スコアランク判定
+		duio_ChangeImage duio_ImageID2UIsetID("result_scorerank"),hdximg(iresult_rank_f-limit(curScore/1000000,0,9))
+
 	//グラフ画像生成
 		SetDrawScreen hdximg(iresult_gaugegraph)
 		ClearDrawScreen
@@ -309,6 +312,16 @@
 
 	duio_SetAllImageOutro"#Shutter"
 	duio_PlaySound"shutter_out"
+	if curClearType!CLEARTYPE_FAILED {
+		duio_PlaySound"result_0"
+		duio_PlaySound"buzz"
+
+		duio_PlaySound"voice_0_"+rnd(3)
+	} else {
+		duio_PlaySound"result_1"
+
+		duio_PlaySound"voice_1_"+rnd(3)
+	}
 
 	return
 
@@ -398,6 +411,9 @@
 	if decidecount!-1 :decidecount+FrameTime
 
 	if decidecount>1000 {
+		duio_StopSound"result_0"
+		duio_StopSound"result_1"
+
 		switch DecideJumpScene
 			case"next"
 				switch GameplayMode

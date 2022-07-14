@@ -66,36 +66,5 @@
 #global
 
 *DrawInitDebugMsg
-
-	logmes"*----------------------------*"
-	logmes""
-	logmes"    Sapphire v2.xx Project    "
-	logmes"  (c) 2019-2022 puoro. Games  "
-	logmes""
-	logmes"*----------------------------*"
-	logmes""
-	logmes"   <STAFF>"
-	logmes"     Game/UI Design     - Okuzawa Yoshihito (piyapipitox)"
-	logmes"     Programming        - Okuzawa Yoshihito (piyapipitox)"
-	logmes"     Debugger           - Okuzawa Yoshihito (piyapipitox)"
-	logmes"     Icon Design        - Icons8 (https://icons8.com)"
-	logmes""
-	logmes"     Music              - cosmo@ñ\ëñP (CHEMICAL SYSTEM) , IOSYS , è„äCÉAÉäÉXå∂ûŸíc , ETIA. , Jenga ,"
-	logmes"                          SHIKI , DJ Myosuke , Laur , HARDCORE TANO*C , Yunomi , Lime (Kankitsu) ,"
-	logmes"                          xi , ÉoÉãÅ[Éì , LeaF , EBIMAYO , t+pazolite , d-elf.com"
-	logmes"     Background Design  - Okuzawa Yoshihito (piyapipitox) , Beeple (MichaelJoseph Winkelmann)"
-	logmes""
-	logmes"     Dynamic UI Language (Input-Output Module) , duio-parse Copyright (c) 2022 puoro. Games"
-	logmes"     DX Library Copyright (C) 2001-2021 Takumi Yamada."
-	logmes"     BASS Audio Library Copyright (c) 1999-2021 Un4seen Developments Ltd. All rights reserved."
-	logmes"     mod_fx v5.1.0 Copyright (c) 2015 motchy"
-	logmes""
-	logmes"   <System Information>"
-	logmes"     Runtime            - HSP3.6 x64"
-	logmes"     Module/Plugin      - DX Library , BASS Audio Library , hspint64 , duio-parse"
-	logmes"     Build Environment  - "+sysinfo(0)
-	logmes""
-	logmes"*----------------------------*"
-	logmes""
 	
 	return

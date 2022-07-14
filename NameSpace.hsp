@@ -162,6 +162,17 @@
 
 #enum iresult_gaugegraph
 
+#enum iresult_rank_ex
+#enum iresult_rank_s
+#enum iresult_rank_aaa
+#enum iresult_rank_aa
+#enum iresult_rank_a
+#enum iresult_rank_b
+#enum iresult_rank_c
+#enum iresult_rank_d
+#enum iresult_rank_e
+#enum iresult_rank_f
+
 #enum istore_item_map
 #enum istore_item_customize_note
 #enum istore_ticket1

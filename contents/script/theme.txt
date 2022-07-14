@@ -398,6 +398,8 @@
 		#Result @image result_score_new_score graphic/result_new_score.png 635 400 &layerlv=2 result_iconnew_style
 		#Result @image result_score_new_ability graphic/result_new_ability.png 675 518 &layerlv=2 result_iconnew_style
 
+		#Result @image result_scorerank * 1232 410 &imgwidth=300 &imgheight=128 &animation-in=fade,1000,250,CUBIC_OUT &animation-in=zoom,1000,300,1.2,CUBIC_OUT &layerlv=2
+
 	////// judge detail //////
 		#Result @image result_judgedetail_layer graphic/result_judgedetail_layer.png 270 600 &animation-in=fade,600,200,CUBIC_OUT &animation-in=move,600,250,0,128,CUBIC_OUT
 

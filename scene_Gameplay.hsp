@@ -269,12 +269,15 @@
 				swbreak
 
 				case ID_BPM
-					bpmevent_timing(bpmevent_max)=lpeek(tmpmapbuf,binpos+1)
-					bpmevent_value(bpmevent_max)=f2d(lpeek(tmpmapbuf,binpos+5))
 
-					logmes GetTimeStamp()+" [Gameplay] BPM event ("+bpmevent_max+") "+bpmevent_timing(bpmevent_max)+"ms , "+bpmevent_value(bpmevent_max)
+					if (pfreg_Placement!PLAYOPT_ID_OBJPLACE_SPEEDFIX)|(pfreg_Placement==PLAYOPT_ID_OBJPLACE_SPEEDFIX&bpmevent_max==0) {
+						bpmevent_timing(bpmevent_max)=lpeek(tmpmapbuf,binpos+1)
+						bpmevent_value(bpmevent_max)=f2d(lpeek(tmpmapbuf,binpos+5))
 
-					bpmevent_max++
+						logmes GetTimeStamp()+" [Gameplay] BPM event ("+bpmevent_max+") "+bpmevent_timing(bpmevent_max)+"ms , "+bpmevent_value(bpmevent_max)
+
+						bpmevent_max++
+					}
 
 					binpos+9
 				swbreak
@@ -295,22 +298,17 @@
 
 					objmax++
 
-					if pfreg_Placement==PLAYOPT_ID_OBJPLACE_SINGLE {
-						objType(objmax-1)=ID_OBJTYPE_SINGLE
-						objLength(objmax-1)=0
-					} else {
-						objChannel(objmax)=peek(tmpmapbuf,binpos+1)
-						objTiming(objmax)=objTiming(objmax-1)+objLength(objmax-1)
-						objhSndDB(objmax)=-1
-						objVolume(objmax)=0.0
+					objChannel(objmax)=peek(tmpmapbuf,binpos+1)
+					objTiming(objmax)=objTiming(objmax-1)+objLength(objmax-1)
+					objhSndDB(objmax)=-1
+					objVolume(objmax)=0.0
 
-						objbpm(objmax)=0.0
-						objType(objmax)=ID_OBJTYPE_HOLDEND
-						objLength(objmax)=0
-						objJudgeFlag(objmax)=FALSE
-						objActiveFlag(objmax)=FALSE
-						objmax++
-					}
+					objbpm(objmax)=0.0
+					objType(objmax)=ID_OBJTYPE_HOLDEND
+					objLength(objmax)=0
+					objJudgeFlag(objmax)=FALSE
+					objActiveFlag(objmax)=FALSE
+					objmax++
 
 					binpos+13
 				swbreak
@@ -374,13 +372,17 @@
 		loop
 
 	//オプション適用
+
+		if AutoPlayFlag :PlayOptionList+"AUTO,"
+		if pfreg_Placement==PLAYOPT_ID_OBJPLACE_SPEEDFIX :PlayOptionList+"SPEEDFIX,"
+
 		dim objplacement_map,6:dim i
 		switch pfreg_Placement
 			default
 				objplacement_map=0,1,2,3,4,5
 			swbreak
 			case PLAYOPT_ID_OBJPLACE_RANDOM
-				PlayOptionList+"RANDOM"
+				PlayOptionList+"RANDOM,"
 				dim objrndretry
 				repeat
 					objplacement_map(i+1)=1+rnd(4)
@@ -404,18 +406,21 @@
 				}
 			swbreak
 			case PLAYOPT_ID_OBJPLACE_MIRROR
-				PlayOptionList+"MIRROR"
+				PlayOptionList+"MIRROR,"
 				objplacement_map=5,4,3,2,1,0
 			swbreak
 			case PLAYOPT_ID_OBJPLACE_HALF
-				PlayOptionList+"HALF-HALF"
+				PlayOptionList+"HALF-HALF,"
 				objplacement_map=0,1,2,4,3,5
 			swbreak
 			case PLAYOPT_ID_OBJPLACE_SMIRROR
-				PlayOptionList+"S-MIRROR"
+				PlayOptionList+"S-MIRROR,"
 				objplacement_map=5,1,2,3,4,0
 			swbreak
 		swend
+
+		//末尾のカンマを除去
+		if strmid(PlayOptionList,-1,1)=="," :PlayOptionList=strmid(PlayOptionList,0,strlen(PlayOptionList)-1)
 
 		repeat objmax
 			objChannel(cnt)=objplacement_map(objChannel(cnt))

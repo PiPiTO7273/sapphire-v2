@@ -86,7 +86,7 @@
 #enum iplayoption_objplace_mirror_enabled
 #enum iplayoption_objplace_half_enabled
 #enum iplayoption_objplace_smirror_enabled
-#enum iplayoption_objplace_single_enabled
+#enum iplayoption_objplace_speedfix_enabled
 #enum iplayoption_gauge_normal_enabled
 #enum iplayoption_gauge_madness_enabled
 #enum iplayoption_gauge_assist_enabled
@@ -258,6 +258,7 @@
 #enum ID_OBJTYPE_SINGLE		=	0
 #enum ID_OBJTYPE_HOLDSTART
 #enum ID_OBJTYPE_HOLDEND
+#enum ID_OBJTYPE_BPMCHANGE
 
 #const jWid_Excellent	30
 #const jWid_Great		60
@@ -290,7 +291,7 @@
 #enum PLAYOPT_ID_OBJPLACE_MIRROR
 #enum PLAYOPT_ID_OBJPLACE_HALF
 #enum PLAYOPT_ID_OBJPLACE_SMIRROR
-#enum PLAYOPT_ID_OBJPLACE_SINGLE
+#enum PLAYOPT_ID_OBJPLACE_SPEEDFIX
 
 //ゲージの難易度（後方互換性の値）
 #const PLAYOPT_ID_GAUGE_ASSIST_OLD		0

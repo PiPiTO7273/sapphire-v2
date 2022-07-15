@@ -170,7 +170,7 @@
 		#PlayOption @button playoption_button_objplace_mirror graphic/playoption_button_objplacement_mirror.png 60 389 120 35 &animation-in=zoom,400,250,0.4,CUBIC_OUT &animation-in=fade,400,250,CUBIC_OUT playoption_style
 		#PlayOption @button playoption_button_objplace_half graphic/playoption_button_objplacement_half.png 196 389 120 35 &animation-in=zoom,400,250,0.4,CUBIC_OUT &animation-in=fade,400,250,CUBIC_OUT playoption_style
 		#PlayOption @button playoption_button_objplace_smirror graphic/playoption_button_objplacement_smirror.png 60 432 120 35 &animation-in=zoom,450,250,0.4,CUBIC_OUT &animation-in=fade,450,250,CUBIC_OUT playoption_style
-		#PlayOption @button playoption_button_objplace_single graphic/playoption_button_objplacement_single.png 196 432 120 35 &animation-in=zoom,450,250,0.4,CUBIC_OUT &animation-in=fade,450,250,CUBIC_OUT playoption_style
+		#PlayOption @button playoption_button_objplace_speedfix graphic/playoption_button_objplacement_speedfix.png 196 432 120 35 &animation-in=zoom,450,250,0.4,CUBIC_OUT &animation-in=fade,450,250,CUBIC_OUT playoption_style
 
 		////// gauge difficulty //////
 		#PlayOption @button playoption_button_gauge_normal graphic/playoption_button_gauge_normal.png 370 346 120 35 &animation-in=zoom,400,250,0.4,CUBIC_OUT &animation-in=fade,400,250,CUBIC_OUT playoption_style
@@ -317,7 +317,7 @@
 		#Gameplay @text gameplay_option OPTION 216 244 ps16 &align-right-size=61 &animation-in=move,300,300,-32,0,CUBIC_OUT &animation-in=fade,300,300,CUBIC_OUT gameplay_uitext_style
 		#Gameplay @text gameplay_bpm_value * 300 174 ps20 &animation-in=move,225,300,-32,0,CUBIC_OUT &animation-in=fade,225,300,CUBIC_OUT gameplay_uitext_style
 		#Gameplay @text gameplay_speed_value * 300 206 ps20 &animation-in=move,275,300,-32,0,CUBIC_OUT &animation-in=fade,275,300,CUBIC_OUT gameplay_uitext_style
-		#Gameplay @text gameplay_option_value * 300 238 ps20 &animation-in=move,325,300,-32,0,CUBIC_OUT &animation-in=fade,325,300,CUBIC_OUT gameplay_uitext_style
+		#Gameplay @text gameplay_option_value * 300 245 ps14 &animation-in=move,325,300,-32,0,CUBIC_OUT &animation-in=fade,325,300,CUBIC_OUT gameplay_uitext_style
 
 	////// Profile //////
 		#Gameplay @text gameplay_profile_badge * 48 350 rom1cm14 &color=31,147,207 &layerlv=2 &animation-in=fade,300,350,CUBIC_OUT &animation-in=move,300,350,-64,0,CUBIC_OUT &animation-in=random.text,400,500 &hide

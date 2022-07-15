@@ -885,6 +885,5 @@ goto*Startup
 
 	gosub*UploadAllSavedata
 
-	ExportDebugLog
 	DxLib_End
 	end

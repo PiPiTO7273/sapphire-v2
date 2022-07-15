@@ -254,7 +254,7 @@
 		dim recordload_flag
 		dim irload_flag
 
-		if pfreg_Placement==PLAYOPT_ID_OBJPLACE_SINGLE :recordsend_flag=TRUE:irsend_flag=TRUE
+		if pfreg_Placement==PLAYOPT_ID_OBJPLACE_SPEEDFIX :recordsend_flag=TRUE:irsend_flag=TRUE
 		if AutoPlayFlag :recordsend_flag=TRUE:irsend_flag=TRUE
 
 	//ミッションクリア処理

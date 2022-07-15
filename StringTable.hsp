@@ -8,7 +8,7 @@
 	playoption_objplace_buttonid(2)="playoption_button_objplace_mirror"
 	playoption_objplace_buttonid(3)="playoption_button_objplace_half"
 	playoption_objplace_buttonid(4)="playoption_button_objplace_smirror"
-	playoption_objplace_buttonid(5)="playoption_button_objplace_single"
+	playoption_objplace_buttonid(5)="playoption_button_objplace_speedfix"
 
 	//ゲージの難易度 , ボタンのID
 	sdim playoption_gauge_buttonid

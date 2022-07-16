@@ -201,6 +201,7 @@
 
 #enum iprofile_customize_bg_0
 #enum iprofile_customize_bg_1
+#enum iprofile_customize_off
 
 #enum icommon_connecting
 

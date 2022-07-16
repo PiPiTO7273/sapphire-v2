@@ -19,7 +19,11 @@
 	duio_ChangeTextBody duio_TextID2UIsetID("profile_account_comment"),pfreg_Badge
 	duio_ChangeTextBody duio_TextID2UIsetID("profile_note_curset"),customize_note_name(pfreg_CustomizeNote)
 	duio_ChangeTextBody duio_TextID2UIsetID("profile_note_changeset"),""
-	duio_ChangeTextBody duio_TextID2UIsetID("profile_bg_curset"),customize_bg_name(pfreg_CustomizeBackground)
+	if pfreg_CustomizeBackground==-1 {
+		duio_ChangeTextBody duio_TextID2UIsetID("profile_bg_curset"),"OFF"
+	} else {
+		duio_ChangeTextBody duio_TextID2UIsetID("profile_bg_curset"),customize_bg_name(pfreg_CustomizeBackground)
+	}
 	duio_ChangeTextBody duio_TextID2UIsetID("profile_bg_changeset"),""
 
 	//É{É^ÉìçÏê¨
@@ -65,6 +69,24 @@
 		mapitem_max++
 	loop
 
+	//îwåiOFF
+		mapitem_himg(mapitem_max)=MakeScreen(84,300,TRUE)
+			SetDrawScreen mapitem_himg(mapitem_max)
+
+			//îwåi
+			SetDrawBlendMode DX_BLENDMODE_PMA_ALPHA,256
+			DrawGraph 0,0,hdximg(iprofile_customize_off),TRUE
+
+			//duioÇ…ìoò^
+			duio_CreateButton"#Profile","profile_bg@off",mapitem_himg(mapitem_max),776+96*0,530,84,300
+			mapitem_uisetid(mapitem_max)=stat
+			duio_AddInButtonAnimation_Zoom mapitem_uisetid(mapitem_max),200+50*mapitem_max,350,0.6,ease_cubic_out
+			duio_AddInButtonAnimation_Fade mapitem_uisetid(mapitem_max),200+50*mapitem_max,300,ease_cubic_out
+			duio_SetButtonEvent mapitem_uisetid(mapitem_max),"bg@off"
+			duio_SetButtonPushSound mapitem_uisetid(mapitem_max),"decide"
+
+		mapitem_max++
+
 	repeat customize_bg_max
 
 		//çÄñ⁄
@@ -78,7 +100,7 @@
 			DrawExtendGraph 8,16,8+64,16+256,customize_bg_himg(cnt),TRUE
 
 			//duioÇ…ìoò^
-			duio_CreateButton"#Profile","profile_bg@"+cnt,mapitem_himg(mapitem_max),776+96*cnt,530,84,300
+			duio_CreateButton"#Profile","profile_bg@"+cnt,mapitem_himg(mapitem_max),776+96*(cnt+1),530,84,300
 			mapitem_uisetid(mapitem_max)=stat
 			duio_AddInButtonAnimation_Zoom mapitem_uisetid(mapitem_max),200+50*mapitem_max,350,0.6,ease_cubic_out
 			duio_AddInButtonAnimation_Fade mapitem_uisetid(mapitem_max),200+50*mapitem_max,300,ease_cubic_out
@@ -317,6 +339,10 @@
 			duio_ChangeTextBody duio_TextID2UIsetID("profile_note_curset"),customize_note_name(pfreg_CustomizeNote)
 		}
 	loop
+	if duio_GetButtonEventStack()=="bg@off" {
+		pfreg_CustomizeBackground=-1
+		duio_ChangeTextBody duio_TextID2UIsetID("profile_bg_curset"),"OFF"
+	}
 	repeat customize_bg_max
 		if duio_GetButtonEventStack()=="bg@"+cnt {
 			pfreg_CustomizeBackground=cnt

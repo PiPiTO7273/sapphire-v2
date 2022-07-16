@@ -875,8 +875,10 @@
 	//îwåi
 		SetDrawScreen hdximg(igameplay_bg_sidelr)
 			ClearDrawScreen
-			DrawGraph 0,-1024+(double(SceneCount)*double(FrameTime)*1.4)\1024,customize_bg_himg(pfreg_CustomizeBackground),TRUE
-			DrawGraph 0,-1024+(double(SceneCount)*double(FrameTime)*1.4)\1024+1024,customize_bg_himg(pfreg_CustomizeBackground),TRUE
+			if pfreg_CustomizeBackground!-1 {
+				DrawGraph 0,-1024+(double(SceneCount)*double(FrameTime)*1.4)\1024,customize_bg_himg(pfreg_CustomizeBackground),TRUE
+				DrawGraph 0,-1024+(double(SceneCount)*double(FrameTime)*1.4)\1024+1024,customize_bg_himg(pfreg_CustomizeBackground),TRUE
+			}
 
 		SetDrawScreen hdximg(igameplay_bg_grid)
 			ClearDrawScreen
@@ -898,8 +900,13 @@
 		DrawRectGraph 227,152,0,0,int(200.0*(double(sysclock_cur)/double(mapconfig_playlength))),6,hdximg(igameplay_playtime_pre),TRUE
 
 	//ÉMÉAÉ`ÉFÉì
-		if KeyInputFlag(KEY_INPUT_SPACE) :SpeedChange_WindowCount=limit(SpeedChange_WindowCount+FrameTime,,300):else:SpeedChange_WindowCount=limit(SpeedChange_WindowCount-FrameTime,0)
-		setease BufHeight,905,ease_cubic_out
+		if KeyInputFlag(KEY_INPUT_SPACE) {
+			SpeedChange_WindowCount=limit(SpeedChange_WindowCount+FrameTime,,300)
+			setease BufHeight,905,ease_cubic_out
+		} else {
+			SpeedChange_WindowCount=limit(SpeedChange_WindowCount-FrameTime,0)
+			setease BufHeight,905,ease_cubic_in
+		}
 		EasePosY=getease(SpeedChange_WindowCount,300)
 		DrawGraph 760,EasePosY,hdximg(igameplay_speedchange),TRUE
 		DrawGraph 955+int(160.0*((AddSpeed_EaseValue-0.1)/9.9)),EasePosY+15,hdximg(igameplay_speedchange_cursor),TRUE

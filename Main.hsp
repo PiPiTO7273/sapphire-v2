@@ -400,6 +400,7 @@ goto*Startup
 
 		hdximg(iprofile_customize_bg_0)=LoadGraph("contents/graphic/profile_customize_bg_0.png")
 		hdximg(iprofile_customize_bg_1)=LoadGraph("contents/graphic/profile_customize_bg_1.png")
+		hdximg(iprofile_customize_off)=LoadGraph("contents/graphic/profile_customize_off.png")
 
 		hdximg(icommon_connecting)=LoadGraph("contents/graphic/common_connecting.png")
 

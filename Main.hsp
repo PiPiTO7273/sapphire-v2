@@ -133,6 +133,7 @@ goto*Startup
 			case 2	//枠なしウィンドウモード
 				chgdisp 1,DispWidth,DispHeight
 				bgscr 0,DispWidth,DispHeight,0,0,0
+				mouse -1
 				SetUserWindow hwnd
 			swbreak
 		swend
@@ -767,6 +768,7 @@ goto*Startup
 		cursorPosX=int(double(cursorPosX)*(double(BufWidth)/double(DispWidth)))
 		cursorPosY=int(double(cursorPosY)*(double(BufHeight)/double(DispHeight)))
 		cursorWheelraw=(cfunc64f(GetMouseWheelRotVolF))
+		if csconf_ScreenMode==2 :cursorWheelraw=mousew
 		if cursorWheelraw<0&bfcursorWheelraw<0&cursorWheelraw!bfcursorWheelraw :cursorWheelEase=int((cursorWheelraw-bfcursorWheelraw)*40.0):cursorWheelCount=0
 		if cursorWheelraw>0&bfcursorWheelraw>0&cursorWheelraw!bfcursorWheelraw :cursorWheelEase=int((cursorWheelraw-bfcursorWheelraw)*40.0):cursorWheelCount=0
 		if (cursorWheelraw>0&bfcursorWheelraw<0)|(cursorWheelraw<0&bfcursorWheelraw>0) :cursorWheelEase=int(cursorWheelraw*40.0):cursorWheelCount=0

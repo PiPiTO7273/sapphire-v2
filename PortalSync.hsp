@@ -95,6 +95,9 @@
 #deffunc PortalWebSvc_DeleteAccount str _name
 	return WebAPI_Get("http://"+duio_idsGet("Server")+"/apiv2/API-DeleteAccount.php?key="+duio_idsGet("_keymac_APIkey_DeleteAccount")+"&name="+_name)
 
+#defcfunc PortalWebSvc_DownloadUpdateFeed
+	return WebAPI_Get("http://"+duio_idsGet("Server")+"/apiv2/updfeed.txt")
+
 #global
 
 *syncAllSavedata

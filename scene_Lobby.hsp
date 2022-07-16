@@ -36,6 +36,11 @@
 	if duio_GetImageOutroFlag(duio_ImageID2UIsetID("shutter_00"))!TRUE :duio_PlaySound"shutter_out"
 	duio_SetAllImageOutro"#Shutter"
 
+	//フィード
+	sdim updfeed
+	updfeed=strf("%04d.%d.%d %d.%02d.%02d 更新 |【最新のニュース】",gettime(0),gettime(1),gettime(3),gettime(4),gettime(5),gettime(6))
+	updfeed+PortalWebSvc_DownloadUpdateFeed()
+
 	UpdateProfileDisp
 
 	if BASS_ChannelIsActive(duio_GetHandle("main"))!BASS_ACTIVE_PLAYING {
@@ -62,6 +67,19 @@
 
 	duio_Draw"#Lobby"
 	duio_Draw"#Common-Profile"
+
+	//フィード
+	if SceneTime>250 {
+		setease BufHeight,1000,ease_cubic_out
+		EasePosY=getease(SceneTime-250,300)
+		setease 0,180,ease_cubic_out
+		SetDrawBlendMode DX_BLENDMODE_PMA_ALPHA,getease(SceneTime-250,250)
+		DrawBox 0,EasePosY,BufWidth,EasePosY+40,$000000,TRUE
+		setease 0,256,ease_cubic_out
+		SetDrawBlendMode DX_BLENDMODE_ALPHA,getease(SceneTime-250,250)
+		DrawStringToHandle BufWidth-((SceneTime+1000)/10)\(GetDrawStringWidthToHandle(updfeed,strlen(updfeed),duio_GetFontHandle("rom1cm20"))+BufWidth),EasePosY+8,updfeed,$FFFFFF,duio_GetFontHandle("rom1cm20")
+	}
+
 	duio_Draw"#Shutter"
 	duio_Draw"#Dialog-Common-InvalidAction"
 	duio_Draw"#Accept-GiftCode"

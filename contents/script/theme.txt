@@ -730,7 +730,7 @@
 
 		#Config @button config_button_screenmode_0 graphic/config_button_screenmode_0.png 610 230 180 50 &animation-in=zoom,300,250,0.6,CUBIC_OUT &animation-in=fade,300,250,CUBIC_OUT &event=screenmode_0 &pushsound=opchange
 		#Config @button config_button_screenmode_1 graphic/config_button_screenmode_1.png 810 230 180 50 &animation-in=zoom,350,250,0.6,CUBIC_OUT &animation-in=fade,350,250,CUBIC_OUT &event=screenmode_1 &pushsound=opchange
-		#Config @button config_button_screenmode_2 graphic/config_button_screenmode_2.png 1010 230 180 50 &animation-in=zoom,400,250,0.6,CUBIC_OUT &animation-in=fade,400,250,CUBIC_OUT &event=screenmode_2 &pushsound=opchange
+		#Config @button config_button_screenmode_2 graphic/config_button_screenmode_2.png 1010 230 180 50 &animation-in=zoom,400,250,0.6,CUBIC_OUT &animation-in=fade,400,250,CUBIC_OUT &event=screenmode_2 &pushsound=opchange &hide
 
 		#Config @button config_button_screensize_0 graphic/config_button_screensize_0.png 610+200*0 330 180 50 &animation-in=zoom,350,250,0.6,CUBIC_OUT &animation-in=fade,350,250,CUBIC_OUT &event=screensize_0 &pushsound=opchange
 		#Config @button config_button_screensize_1 graphic/config_button_screensize_1.png 610+200*1 330 180 50 &animation-in=zoom,400,250,0.6,CUBIC_OUT &animation-in=fade,400,250,CUBIC_OUT &event=screensize_1 &pushsound=opchange

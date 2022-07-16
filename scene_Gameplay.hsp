@@ -39,6 +39,9 @@
 
 	dup AddSpeed,pfreg_AddSpeed
 	dup GameplayWindowLayout,pfreg_WindowLayout
+	ddim AddSpeed_EaseValue
+	ddim AddSpeed_EaseValue_From
+	ddim AddSpeed_EaseCount
 
 	dim obj_holdstartid
 	dim obj_holddrawheight
@@ -60,6 +63,10 @@
 	dim LaneWidth
 	dim LaneHeight
 	dim JudgeOffset
+	dim ImpactEffectTime
+	sdim ImpactEffect_Msg
+	dim SpeedChange_WindowCount
+	ImpactEffectTime=-1
 	;AutoPlayFlag=TRUE
 	;JudgeOffset=-70
 
@@ -274,8 +281,6 @@
 						bpmevent_timing(bpmevent_max)=lpeek(tmpmapbuf,binpos+1)
 						bpmevent_value(bpmevent_max)=f2d(lpeek(tmpmapbuf,binpos+5))
 
-						logmes GetTimeStamp()+" [Gameplay] BPM event ("+bpmevent_max+") "+bpmevent_timing(bpmevent_max)+"ms , "+bpmevent_value(bpmevent_max)
-
 						bpmevent_max++
 					}
 
@@ -293,8 +298,6 @@
 					objType(objmax)=ID_OBJTYPE_HOLDSTART
 					objJudgeFlag(objmax)=FALSE
 					objActiveFlag(objmax)=FALSE
-
-					logmes GetTimeStamp()+" [Gameplay] NOTE_HOLD ("+objmax+") "+objTiming(objmax)+"ms , "+objLength(objmax)+"ms , ch"+objChannel(objmax)
 
 					objmax++
 
@@ -318,8 +321,6 @@
 					objTiming(objmax)=lpeek(tmpmapbuf,binpos+2)
 					objhSndDB(objmax)=wpeek(tmpmapbuf,binpos+6)
 					objVolume(objmax)=1.0;double(peek(tmpmapbuf,binpos+8))/100.0
-
-					logmes GetTimeStamp()+" [Gameplay] NOTE_SINGLE ("+objmax+") "+objTiming(objmax)+"ms , ch"+objChannel(objmax)
 
 					objbpm(objmax)=0.0
 					objType(objmax)=ID_OBJTYPE_SINGLE
@@ -542,7 +543,7 @@
 		}
 		if mapconfig_sndmode==1 {
 			//すべてのオブジェクトを判定し終わったら
-			mapconfig_playlength=objTiming(objmax-1)+3000
+			mapconfig_playlength=objTiming(objmax-1)+2000
 		}
 
 	//判定履歴
@@ -757,13 +758,19 @@
 			loop
 
 			//ノーツ位置再計算
+			if AddSpeed_EaseCount<500 {
+				setease AddSpeed_EaseValue_From,AddSpeed,ease_cubic_out
+				AddSpeed_EaseValue=geteasef(AddSpeed_EaseCount,500)
+				AddSpeed_EaseCount+FrameTime
+			} else :AddSpeed_EaseValue=AddSpeed
+
 			ddim ObjPosition,objmax
 			ddim TmpNotepos,1
 			repeat ObjMax
 				if cnt==0 {
-					ObjPosition(cnt)=TmpNotepos-(double((ObjTiming(cnt)+JudgeOffset)-LaneScroll)*200.0*(objbpm(cnt)/objbpm(0))/200.0*AddSpeed/TexLv)
+					ObjPosition(cnt)=TmpNotepos-(double((ObjTiming(cnt)+JudgeOffset)-LaneScroll)*100.0*(objbpm(cnt)/objbpm(0))/200.0*AddSpeed_EaseValue/TexLv)
 				} else {
-					ObjPosition(cnt)=TmpNotepos-(double(ObjTiming(cnt)-ObjTiming(cnt-1))*200.0*(objbpm(cnt)/objbpm(0))/200.0*AddSpeed/TexLv)
+					ObjPosition(cnt)=TmpNotepos-(double(ObjTiming(cnt)-ObjTiming(cnt-1))*100.0*(objbpm(cnt)/objbpm(0))/200.0*AddSpeed_EaseValue/TexLv)
 				}
 				TmpNotepos=ObjPosition(cnt)
 			loop
@@ -878,25 +885,71 @@
 
 		SetDrawScreen hcommonLayer
 
+	if ImpactEffectTime!-1&ImpactEffectTime/FrameTime<46 {
+		SetDrawBlendMode DX_BLENDMODE_ADD,256
+		DrawGraph 0,BufHeight-512,hdximgarr_bonuseffect(limit(ImpactEffectTime/FrameTime,0,45)),TRUE
+	}
+
+	SetDrawBlendMode DX_BLENDMODE_PMA_ALPHA,256
 	duio_Draw"#Gameplay"
 
 	//プレイ時間
 		SetDrawBlendMode DX_BLENDMODE_PMA_ALPHA,256
 		DrawRectGraph 227,152,0,0,int(200.0*(double(sysclock_cur)/double(mapconfig_playlength))),6,hdximg(igameplay_playtime_pre),TRUE
 
+	//ギアチェン
+		if KeyInputFlag(KEY_INPUT_SPACE) :SpeedChange_WindowCount=limit(SpeedChange_WindowCount+FrameTime,,300):else:SpeedChange_WindowCount=limit(SpeedChange_WindowCount-FrameTime,0)
+		setease BufHeight,905,ease_cubic_out
+		EasePosY=getease(SpeedChange_WindowCount,300)
+		DrawGraph 760,EasePosY,hdximg(igameplay_speedchange),TRUE
+		DrawGraph 955+int(160.0*((AddSpeed_EaseValue-0.1)/9.9)),EasePosY+15,hdximg(igameplay_speedchange_cursor),TRUE
+		SetDrawBlendMode DX_BLENDMODE_ALPHA,256
+		DrawStringToHandle 865,EasePosY+13,strf("x%.2f",AddSpeed),$FFFFFF,duio_GetFontHandle("ps20")
+
 	//判定
-		if JudgeDispCount<500 {
-			SetDrawBlendMode DX_BLENDMODE_PMA_ALPHA,256
-		} else {
-			setease 256,0,ease_linear
-			SetDrawBlendMode DX_BLENDMODE_PMA_ALPHA,getease(JudgeDispCount-500,250)
+		if JudgeDisphImg!0 {
+			if JudgeDispCount<500 {
+				SetDrawBlendMode DX_BLENDMODE_PMA_ALPHA,256
+			} else {
+				setease 256,0,ease_linear
+				SetDrawBlendMode DX_BLENDMODE_PMA_ALPHA,getease(JudgeDispCount-500,250)
+			}
+			setease 1.6,1,ease_cubic_out
+			EaseWidth=int(geteasef(JudgeDispCount,120)*200.0)
+			EaseHeight=int(geteasef(JudgeDispCount,120)*50.0)
+			EasePosX=860+200/2-EaseWidth/2
+			EasePosY=720+50/2-EaseHeight/2
+			DrawExtendGraph EasePosX,EasePosY,EasePosX+EaseWidth,EasePosY+EaseHeight,JudgeDisphImg,TRUE
+
+			if JudgeDisphImg!hdximg(igameplay_judge_excellent)&JudgeDispCount<750 {
+				setease 256,0,ease_linear
+				SetDrawBlendMode DX_BLENDMODE_ALPHA,getease(JudgeDispCount-600,150)
+				dim RecentJudgeDrawGap
+				RecentJudgeDrawGap=RecentJudgeGap(limit(RecentJudgeCount-cnt-1,0,length(RecentJudgeGap)-1))
+				if RecentJudgeDrawGap>0 {
+					DrawStringToHandle 348,682,"LATE +"+abs(RecentJudgeDrawGap)+"ms",$34C1FF,duio_GetFontHandle("ps20")
+				} else {
+					DrawStringToHandle 348,682,"EARLY -"+abs(RecentJudgeDrawGap)+"ms",$FE17CF,duio_GetFontHandle("ps20")
+				}
+			}
 		}
-		setease 1.6,1,ease_cubic_out
-		EaseWidth=int(geteasef(JudgeDispCount,120)*200.0)
-		EaseHeight=int(geteasef(JudgeDispCount,120)*50.0)
-		EasePosX=860+200/2-EaseWidth/2
-		EasePosY=707+50/2-EaseHeight/2
-		DrawExtendGraph EasePosX,EasePosY,EasePosX+EaseWidth,EasePosY+EaseHeight,JudgeDisphImg,TRUE
+
+	//ボーナス演出
+		if ImpactEffectTime!-1 {
+			if ImpactEffectTime<300 {
+				setease 32,0,ease_cubic_out
+				EasePosY=getease(ImpactEffectTime,300)
+				setease 0,256,ease_cubic_out
+				SetDrawBlendMode DX_BLENDMODE_ALPHA,getease(ImpactEffectTime,300)
+			} else {
+				setease 0,32,ease_cubic_out
+				EasePosY=getease(ImpactEffectTime-1700,300)
+				setease 256,0,ease_cubic_out
+				SetDrawBlendMode DX_BLENDMODE_ALPHA,getease(ImpactEffectTime-1700,300)
+			}
+			DrawStringXCenterToHandle 866,655+EasePosY,ImpactEffect_Msg(0),189,$FFFFFF,duio_GetFontHandle("ps20")
+			DrawStringXCenterToHandle 866,690+EasePosY,"能力値 "+ImpactEffect_Msg(1),189,$00FFE5,duio_GetFontHandle("rom1cm16")
+		}
 
 	//判定の履歴
 		if pfreg_WindowLayout&UIlayout_Judge {
@@ -1067,13 +1120,13 @@
 				mapconfig_finishflag=TRUE:duio_SetActiveScene"#Gameplay",FALSE
 				gosub*onshutter
 				mapconfig_finishtime=2000:mapconfig_compeff_shutterflag=TRUE
-				mapconfig_retryflag=TRUE
+				if currentSetMission==-1 :mapconfig_retryflag=TRUE
 			}
 			if pfreg_GaugeType==PLAYOPT_ID_GAUGE_AR_ALLEX&(curJudge(JUDGEID_EARLY)!0|curJudge(JUDGEID_LATE)!0) {	//ALLEXチャレンジ
 				mapconfig_finishflag=TRUE:duio_SetActiveScene"#Gameplay",FALSE
 				gosub*onshutter
 				mapconfig_finishtime=2000:mapconfig_compeff_shutterflag=TRUE
-				mapconfig_retryflag=TRUE
+				if currentSetMission==-1 :mapconfig_retryflag=TRUE
 			}
 		}
 
@@ -1102,6 +1155,7 @@
 		if mapconfig_retryflag {
 			duio_SetAllImageOutro"#Shutter"
 			duio_PlaySound"shutter_out"
+			duio_ChangeTextBody duio_TextID2UIsetID("musicdecide_loadprogress"),"0"
 			repeat int(1000.0/double(duio_GetFPS()))
 				gosub*scene_Gameplay_UpdateLoadScreen
 			loop
@@ -1125,6 +1179,32 @@
 	if SndEventThread==0 :gosub*scene_Gameplay_PlaySoundEvent
 
 	if IsPushed(KEY_INPUT_ESCAPE) :duio_SetEventStack"gameplay_event_retire"
+	if IsPushed(KEY_INPUT_DELETE) :duio_SetEventStack"gameplay_event_restart"
+	if KeyInputFlag(KEY_INPUT_SPACE)&IsPushed(KEY_INPUT_D) :AddSpeed_EaseValue_From=AddSpeed_EaseValue:AddSpeed_EaseCount=0:AddSpeed-0.1
+	if KeyInputFlag(KEY_INPUT_SPACE)&IsPushed(KEY_INPUT_F) :AddSpeed_EaseValue_From=AddSpeed_EaseValue:AddSpeed_EaseCount=0:AddSpeed+0.1
+	if KeyInputFlag(KEY_INPUT_SPACE)&IsPushed(KEY_INPUT_J) :AddSpeed_EaseValue_From=AddSpeed_EaseValue:AddSpeed_EaseCount=0:AddSpeed-1.0
+	if KeyInputFlag(KEY_INPUT_SPACE)&IsPushed(KEY_INPUT_K) :AddSpeed_EaseValue_From=AddSpeed_EaseValue:AddSpeed_EaseCount=0:AddSpeed+1.0
+	AddSpeed=limitf(AddSpeed,0.1,10.0)
+
+	if ImpactEffectTime!-1 :ImpactEffectTime+FrameTime
+	if ImpactEffectTime>2000 :ImpactEffectTime=-1
+	if ImpactEffectTime!-1&ImpactEffectTime<2000 {
+		SetDrawScreen hdximg(itmplayer)
+			ClearDrawScreen
+			setease 1,1.1,ease_cubic_out
+			EaseWidth=int(double(geteasef(ImpactEffectTime,600))*double(BufWidth))
+			EaseHeight=int(double(geteasef(ImpactEffectTime,600))*double(BufHeight))
+			EasePosX=BufWidth/2-EaseWidth/2
+			EasePosY=BufHeight/2-EaseHeight/2
+			DrawExtendGraph EasePosX,EasePosY,EasePosX+EaseWidth,EasePosY+EaseHeight,hcommonLayer,TRUE
+		SetDrawScreen hcommonLayer
+			setease 150,0,ease_cubic_out
+			SetDrawBlendMode DX_BLENDMODE_PMA_ALPHA,getease(ImpactEffectTime,600)
+			DrawGraph 0,0,hdximg(itmplayer),TRUE
+
+			setease 1000,0,ease_cubic_out
+			GraphFilterS hcommonLayer,DX_GRAPH_FILTER_GAUSS,16,getease(ImpactEffectTime,400)
+	}
 
 	if duio_GetButtonEventStack()!"" :gosub*scene_Gameplay_eventstack
 
@@ -1135,8 +1215,10 @@
 	switch duio_GetButtonEventStack()
 
 		case"gameplay_event_restart"
-			gosub*scene_Gameplay_free
-			gosub*scene_Gameplay_Init
+			mapconfig_finishflag=TRUE:duio_SetActiveScene"#Gameplay",FALSE
+			gosub*onshutter
+			mapconfig_finishtime=2000:mapconfig_compeff_shutterflag=TRUE
+			if currentSetMission==-1 :mapconfig_retryflag=TRUE
 		swbreak
 
 		case"gameplay_event_retire"
@@ -1190,6 +1272,10 @@
 							cfunc64v BASS_ChannelPlay,duio_GetHandle("keysnd_"+objChannel(cnt))
 						}
 					}
+				}
+				if (objChannel(cnt)==0|objChannel(cnt)==5) {
+					curBonusScore+0.05
+					PlayImpactEffect"SIDELANE BONUS","+0.05"
 				}
 			}
 		loop
@@ -1265,6 +1351,10 @@
 									cfunc64v BASS_ChannelPlay,duio_GetHandle("keysnd_"+ProgLaneID)
 								}
 							}
+						}
+						if NearNoteGap(ProgLaneID)<=jWid_Good&(ProgLaneID==0|ProgLaneID==5) {
+							curBonusScore+0.05
+							PlayImpactEffect"SIDELANE BONUS","+0.05"
 						}
 					}
 					if NearNoteID(ProgLaneID)!-1 {
@@ -1460,7 +1550,7 @@
 	if maxCombo<curCombo :maxCombo=curCombo
 
 	//コンボボーナス
-	if curCombo\100==0&curCombo!0 :curBonusScore+1.0
+	if curCombo\100==0&curCombo!0 :curBonusScore+1.0:PlayImpactEffect"COMBO BONUS","+1.00"
 
 	//能力値を計算
 	curPfScore=GetPfPoint(mapdb_level(curselect_item,curselect_lv),curScore,maxCombo,mapdb_difficulty(curselect_item,curselect_lv))
@@ -1485,3 +1575,10 @@
 		if objJudgeFlag(cnt)==FALSE :tmpjudgeflag=FALSE:break
 	loop
 	return tmpjudgeflag
+
+#deffunc PlayImpactEffect str _msg,str _add
+	ImpactEffectTime=0
+	duio_PlaySound"impact"
+	duio_PlaySound"voice_bonus_"+rnd(6)
+	ImpactEffect_Msg=_msg,_add
+	return

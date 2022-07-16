@@ -145,7 +145,7 @@
 					dim pfreg_WindowLayout		//ウィンドウレイアウト
 					dim pfreg_CustomizeNote		//カスタマイズ（音符）
 					dim pfreg_CustomizeBackground	//カスタマイズ（背景）
-					pfreg_AddSpeed=1.0
+					pfreg_AddSpeed=2.0
 					pfreg_Bonusflag=TRUE
 					pfreg_WindowLayout=1+2+4
 

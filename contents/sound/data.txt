@@ -11,6 +11,7 @@ warning;se_warning.wav;1.0;0
 opchange;se_optionchange.wav;1.0;0
 hover;se_hover.wav;1.0;0
 buzz;se_buzz.wav;0.6;0
+impact;se_impact.wav;0.8;0
 
 //BGM
 main;bgm_main.ogg;0.4;1
@@ -30,6 +31,12 @@ voice_lobby;voice_lobby.wav;1.0;0
 voice_start_0;voice_start_0.wav;1.0;0
 voice_start_1;voice_start_1.wav;1.0;0
 voice_start_2;voice_start_2.wav;1.0;0
+voice_bonus_0;voice_bonus_0.wav;1.0;0
+voice_bonus_1;voice_bonus_1.wav;1.0;0
+voice_bonus_2;voice_bonus_2.wav;1.0;0
+voice_bonus_3;voice_bonus_3.wav;1.0;0
+voice_bonus_4;voice_bonus_4.wav;1.0;0
+voice_bonus_5;voice_bonus_5.wav;1.0;0
 
 keysnd_0;keysnd_default.wav;1.0;0
 keysnd_1;keysnd_default.wav;1.0;0

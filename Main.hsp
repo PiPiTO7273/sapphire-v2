@@ -3,8 +3,8 @@
 //	(c) 2022 puoro.
 
 //既知の不具合
-// - SINGLEオプション使用時かつBPM変更地点がロングノーツ終点に存在する場合に、描画と判定がずれる
-//   -> BPM変更地点に存在しないレーンのダミーオブジェクトを配置すると解決？？
+// - SINGLEオプション使用時かつBPM変更地点がロングノーツ終点に存在する場合に、描画と判定がずれる。
+//   -> そもそもSINGLE自体を廃止した。
 
 #include"hsp3_64.as"
 #include"hspint64.as"
@@ -376,6 +376,9 @@ goto*Startup
 
 		hdximg(igameplay_bg_wall)=LoadGraph("contents/graphic/gameplay_bg_wall.png")
 
+		hdximg(igameplay_speedchange)=LoadGraph("contents/graphic/gameplay_speedchange.png")
+		hdximg(igameplay_speedchange_cursor)=LoadGraph("contents/graphic/gameplay_speedchange_cursor.png")
+
 		hdximg(iresult_ratio_excellent)=LoadGraph("contents/graphic/result_ratio_excellent.png")
 		hdximg(iresult_ratio_great)=LoadGraph("contents/graphic/result_ratio_great.png")
 		hdximg(iresult_ratio_good)=LoadGraph("contents/graphic/result_ratio_good.png")
@@ -416,6 +419,11 @@ goto*Startup
 		dim hdximgarr_titlelogo,120
 		repeat 120
 			hdximgarr_titlelogo(cnt)=LoadGraph("contents/package/res_titlelogo/f"+strf("%04d.png",cnt))
+		loop
+
+		dim hdximgarr_bonuseffect,46
+		repeat 46
+			hdximgarr_bonuseffect(cnt)=LoadGraph("contents/package/res_bonuseffect/i_"+strf("%04d.png",cnt))
 		loop
 
 	//グローバル変数

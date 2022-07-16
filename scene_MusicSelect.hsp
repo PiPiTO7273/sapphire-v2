@@ -155,6 +155,8 @@
 	dim curPlayhPreview
 	dim AutoPlayFlag
 	dim SearchItem_hInput
+	dim currentSetMission
+	currentSetMission=-1
 
 	helpscene=""
 	optionwindowclosecount=-1
@@ -772,6 +774,7 @@
 			gosub*scene_MusicSelect_PauseAllPreview
 
 			curpreview_time=0
+			cfunc64v BASS_ChannelSetAttribute,mapdb_hpreview(item,lv),BASS_ATTRIB_VOL,d2f(0.5)
 			cfunc64v BASS_ChannelSetPosition,mapdb_hpreview(item,lv),0,0
 			cfunc64v BASS_ChannelPlay,mapdb_hpreview(item,lv)
 			curPlayhPreview=mapdb_hpreview(item,lv)

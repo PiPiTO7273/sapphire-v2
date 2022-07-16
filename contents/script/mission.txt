@@ -2,3 +2,4 @@
 ids<>:mission@0>>0cdaf088-caa9-db1c-d47c-2bbad453c480,CLEAR,CLEAR,98b0147e-830f-db89-6f3d-b79afb7d7e40
 ids<>:mission@1>>98b0147e-830f-db89-6f3d-b79afb7d7e40,SCORE,7000000,53dbeb27-d57f-0cd4-6655-c9892ccd1a39
 ids<>:mission@2>>12209680-d01a-e3e2-320e-9ecd12859844,CLEAR,EXPERT-CLEAR,459b6b22-7a70-1af8-3541-cc452b29e718
+ids<>:mission@3>>4ee04725-f056-a73e-dfd2-dec615cef9c5,SCORE,8000000,386388ca-36f9-2021-7eaf-e85dc065db01

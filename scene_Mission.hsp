@@ -63,7 +63,7 @@
 			dim item:dim lv
 			SearchDBfromUUID mission_playmap(cnt),item,lv
 
-			if IsUnlocked(item,lv)==FALSE :continue		//ÇªÇ‡ÇªÇ‡â€ëËã»Ç™ñ¢âã÷Ç»ÇÁñ≥éã
+			;if IsUnlocked(item,lv)==FALSE :continue		//ÇªÇ‡ÇªÇ‡â€ëËã»Ç™ñ¢âã÷Ç»ÇÁñ≥éã
 
 			mapitem_tmptitle=mapdb_title(item,lv)+" ["
 			mapitem_tmptitle+difid2difstr(lv)+"] Ç\n"
@@ -296,14 +296,15 @@
 
 				//ÉIÉvÉVÉáÉìê›íË
 				pfreg_Placement=PLAYOPT_ID_OBJPLACE_NORMAL
+				pfreg_GaugeType=PLAYOPT_ID_GAUGE_NORMAL
 				if mission_type(currentSetMission)=="CLEAR" {
 					switch mission_typeprm(currentSetMission)
-						case"ASSIST":pfreg_GaugeType=PLAYOPT_ID_GAUGE_ASSIST:swbreak
-						case"NORMAL":pfreg_GaugeType=PLAYOPT_ID_GAUGE_NORMAL:swbreak
-						case"EXPERT":pfreg_GaugeType=PLAYOPT_ID_GAUGE_EXPERT:swbreak
-						case"MADNESS":pfreg_GaugeType=PLAYOPT_ID_GAUGE_MADNESS:swbreak
+						case"ASSIST-CLEAR":pfreg_GaugeType=PLAYOPT_ID_GAUGE_ASSIST:swbreak
+						case"CLEAR":pfreg_GaugeType=PLAYOPT_ID_GAUGE_NORMAL:swbreak
+						case"EXPERT-CLEAR":pfreg_GaugeType=PLAYOPT_ID_GAUGE_EXPERT:swbreak
+						case"MADNESS-CLEAR":pfreg_GaugeType=PLAYOPT_ID_GAUGE_MADNESS:swbreak
 						case"FULLCOMBO":pfreg_GaugeType=PLAYOPT_ID_GAUGE_AR_FC:swbreak
-						case"ALLEXCELLENT":pfreg_GaugeType=PLAYOPT_ID_GAUGE_AR_ALLEX:swbreak
+						case"ALL-EXCELLENT":pfreg_GaugeType=PLAYOPT_ID_GAUGE_AR_ALLEX:swbreak
 					swend
 				}
 

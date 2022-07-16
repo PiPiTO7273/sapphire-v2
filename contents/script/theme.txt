@@ -297,6 +297,7 @@
 		#Gameplay @image gameplay_judge graphic/gameplay_judge.png 20 540 &animation-in=move,100,370,-200,0,CUBIC_OUT &animation-in=fade,100,370,CUBIC_OUT &layerlv=1 &hide
 		#Gameplay @image gameplay_score graphic/gameplay_score.png 1440 40 &animation-in=move,100,350,200,0,CUBIC_OUT &animation-in=fade,100,350,CUBIC_OUT &layerlv=1
 		#Gameplay @image gameplay_scoregraph graphic/gameplay_scoregraph.png 1474 260 &animation-in=move,100,350,200,0,CUBIC_OUT &animation-in=fade,100,350,CUBIC_OUT &layerlv=1 &hide
+		#Gameplay @image gameplay_keyguide graphic/gameplay_keyguide.png 20 824 &animation-in=move,200,350,-200,0,CUBIC_OUT &animation-in=fade,200,350,CUBIC_OUT &layerlv=1
 
 		#Gameplay @text gameplay_title_text * 830 8 rom1cm20 &align-center-size=260 &animation-in=move,300,200,0,-16,CUBIC_OUT &animation-in=fade,300,200,CUBIC_OUT &layerlv=2
 

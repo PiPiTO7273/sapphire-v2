@@ -154,12 +154,14 @@
 					if common_cleartype(cnt)==mapdb_mybest_cleartype(item,lv) :mybestClearType=cnt:break
 				loop
 
-				if GameplayMode==GAMEMODE_MISSION&mission_type(currentSetMission)=="CLEAR" {
-					dim missionClearType
-					missionClearType=CLEARTYPE_NODATA
-					foreach common_cleartype
-						if common_cleartype(cnt)==mission_typeprm(currentSetMission) :missionClearType=cnt:break
-					loop
+				if currentSetMission!-1 {
+					if GameplayMode==GAMEMODE_MISSION&mission_type(currentSetMission)=="CLEAR" {
+						dim missionClearType
+						missionClearType=CLEARTYPE_NODATA
+						foreach common_cleartype
+							if common_cleartype(cnt)==mission_typeprm(currentSetMission) :missionClearType=cnt:break
+						loop
+					}
 				}
 
 			//今回
@@ -429,6 +431,16 @@
 					swbreak
 				swend
 			swbreak
+			case"retry"
+				curSceneTag="#Gameplay"
+				duio_SetAllImageOutro"#Shutter"
+				duio_PlaySound"shutter_out"
+				duio_ChangeTextBody duio_TextID2UIsetID("musicdecide_loadprogress"),"0"
+				repeat int(1000.0/double(duio_GetFPS()))
+					gosub*scene_Gameplay_UpdateLoadScreen
+				loop
+				gosub*scene_Gameplay_Init
+			swbreak
 		swend
 	}
 
@@ -455,9 +467,10 @@
 
 		//もう一度
 		case"retry"
-			curSceneTag="#Gameplay"
-			gosub*scene_Gameplay_free
-			gosub*scene_Gameplay_Init
+			if decidecount==-1 {
+				decidecount=0:DecideJumpScene="retry"
+				gosub*onshutter
+			}
 		swbreak
 
 		//スクショ

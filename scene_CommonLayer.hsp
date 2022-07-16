@@ -55,6 +55,19 @@
 			giftres="あ"
 		swbreak
 
+		case"TICKETINF"
+			pfreg_NumTickets+1000
+			giftres="ちけっといっぱい＾＾"
+		swbreak
+
+		case"MRES"
+			repeat mission_max
+				PortalWebSvc_SendProfile PlayerID,PlayerPassword,"XODA.MISSION.PROGRESS."+cnt,"0"
+				mission_progress(cnt)=0
+			loop
+			giftres="りせっとー"
+		swbreak
+
 		default
 			//存在しないコード
 			return 2

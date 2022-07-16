@@ -154,6 +154,9 @@
 
 #enum igameplay_bg_wall
 
+#enum igameplay_speedchange
+#enum igameplay_speedchange_cursor
+
 #enum iresult_ratio_excellent
 #enum iresult_ratio_great
 #enum iresult_ratio_good

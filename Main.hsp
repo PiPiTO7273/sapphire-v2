@@ -103,6 +103,21 @@ goto*Startup
 		dupptr csconf_proxyIP,varptr64(ClientSaveData)+308,64,vartype("str")
 		dupptr csconf_proxyPort,varptr64(ClientSaveData)+372,64,vartype("str")
 
+		dupptr csconf_keyconfig_S,varptr64(ClientSaveData)+436,4,vartype("int")
+		dupptr csconf_keyconfig_D,varptr64(ClientSaveData)+440,4,vartype("int")
+		dupptr csconf_keyconfig_F,varptr64(ClientSaveData)+444,4,vartype("int")
+		dupptr csconf_keyconfig_J,varptr64(ClientSaveData)+448,4,vartype("int")
+		dupptr csconf_keyconfig_K,varptr64(ClientSaveData)+452,4,vartype("int")
+		dupptr csconf_keyconfig_L,varptr64(ClientSaveData)+456,4,vartype("int")
+		dupptr csconf_keyconfig_SPACE,varptr64(ClientSaveData)+460,4,vartype("int")
+		if csconf_keyconfig_S==0 :csconf_keyconfig_S=KEY_INPUT_S
+		if csconf_keyconfig_D==0 :csconf_keyconfig_D=KEY_INPUT_D
+		if csconf_keyconfig_F==0 :csconf_keyconfig_F=KEY_INPUT_F
+		if csconf_keyconfig_J==0 :csconf_keyconfig_J=KEY_INPUT_J
+		if csconf_keyconfig_K==0 :csconf_keyconfig_K=KEY_INPUT_K
+		if csconf_keyconfig_L==0 :csconf_keyconfig_L=KEY_INPUT_L
+		if csconf_keyconfig_SPACE==0 :csconf_keyconfig_SPACE=KEY_INPUT_SPACE
+
 		dim hdximg,iBuffer_Max
 		gosub*ApplyClientConfig
 
@@ -131,10 +146,10 @@ goto*Startup
 				ChangeWindowMode FALSE
 			swbreak
 			case 2	//枠なしウィンドウモード
-				chgdisp 1,DispWidth,DispHeight
+				/*chgdisp 1,DispWidth,DispHeight
 				bgscr 0,DispWidth,DispHeight,0,0,0
 				mouse -1
-				SetUserWindow hwnd
+				SetUserWindow hwnd*/
 			swbreak
 		swend
 		;SetWindowVisibleFlag FALSE
@@ -329,6 +344,8 @@ goto*Startup
 				DrawGraph 0,0,duio_GetButtonhImg(duio_ButtonID2UIsetID(playoption_target_buttonid(cnt+6))),TRUE
 				DrawGraph 0,0,hdximg(iplayoption_enabled_180),TRUE
 			loop
+
+		hdximg(igameplay_getready_movie)=LoadGraph("contents/video/getready.ogv")
 
 		hdximg(igameplay_bg_sidelr)=MakeScreen(256,1024,TRUE)
 		;hdximg(igameplay_bgorg_side_0)=LoadGraph("contents/graphic/gameplay_bg_effect_0.png")

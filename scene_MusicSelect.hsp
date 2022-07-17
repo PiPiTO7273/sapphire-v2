@@ -905,6 +905,7 @@
 	duio_ChangeImage duio_ImageID2UIsetID("musicdecide_level_img"),hdximg(imusicselect_item_normal+curselect_lv)
 
 	duio_PlaySound"voice_start_"+rnd(3)
+	duio_PlaySound"buzz_load"
 
 	return
 

@@ -318,9 +318,17 @@
 
 		swend
 
-		
-
 	return 0
+
+*freeAllSaveData
+	repeat idsDB_max
+		if instr(idsDB_Key(cnt),0,"_GiftCodeUsed")!-1 :idsDB_Value(cnt)=""
+		if instr(idsDB_Key(cnt),0,"_MapUnlock")!-1 :idsDB_Value(cnt)=""
+		if instr(idsDB_Key(cnt),0,"_Customize")!-1 :idsDB_Value(cnt)=""
+		if instr(idsDB_Key(cnt),0,"_Mission")!-1 :idsDB_Value(cnt)=""
+		if instr(idsDB_Key(cnt),0,"_Customize")!-1 :idsDB_Value(cnt)=""
+	loop
+	return
 
 *UploadAllSavedata
 	if OnlineFlag {

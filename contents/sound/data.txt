@@ -11,7 +11,9 @@ warning;se_warning.wav;1.0;0
 opchange;se_optionchange.wav;1.0;0
 hover;se_hover.wav;1.0;0
 buzz;se_buzz.wav;0.6;0
+buzz_load;se_buzz_load.wav;0.6;0
 impact;se_impact.wav;0.8;0
+getready;se_getready.wav;0.8;0
 
 //BGM
 main;bgm_main.ogg;0.4;1

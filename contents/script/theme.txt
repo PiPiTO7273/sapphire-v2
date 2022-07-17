@@ -281,7 +281,7 @@
 
 	////// Side Lane //////
 		#Gameplay @3dsquare gameplay_lane_side_l (700,250,200) (500,7000,100) (500,250,100) (700,7000,200) * &layerlv=1 &disable-imgalpha
-		#Gameplay @3dsquare gameplay_lane_side_r (-700,250,200) (-500,7000,100) (-500,250,100) (-700,7000,200) * &layerlv=1 &disable-imgalpha
+		#Gameplay @3dsquare gameplay_lane_side_r (-500,250,100) (-700,7000,200) (-700,250,200) (-500,7000,100) * &layerlv=1 &disable-imgalpha
 
 	////// Background Effect //////
 		#Gameplay @3dsquare gameplay_bg_effect_l0 (1200,-300,500) (850,7000,200) (850,-300,200) (1200,7000,500) * &layerlv=0
@@ -352,6 +352,18 @@
 	////// Gauge //////
 		#Gameplay @image gameplay_gauge_bg * 348 330 &layerlv=2 &imgwidth=50 &imgheight=320
 		#Gameplay @image gameplay_gauge * 358 330 &layerlv=3 &imgwidth=50 &imgheight=320
+
+	////// KeyGuide //////
+		#Gameplay @text gameplay_keyguide_speedchange_0 * 50 891 ps12 &align-center-size=38 &animation-in=move,200,350,-200,0,CUBIC_OUT &animation-in=fade,200,350,CUBIC_OUT &layerlv=1 &color=0,0,0
+		#Gameplay @text gameplay_keyguide_speedchange_1 * 50 917 ps12 &align-center-size=38 &animation-in=move,200,350,-200,0,CUBIC_OUT &animation-in=fade,200,350,CUBIC_OUT &layerlv=1 &color=0,0,0
+		#Gameplay @text gameplay_keyguide_speedchange_2 * 50 943 ps12 &align-center-size=38 &animation-in=move,200,350,-200,0,CUBIC_OUT &animation-in=fade,200,350,CUBIC_OUT &layerlv=1 &color=0,0,0
+		#Gameplay @text gameplay_keyguide_speedchange_3 * 50 969 ps12 &align-center-size=38 &animation-in=move,200,350,-200,0,CUBIC_OUT &animation-in=fade,200,350,CUBIC_OUT &layerlv=1 &color=0,0,0
+		#Gameplay @text gameplay_keyguide_button1 * 136 891 ps12 &align-center-size=8 &animation-in=move,200,350,-200,0,CUBIC_OUT &animation-in=fade,200,350,CUBIC_OUT &layerlv=1 &color=0,0,0
+		#Gameplay @text gameplay_keyguide_button2 * 136 917 ps12 &align-center-size=8 &animation-in=move,200,350,-200,0,CUBIC_OUT &animation-in=fade,200,350,CUBIC_OUT &layerlv=1 &color=0,0,0
+		#Gameplay @text gameplay_keyguide_button3 * 136 943 ps12 &align-center-size=8 &animation-in=move,200,350,-200,0,CUBIC_OUT &animation-in=fade,200,350,CUBIC_OUT &layerlv=1 &color=0,0,0
+		#Gameplay @text gameplay_keyguide_button4 * 136 969 ps12 &align-center-size=8 &animation-in=move,200,350,-200,0,CUBIC_OUT &animation-in=fade,200,350,CUBIC_OUT &layerlv=1 &color=0,0,0
+		#Gameplay @text gameplay_keyguide_retire * 57 995 ps12 &align-center-size=24 &animation-in=move,200,350,-200,0,CUBIC_OUT &animation-in=fade,200,350,CUBIC_OUT &layerlv=1 &color=0,0,0
+		#Gameplay @text gameplay_keyguide_retry * 46 1021 ps12 &align-center-size=46 &animation-in=move,200,350,-200,0,CUBIC_OUT &animation-in=fade,200,350,CUBIC_OUT &layerlv=1 &color=0,0,0
 
 	////// Unlimited //////
 		#Gameplay @text gameplay_unlimitedtime * 1630 10 rom1cm16 &animation-in=fade,300,400,LINEAR &color=36,229,196
@@ -720,6 +732,7 @@
 		#Config @text config_text_texture テクスチャ画質 240 578 rom1cm24 &color=255,255,255 &animation-in=fade,350,250,CUBIC_OUT &animation-in=move,350,300,-64,0,CUBIC_OUT &animation-in=random.text,350,500
 		#Config @text config_text_antialias アンチエイリアス 240 676 rom1cm24 &color=255,255,255 &animation-in=fade,400,250,CUBIC_OUT &animation-in=move,400,300,-64,0,CUBIC_OUT &animation-in=random.text,400,500
 		#Config @text config_text_proxy プロキシ設定 240 774 rom1cm24 &color=255,255,255 &animation-in=fade,450,250,CUBIC_OUT &animation-in=move,450,300,-64,0,CUBIC_OUT &animation-in=random.text,450,500
+		#Config @text config_text_proxy キー割り当て設定 240 892 rom1cm24 &color=255,255,255 &animation-in=fade,500,250,CUBIC_OUT &animation-in=move,500,300,-64,0,CUBIC_OUT &animation-in=random.text,500,500
 
 		#Config @image config_shape_category_0 graphic/config_category.png 500 243 &animation-in=fade,250,250,CUBIC_OUT &animation-in=move,250,300,-32,0,CUBIC_OUT
 		#Config @image config_shape_category_1 graphic/config_category.png 500 343 &animation-in=fade,300,250,CUBIC_OUT &animation-in=move,300,300,-32,0,CUBIC_OUT
@@ -727,6 +740,7 @@
 		#Config @image config_shape_category_3 graphic/config_category.png 500 580 &animation-in=fade,400,250,CUBIC_OUT &animation-in=move,400,300,-32,0,CUBIC_OUT
 		#Config @image config_shape_category_4 graphic/config_category.png 500 678 &animation-in=fade,450,250,CUBIC_OUT &animation-in=move,450,300,-32,0,CUBIC_OUT
 		#Config @image config_shape_category_5 graphic/config_category.png 500 776 &animation-in=fade,500,250,CUBIC_OUT &animation-in=move,500,300,-32,0,CUBIC_OUT
+		#Config @image config_shape_category_5 graphic/config_category.png 500 894 &animation-in=fade,550,250,CUBIC_OUT &animation-in=move,550,300,-32,0,CUBIC_OUT
 
 		#Config @button config_button_screenmode_0 graphic/config_button_screenmode_0.png 610 230 180 50 &animation-in=zoom,300,250,0.6,CUBIC_OUT &animation-in=fade,300,250,CUBIC_OUT &event=screenmode_0 &pushsound=opchange
 		#Config @button config_button_screenmode_1 graphic/config_button_screenmode_1.png 810 230 180 50 &animation-in=zoom,350,250,0.6,CUBIC_OUT &animation-in=fade,350,250,CUBIC_OUT &event=screenmode_1 &pushsound=opchange
@@ -767,5 +781,29 @@
 
 		#Config @text config_current_proxyip * 630 806 ps20 &animation-in=fade,600,250,LINEAR &color=0,0,0
 		#Config @text config_current_proxyport * 946 806 ps20 &animation-in=fade,650,250,LINEAR &color=0,0,0
+
+		#Config @text config_keyconfig_name_lside L-SIDE 625 880 ps16 &align-center-size=52 &color=255,39,183 &animation-in=fade,650,250,CUBIC_OUT &animation-in=move,650,250,-16,0,CUBIC_OUT
+		#Config @text config_keyconfig_name_button1 BUTTON-1 733 880 ps16 &align-center-size=76 &color=230,230,230 &animation-in=fade,700,250,CUBIC_OUT &animation-in=move,700,250,-16,0,CUBIC_OUT
+		#Config @text config_keyconfig_name_button2 BUTTON-2 831 880 ps16 &align-center-size=80 &color=230,230,230 &animation-in=fade,750,250,CUBIC_OUT &animation-in=move,750,250,-16,0,CUBIC_OUT
+		#Config @text config_keyconfig_name_button3 BUTTON-3 931 880 ps16 &align-center-size=81 &color=230,230,230 &animation-in=fade,800,250,CUBIC_OUT &animation-in=move,800,250,-16,0,CUBIC_OUT
+		#Config @text config_keyconfig_name_button4 BUTTON-4 1030 880 ps16 &align-center-size=82 &color=230,230,230 &animation-in=fade,850,250,CUBIC_OUT &animation-in=move,850,250,-16,0,CUBIC_OUT
+		#Config @text config_keyconfig_name_rside R-SIDE 1165 880 ps16 &align-center-size=52 &color=39,255,226 &animation-in=fade,900,250,CUBIC_OUT &animation-in=move,900,250,-16,0,CUBIC_OUT
+		#Config @text config_keyconfig_name_speedchange スピード変更 1250 879 rom1cm16 &align-center-size=96 &color=230,230,230 &animation-in=fade,950,250,CUBIC_OUT &animation-in=move,950,250,-16,0,CUBIC_OUT
+
+		#Config @text config_keyconfig_key_lside * 625 911 ps24 &align-center-size=52 &color=230,230,230 &animation-in=fade,700,250,CUBIC_OUT &animation-in=move,700,250,-16,0,CUBIC_OUT
+		#Config @text config_keyconfig_key_button1 * 733 911 ps24 &align-center-size=76 &color=230,230,230 &animation-in=fade,750,250,CUBIC_OUT &animation-in=move,750,250,-16,0,CUBIC_OUT
+		#Config @text config_keyconfig_key_button2 * 831 911 ps24 &align-center-size=80 &color=230,230,230 &animation-in=fade,800,250,CUBIC_OUT &animation-in=move,800,250,-16,0,CUBIC_OUT
+		#Config @text config_keyconfig_key_button3 * 931 911 ps24 &align-center-size=81 &color=230,230,230 &animation-in=fade,850,250,CUBIC_OUT &animation-in=move,850,250,-16,0,CUBIC_OUT
+		#Config @text config_keyconfig_key_button4 * 1030 911 ps24 &align-center-size=82 &color=230,230,230 &animation-in=fade,900,250,CUBIC_OUT &animation-in=move,900,250,-16,0,CUBIC_OUT
+		#Config @text config_keyconfig_key_rside * 1165 911 ps24 &align-center-size=52 &color=230,230,230 &animation-in=fade,950,250,CUBIC_OUT &animation-in=move,950,250,-16,0,CUBIC_OUT
+		#Config @text config_keyconfig_key_speedchange * 1250 911 ps24 &align-center-size=96 &color=230,230,230 &animation-in=fade,1000,250,CUBIC_OUT &animation-in=move,1000,250,-16,0,CUBIC_OUT
+
+		#Config @button config_keyconfig_change_lside graphic/config_button_keyconfig_change.png 610 951 80 40 &animation-in=fade,750,250,CUBIC_OUT &animation-in=zoom,750,300,0.6,CUBIC_OUT &event=keyconfig_change_lside
+		#Config @button config_keyconfig_change_button1 graphic/config_button_keyconfig_change.png 730 951 80 40 &animation-in=fade,800,250,CUBIC_OUT &animation-in=zoom,800,300,0.6,CUBIC_OUT &event=keyconfig_change_button1
+		#Config @button config_keyconfig_change_button2 graphic/config_button_keyconfig_change.png 830 951 80 40 &animation-in=fade,850,250,CUBIC_OUT &animation-in=zoom,850,300,0.6,CUBIC_OUT &event=keyconfig_change_button2
+		#Config @button config_keyconfig_change_button3 graphic/config_button_keyconfig_change.png 930 951 80 40 &animation-in=fade,900,250,CUBIC_OUT &animation-in=zoom,900,300,0.6,CUBIC_OUT &event=keyconfig_change_button3
+		#Config @button config_keyconfig_change_button4 graphic/config_button_keyconfig_change.png 1030 951 80 40 &animation-in=fade,950,250,CUBIC_OUT &animation-in=zoom,950,300,0.6,CUBIC_OUT &event=keyconfig_change_button4
+		#Config @button config_keyconfig_change_rside graphic/config_button_keyconfig_change.png 1150 951 80 40 &animation-in=fade,1000,250,CUBIC_OUT &animation-in=zoom,1000,300,0.6,CUBIC_OUT &event=keyconfig_change_rside
+		#Config @button config_keyconfig_change_speedchange graphic/config_button_keyconfig_change.png 1257 951 80 40 &animation-in=fade,1050,250,CUBIC_OUT &animation-in=zoom,1050,300,0.6,CUBIC_OUT &event=keyconfig_change_speedchange
 
 		#Config @button config_button_back graphic/common_button_back.png 0 1020 240 60 &animation-in=fade,200,300,CUBIC_OUT &animation-in=move,200,300,-128,0,CUBIC_OUT &pushsound=pushbutton &event=backscene

@@ -66,6 +66,7 @@
 	dim ImpactEffectTime
 	sdim ImpactEffect_Msg
 	dim SpeedChange_WindowCount
+	dim PausePreviewFlag
 	ImpactEffectTime=-1
 	;AutoPlayFlag=TRUE
 	;JudgeOffset=-70
@@ -644,6 +645,18 @@
 	duio_ChangeTextBody duio_TextID2UIsetID("musicdecide_loadprogress"),"100"
 	gosub*scene_Gameplay_UpdateLoadScreen
 
+	//操作方法
+	duio_ChangeTextBody duio_TextID2UIsetID("gameplay_keyguide_speedchange_0"),KeyName(csconf_keyconfig_SPACE)
+	duio_ChangeTextBody duio_TextID2UIsetID("gameplay_keyguide_speedchange_1"),KeyName(csconf_keyconfig_SPACE)
+	duio_ChangeTextBody duio_TextID2UIsetID("gameplay_keyguide_speedchange_2"),KeyName(csconf_keyconfig_SPACE)
+	duio_ChangeTextBody duio_TextID2UIsetID("gameplay_keyguide_speedchange_3"),KeyName(csconf_keyconfig_SPACE)
+	duio_ChangeTextBody duio_TextID2UIsetID("gameplay_keyguide_button1"),KeyName(csconf_keyconfig_D)
+	duio_ChangeTextBody duio_TextID2UIsetID("gameplay_keyguide_button2"),KeyName(csconf_keyconfig_F)
+	duio_ChangeTextBody duio_TextID2UIsetID("gameplay_keyguide_button3"),KeyName(csconf_keyconfig_J)
+	duio_ChangeTextBody duio_TextID2UIsetID("gameplay_keyguide_button4"),KeyName(csconf_keyconfig_K)
+	duio_ChangeTextBody duio_TextID2UIsetID("gameplay_keyguide_retire"),KeyName(KEY_INPUT_ESCAPE)
+	duio_ChangeTextBody duio_TextID2UIsetID("gameplay_keyguide_retry"),KeyName(KEY_INPUT_DELETE)
+
 	//タイマー設定
 		sysclock_std=GetNowCount()
 
@@ -668,10 +681,17 @@
 
 		return
 	}
-	if SceneTime>500&BASS_ChannelIsActive(curPlayhPreview)==BASS_ACTIVE_PLAYING {
+	if SceneTime>500&PausePreviewFlag==FALSE {
 		cfunc64v BASS_ChannelPause,curPlayhPreview
 		cfunc64v BASS_ChannelSetAttribute,curPlayhPreview,BASS_ATTRIB_VOL,d2f(0.7)	//元に戻しておく
 		gosub*scene_MusicSelect_PauseAllPreview
+
+		SeekMovieToGraph hdximg(igameplay_getready_movie),0
+		PlayMovieToGraph hdximg(igameplay_getready_movie)
+		duio_StopSound"buzz_load"
+		duio_PlaySound"getready"
+
+		PausePreviewFlag=TRUE
 	}
 
 	if CurFPS*double(SubThreadCount)>MaxSubThreadFPS {
@@ -792,10 +812,31 @@
 
 		SetDrawScreen hdximg(igameplay_copybuf)
 			ClearDrawScreen
-			SetDrawBlendMode DX_BLENDMODE_PMA_ALPHA,256
+			SetDrawBlendMode DX_BLENDMODE_PMA_ALPHA,150
 			DrawExtendGraph 0,0,LaneWidth,LaneHeight,hdximg(igameplay_bg_sidelane)
 			DrawExtendGraph LaneWidth,0,LaneWidth*5,LaneHeight,hdximg(igameplay_bg_lane)
 			DrawExtendGraph LaneWidth*5,0,LaneWidth*6,LaneHeight,hdximg(igameplay_bg_sidelane)
+
+			//キーガイド
+			if SceneTime<Pretime {
+				if SceneTime<1000 {
+					setease 0,150,ease_cubic_out
+					SetDrawBlendMode DX_BLENDMODE_ALPHA,getease(SceneTime-650,300)
+					setease 32,0,ease_cubic_out
+					EasePosY=getease(SceneTime-650,350)
+				} else {
+					setease 150,0,ease_cubic_out
+					SetDrawBlendMode DX_BLENDMODE_ALPHA,getease(SceneTime-Pretime+350,350)
+					setease 0,32,ease_cubic_out
+					EasePosY=getease(SceneTime-Pretime+350,350)
+				}
+				DrawStringXCenterToHandle LaneWidth*0,LaneHeight-32+EasePosY,KeyName(csconf_keyconfig_S),LaneWidth,$FFFFFF,duio_GetFontHandle("ps14")
+				DrawStringXCenterToHandle LaneWidth*1,LaneHeight-32+EasePosY,KeyName(csconf_keyconfig_D),LaneWidth,$FFFFFF,duio_GetFontHandle("ps14")
+				DrawStringXCenterToHandle LaneWidth*2,LaneHeight-32+EasePosY,KeyName(csconf_keyconfig_F),LaneWidth,$FFFFFF,duio_GetFontHandle("ps14")
+				DrawStringXCenterToHandle LaneWidth*3,LaneHeight-32+EasePosY,KeyName(csconf_keyconfig_J),LaneWidth,$FFFFFF,duio_GetFontHandle("ps14")
+				DrawStringXCenterToHandle LaneWidth*4,LaneHeight-32+EasePosY,KeyName(csconf_keyconfig_K),LaneWidth,$FFFFFF,duio_GetFontHandle("ps14")
+				DrawStringXCenterToHandle LaneWidth*5,LaneHeight-32+EasePosY,KeyName(csconf_keyconfig_L),LaneWidth,$FFFFFF,duio_GetFontHandle("ps14")
+			}
 
 			//レーンエフェクト
 			repeat 6
@@ -900,7 +941,7 @@
 		DrawRectGraph 227,152,0,0,int(200.0*(double(sysclock_cur)/double(mapconfig_playlength))),6,hdximg(igameplay_playtime_pre),TRUE
 
 	//ギアチェン
-		if KeyInputFlag(KEY_INPUT_SPACE) {
+		if KeyInputFlag(csconf_keyconfig_SPACE) {
 			SpeedChange_WindowCount=limit(SpeedChange_WindowCount+FrameTime,,300)
 			setease BufHeight,905,ease_cubic_out
 		} else {
@@ -1144,6 +1185,16 @@
 			DrawBox 0,0,BufWidth,BufHeight,0,TRUE
 		}
 
+	//Get Ready表示
+		if SceneTime>500&SceneTime<4000 {
+			setease 200,0,ease_linear
+			SetDrawBlendMode DX_BLENDMODE_ALPHA,getease(SceneTime-3500,500)
+			DrawBox 0,0,BufWidth,BufHeight,0,TRUE
+
+			SetDrawBlendMode DX_BLENDMODE_ADD,256
+			DrawExtendGraph 0,0,BufWidth,BufHeight,hdximg(igameplay_getready_movie),FALSE
+		}
+
 	if JudgeDispCount!-1 :JudgeDispCount+FrameTime
 	curScore_dispcount+FrameTime
 	repeat 6
@@ -1187,10 +1238,10 @@
 
 	if IsPushed(KEY_INPUT_ESCAPE) :duio_SetEventStack"gameplay_event_retire"
 	if IsPushed(KEY_INPUT_DELETE) :duio_SetEventStack"gameplay_event_restart"
-	if KeyInputFlag(KEY_INPUT_SPACE)&IsPushed(KEY_INPUT_D) :AddSpeed_EaseValue_From=AddSpeed_EaseValue:AddSpeed_EaseCount=0:AddSpeed-0.1
-	if KeyInputFlag(KEY_INPUT_SPACE)&IsPushed(KEY_INPUT_F) :AddSpeed_EaseValue_From=AddSpeed_EaseValue:AddSpeed_EaseCount=0:AddSpeed+0.1
-	if KeyInputFlag(KEY_INPUT_SPACE)&IsPushed(KEY_INPUT_J) :AddSpeed_EaseValue_From=AddSpeed_EaseValue:AddSpeed_EaseCount=0:AddSpeed-1.0
-	if KeyInputFlag(KEY_INPUT_SPACE)&IsPushed(KEY_INPUT_K) :AddSpeed_EaseValue_From=AddSpeed_EaseValue:AddSpeed_EaseCount=0:AddSpeed+1.0
+	if KeyInputFlag(csconf_keyconfig_SPACE)&IsPushed(csconf_keyconfig_D) :AddSpeed_EaseValue_From=AddSpeed_EaseValue:AddSpeed_EaseCount=0:AddSpeed-0.1
+	if KeyInputFlag(csconf_keyconfig_SPACE)&IsPushed(csconf_keyconfig_F) :AddSpeed_EaseValue_From=AddSpeed_EaseValue:AddSpeed_EaseCount=0:AddSpeed+0.1
+	if KeyInputFlag(csconf_keyconfig_SPACE)&IsPushed(csconf_keyconfig_J) :AddSpeed_EaseValue_From=AddSpeed_EaseValue:AddSpeed_EaseCount=0:AddSpeed-1.0
+	if KeyInputFlag(csconf_keyconfig_SPACE)&IsPushed(csconf_keyconfig_K) :AddSpeed_EaseValue_From=AddSpeed_EaseValue:AddSpeed_EaseCount=0:AddSpeed+1.0
 	AddSpeed=limitf(AddSpeed,0.1,10.0)
 
 	if ImpactEffectTime!-1 :ImpactEffectTime+FrameTime
@@ -1222,6 +1273,7 @@
 	switch duio_GetButtonEventStack()
 
 		case"gameplay_event_restart"
+			duio_PlaySound"buzz_load"
 			mapconfig_finishflag=TRUE:duio_SetActiveScene"#Gameplay",FALSE
 			gosub*onshutter
 			mapconfig_finishtime=2000:mapconfig_compeff_shutterflag=TRUE
@@ -1296,12 +1348,12 @@
 		}
 
 		//判定処理
-			KeybtJudge(1,0)=CheckHitKey(KEY_INPUT_S)
-			KeybtJudge(1,1)=CheckHitKey(KEY_INPUT_D)
-			KeybtJudge(1,2)=CheckHitKey(KEY_INPUT_F)
-			KeybtJudge(1,3)=CheckHitKey(KEY_INPUT_J)
-			KeybtJudge(1,4)=CheckHitKey(KEY_INPUT_K)
-			KeybtJudge(1,5)=CheckHitKey(KEY_INPUT_L)
+			KeybtJudge(1,0)=CheckHitKey(csconf_keyconfig_S)
+			KeybtJudge(1,1)=CheckHitKey(csconf_keyconfig_D)
+			KeybtJudge(1,2)=CheckHitKey(csconf_keyconfig_F)
+			KeybtJudge(1,3)=CheckHitKey(csconf_keyconfig_J)
+			KeybtJudge(1,4)=CheckHitKey(csconf_keyconfig_K)
+			KeybtJudge(1,5)=CheckHitKey(csconf_keyconfig_L)
 
 		//判定
 			repeat 6
@@ -1475,6 +1527,8 @@
 	if mapconfig_hcompeff!0 {
 		PauseMovieToGraph mapconfig_hcompeff
 	}
+
+	PauseMovieToGraph hdximg(igameplay_getready_movie)
 
 	DeleteGraph bgvideo_himg
 

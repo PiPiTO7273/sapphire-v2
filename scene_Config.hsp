@@ -16,6 +16,8 @@
 	if duio_GetImageOutroFlag(duio_ImageID2UIsetID("shutter_00"))!TRUE :duio_PlaySound"shutter_out"
 	duio_SetAllImageOutro"#Shutter"
 
+	gosub*UpdateKeyConfig
+
 	return
 
 *scene_Config
@@ -89,6 +91,27 @@
 		}
 	}
 
+	if AcceptKeyConfig!-1 {
+		SetKeyConfig=-1
+		repeat 256
+			if KeyInputFlag(cnt) :SetKeyConfig=cnt:break
+		loop
+		if SetKeyConfig!-1 {
+			switch AcceptKeyConfig
+				case 0:csconf_keyconfig_S=SetKeyConfig:swbreak
+				case 1:csconf_keyconfig_D=SetKeyConfig:swbreak
+				case 2:csconf_keyconfig_F=SetKeyConfig:swbreak
+				case 3:csconf_keyconfig_J=SetKeyConfig:swbreak
+				case 4:csconf_keyconfig_K=SetKeyConfig:swbreak
+				case 5:csconf_keyconfig_L=SetKeyConfig:swbreak
+				case 6:csconf_keyconfig_SPACE=SetKeyConfig:swbreak
+			swend
+			gosub*UpdateKeyConfig
+			SetKeyConfig=-1
+			AcceptKeyConfig=-1
+		}
+	}
+
 	duio_Draw"#Shutter"
 
 	if DecideTime!-1 :DecideTime+FrameTime
@@ -151,6 +174,14 @@
 			DecideTime=0
 			gosub*onshutter
 		swbreak
+
+		case"keyconfig_change_lside":AcceptKeyConfig=0:duio_ChangeTextBody duio_TextID2UIsetID("config_keyconfig_key_lside"),"...":swbreak
+		case"keyconfig_change_button1":AcceptKeyConfig=1:duio_ChangeTextBody duio_TextID2UIsetID("config_keyconfig_key_button1"),"...":swbreak
+		case"keyconfig_change_button2":AcceptKeyConfig=2:duio_ChangeTextBody duio_TextID2UIsetID("config_keyconfig_key_button2"),"...":swbreak
+		case"keyconfig_change_button3":AcceptKeyConfig=3:duio_ChangeTextBody duio_TextID2UIsetID("config_keyconfig_key_button3"),"...":swbreak
+		case"keyconfig_change_button4":AcceptKeyConfig=4:duio_ChangeTextBody duio_TextID2UIsetID("config_keyconfig_key_button4"),"...":swbreak
+		case"keyconfig_change_rside":AcceptKeyConfig=5:duio_ChangeTextBody duio_TextID2UIsetID("config_keyconfig_key_rside"),"...":swbreak
+		case"keyconfig_change_speedchange":AcceptKeyConfig=6:duio_ChangeTextBody duio_TextID2UIsetID("config_keyconfig_key_speedchange"),"...":swbreak
 	swend
 
 	repeat 3
@@ -211,4 +242,16 @@
 	loop
 
 	gosub*SaveClientData
+	return
+
+*UpdateKeyConfig
+	dim AcceptKeyConfig:AcceptKeyConfig=-1
+	dim SetKeyConfig
+	duio_ChangeTextBody duio_TextID2UIsetID("config_keyconfig_key_lside"),KeyName(csconf_keyconfig_S)
+	duio_ChangeTextBody duio_TextID2UIsetID("config_keyconfig_key_button1"),KeyName(csconf_keyconfig_D)
+	duio_ChangeTextBody duio_TextID2UIsetID("config_keyconfig_key_button2"),KeyName(csconf_keyconfig_F)
+	duio_ChangeTextBody duio_TextID2UIsetID("config_keyconfig_key_button3"),KeyName(csconf_keyconfig_J)
+	duio_ChangeTextBody duio_TextID2UIsetID("config_keyconfig_key_button4"),KeyName(csconf_keyconfig_K)
+	duio_ChangeTextBody duio_TextID2UIsetID("config_keyconfig_key_rside"),KeyName(csconf_keyconfig_L)
+	duio_ChangeTextBody duio_TextID2UIsetID("config_keyconfig_key_speedchange"),KeyName(csconf_keyconfig_SPACE)
 	return

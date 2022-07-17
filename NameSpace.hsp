@@ -106,6 +106,8 @@
 #enum iplayoption_target_wr_enabled
 #enum iplayoption_target_mission_enabled
 
+#enum igameplay_getready_movie
+
 #enum igameplay_bg_sidelr
 #enum igameplay_bgorg_side_0
 
@@ -270,7 +272,7 @@
 #const jWid_Bad		160
 #const jWid_Miss		240
 
-#const Pretime		3000
+#const Pretime		5000
 
 ;#const SubThreadLimit		4		//サブスレッドの最大処理回数（負の数で実行回数を固定）
 #const AudioBufferSize		0		//オーディオバッファサイズ（0で自動）

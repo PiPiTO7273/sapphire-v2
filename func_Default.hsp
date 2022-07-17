@@ -218,13 +218,6 @@
 		swend
 		return
 
-	//ãNìÆÇÃêiíªÇï\é¶
-	#deffunc ShowBootProgress int n
-		SetDrawScreen DX_SCREEN_FRONT
-		ClearDrawScreen
-		LoadGraphScreen 720,450,"contents/graphic/bootprog_"+n+".png":WaitVSync 1:wait 10
-		return
-
 	#defcfunc ToDxlibKeyCode int _ascii
 		switch _ascii
 			case'a':return KEY_INPUT_A:swbreak

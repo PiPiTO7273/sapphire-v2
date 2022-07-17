@@ -1,0 +1,37 @@
+
+*scene_Credit_Init
+
+	duio_InitAllCount"#Credit"
+
+	dim SceneCount
+	dim DecideTime
+	DecideTime=-1
+
+	return
+
+*scene_Credit
+
+	SetDrawBlendMode DX_BLENDMODE_ALPHA,256
+	DrawBox 0,0,BufWidth,BufHeight,$FFFFFF,TRUE
+
+	SetDrawBlendMode DX_BLENDMODE_PMA_ALPHA,256
+	duio_Draw"#Credit"
+	duio_Draw"#Shutter"
+
+	if SceneCount*FrameTime>500+2000&duio_GetImageOutroFlag(duio_ImageID2UIsetID("credit_0"))==FALSE {
+		duio_SetImageOutro duio_ImageID2UIsetID("credit_0"),TRUE
+	}
+	if SceneCount*FrameTime>500+2000+500+3000&duio_GetImageOutroFlag(duio_ImageID2UIsetID("credit_1"))==FALSE {
+		duio_SetImageOutro duio_ImageID2UIsetID("credit_1"),TRUE
+	}
+	if SceneCount*FrameTime>500+2000+500+3000+500&DecideTime==-1 {
+		gosub*onshutter
+		DecideTime=0
+	}
+	if SceneCount*FrameTime>500+2000+500+3000+500+1000 {
+		gosub*scene_Title_Init
+		curSceneTag="#Title"
+		return
+	}
+
+	return

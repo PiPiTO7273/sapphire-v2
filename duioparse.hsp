@@ -419,10 +419,10 @@
 										UIset_Button_drawLevel(UIset_Button_max)=fxint(UIsetscript_ExtraParam)
 										if UIset_maxdrawLev<fxint(UIsetscript_ExtraParam) :UIset_maxdrawLev=fxint(UIsetscript_ExtraParam)
 									swbreak
-									case"0x000E"	//disable-imgalpha
+									case"0x000E"	//&disable-imgalpha
 										UIset_Button_EnableAlpha(UIset_Button_max)=FALSE
 									swbreak
-									case"0x0013"	//pushsound
+									case"0x0013"	//&pushsound
 										if UIsetscript_ExtraParam=="!silent" {
 											UIset_Button_hPushSound(UIset_Button_max)=-2
 										} else {
@@ -612,7 +612,7 @@
 										UIset_Image_drawLevel(UIset_Image_max)=fxint(UIsetscript_ExtraParam)
 										if UIset_maxdrawLev<fxint(UIsetscript_ExtraParam) :UIset_maxdrawLev=fxint(UIsetscript_ExtraParam)
 									swbreak
-									case"0x000E"	//disable-imgalpha
+									case"0x000E"	//&disable-imgalpha
 										UIset_Image_EnableAlpha(UIset_Image_max)=FALSE
 									swbreak
 									case"0x0011"	//&imgwidth

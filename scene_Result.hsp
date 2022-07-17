@@ -9,8 +9,6 @@
 	sdim DecideJumpScene
 	decidecount=-1
 
-	UpdateProfileDisp
-
 	//アクション
 	duio_SetImageVisible duio_ImageID2UIsetID("result_action_layer"),FALSE
 	duio_SetButtonVisible duio_ButtonID2UIsetID("result_action_twitter"),FALSE
@@ -311,6 +309,43 @@
 			y(1)=double(100-gaugecapture_buf(cnt))
 			DrawLineAA d2f(x(0)),d2f(y(0)),d2f(x(1)),d2f(y(1)),0,d2f(2.0)
 		loop
+
+	//報酬
+		sdim reward_itemlist
+		switch curClearType
+			case CLEARTYPE_ASSIST
+				reward_itemlist=""+int(80.0+curAbilityScore*2.2)+" Lepus"
+				pfreg_NumLepus+int(80.0+curAbilityScore*2.2)
+			swbreak
+			case CLEARTYPE_CLEAR
+				reward_itemlist=""+int(100.0+curAbilityScore*4.2)+" Lepus"
+				pfreg_NumLepus+int(100.0+curAbilityScore*4.2)+" Lepus"
+			swbreak
+			case CLEARTYPE_EXPERT
+				reward_itemlist=""+int(150.0+curAbilityScore*5.0)+" Lepus , 音色のかけら x1"
+				pfreg_NumLepus+int(150.0+curAbilityScore*5.0)
+				pfreg_NumFragments+1
+			swbreak
+			case CLEARTYPE_MADNESS
+				reward_itemlist=""+int(200.0+curAbilityScore*6.3)+" Lepus , 音色のかけら x2"
+				pfreg_NumLepus+int(200.0+curAbilityScore*6.3)
+				pfreg_NumFragments+2
+			swbreak
+			case CLEARTYPE_FC
+				reward_itemlist=""+(400+int(curAbilityScore*3.6))+" Lepus , チャレンジチケット x1"
+				pfreg_NumLepus+(400+int(curAbilityScore*3.6))
+				pfreg_NumTickets+1
+			swbreak
+			case CLEARTYPE_ALLEX
+				reward_itemlist=""+(500+int(curAbilityScore*4.6))+" Lepus , チャレンジチケット x3"
+				pfreg_NumLepus+(500+int(curAbilityScore*4.6))
+				pfreg_NumTickets+3
+			swbreak
+		swend
+		if reward_itemlist=="" :reward_itemlist="なし"
+		duio_ChangeTextBody duio_TextID2UIsetID("result_reward_list"),reward_itemlist
+
+		UpdateProfileDisp
 
 	duio_SetAllImageOutro"#Shutter"
 	duio_PlaySound"shutter_out"

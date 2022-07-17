@@ -6,6 +6,10 @@
 //                                        //
 //****************************************//
 
+//----- Credit -----//
+		#Credit @image credit_0 graphic/credit_0.png 0 0 &animation-in=fade,0,500,LINEAR &disable-imgalpha
+		#Credit @image credit_1 graphic/credit_1.png 0 0 &animation-in=fade,500+2000+500,500,LINEAR &disable-imgalpha
+
 //----- Profile -----//
 		#Common-Profile @image musicselect_profile graphic/musicselect_profile.png 759 0 &animation-in=fade,20,350,CUBIC_OUT &animation-in=move,20,350,128,0,CUBIC_OUT &layerlv=2
 		
@@ -464,6 +468,10 @@
 	////// status //////
 		#Result @image result_status_load * 1200 830 &animation-in=zoom,1200,250,0,CUBIC_OUT &imgwidth=80 &imgheight=80
 		#Result @text result_status スコアを送信中・・・ 1300 853 rom1cm24 &animation-in=fade,1400,200,CUBIC_OUT &animation-in=move,1400,250,64,0,CUBIC_OUT result_text_style
+
+	////// reward //////
+		#Result @text result_reward_tx 獲得アイテム 760 965 rom1cm14 &animation-in=fade,1200,250,CUBIC_OUT &animation-in=move,1200,300,-32,0,CUBIC_OUT result_text_style
+		#Result @text result_reward_list * 876 965 rom1cm16 &animation-in=fade,1250,250,CUBIC_OUT &animation-in=move,1250,300,-32,0,CUBIC_OUT result_text_style
 
 	////// mission //////
 		#Result-MissionReward @image result_missionreward_bg graphic/result_missionreward_bg.png 40 40 &animation-in=fade,500,250,CUBIC_OUT &animation-in=move,500,500,-40-550,0,CUBIC_OUT

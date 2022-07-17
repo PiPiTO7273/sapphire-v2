@@ -34,6 +34,7 @@ goto*Startup
 #include"PortalSync.hsp"				//IR同期関連
 #include"duioparse.hsp"				//Dynamic UI Language (Input-Output Module)
 #include"scene_CommonLayer.hsp"		//共通レイヤー
+#include"scene_Credit.hsp"			//起動時のクレジット
 #include"scene_Title.hsp"			//タイトル画面
 #include"scene_Lobby.hsp"			//ロビー
 #include"scene_MusicSelect.hsp"		//楽曲選択画面
@@ -752,8 +753,9 @@ goto*Startup
 		cfunc64v EnumDisplaySettings,0,-1,varptr64(DEVMODE)
 		duio_SetFPS DEVMODE(30)
 
-	curSceneTag="#Title"
-	gosub*scene_Title_Init
+	curSceneTag="#Credit"
+	gosub*scene_Credit_Init
+	;gosub*scene_Title_Init
 	;gosub*scene_Lobby_Init
 	;gosub*scene_Result_Init
 	;gosub*scene_MusicSelect_Init
@@ -817,6 +819,7 @@ goto*Startup
 
 	//シーン別
 		switch curSceneTag
+			case"#Credit":gosub*scene_Credit:swbreak
 			case"#Title":gosub*scene_Title:swbreak
 			case"#Lobby":gosub*scene_Lobby:swbreak
 			case"#MusicSelect":gosub*scene_MusicSelect:swbreak

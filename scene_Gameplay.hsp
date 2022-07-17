@@ -812,7 +812,7 @@
 
 		SetDrawScreen hdximg(igameplay_copybuf)
 			ClearDrawScreen
-			SetDrawBlendMode DX_BLENDMODE_PMA_ALPHA,150
+			SetDrawBlendMode DX_BLENDMODE_PMA_ALPHA,256
 			DrawExtendGraph 0,0,LaneWidth,LaneHeight,hdximg(igameplay_bg_sidelane)
 			DrawExtendGraph LaneWidth,0,LaneWidth*5,LaneHeight,hdximg(igameplay_bg_lane)
 			DrawExtendGraph LaneWidth*5,0,LaneWidth*6,LaneHeight,hdximg(igameplay_bg_sidelane)
@@ -1273,11 +1273,13 @@
 	switch duio_GetButtonEventStack()
 
 		case"gameplay_event_restart"
-			duio_PlaySound"buzz_load"
-			mapconfig_finishflag=TRUE:duio_SetActiveScene"#Gameplay",FALSE
-			gosub*onshutter
-			mapconfig_finishtime=2000:mapconfig_compeff_shutterflag=TRUE
-			if currentSetMission==-1 :mapconfig_retryflag=TRUE
+			if mapconfig_finishflag==FALSE {
+				duio_PlaySound"buzz_load"
+				mapconfig_finishflag=TRUE:duio_SetActiveScene"#Gameplay",FALSE
+				gosub*onshutter
+				mapconfig_finishtime=2000:mapconfig_compeff_shutterflag=TRUE
+				if currentSetMission==-1 :mapconfig_retryflag=TRUE
+			}
 		swbreak
 
 		case"gameplay_event_retire"

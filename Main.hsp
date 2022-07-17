@@ -171,6 +171,9 @@ goto*Startup
 		sdim dxversionarr:dxversionarr="[ERROR]","9","9 EX","11"
 		logmes GetTimeStamp()+" - DirectX API version : "+dxversionarr(GetUseDirect3DVersion())
 
+		dim dxlibver:dim directxver:dim windowsver
+		cfunc64v _GetSystemInfo,varptr64(dxlibver),varptr64(directxver),varptr64(windowsver)
+
 		SetUseLighting FALSE
 		SetCameraNearFar d2f(100),d2f(4000)
 
